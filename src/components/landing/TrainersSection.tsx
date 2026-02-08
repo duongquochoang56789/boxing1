@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { useInView } from "framer-motion";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { Instagram, Facebook, Linkedin } from "lucide-react";
 
 const trainers = [
@@ -41,80 +41,137 @@ const trainers = [
 const TrainersSection = () => {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
   return (
-    <section id="trainers" className="section-padding bg-gym-charcoal text-white">
-      <div className="container-custom" ref={ref}>
+    <section id="trainers" className="section-padding bg-charcoal text-cream relative overflow-hidden">
+      {/* Background decoration */}
+      <div className="absolute inset-0 opacity-5">
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-terracotta rounded-full blur-3xl" />
+        <div className="absolute bottom-0 right-1/4 w-80 h-80 bg-peach rounded-full blur-3xl" />
+      </div>
+
+      <div className="container-custom relative z-10" ref={ref}>
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.8 }}
-          className="text-center max-w-2xl mx-auto mb-16"
+          className="text-center max-w-2xl mx-auto mb-20"
         >
-          <span className="text-accent text-sm font-medium tracking-[0.3em] uppercase">
-            Đội ngũ
+          <span className="text-label text-terracotta">
+            Đội ngũ chuyên gia
           </span>
-          <h2 className="heading-section mt-4 text-white">
+          <h2 className="heading-section mt-4 text-cream">
             Huấn luyện viên
             <br />
-            <span className="text-accent">chuyên nghiệp</span>
+            <span className="text-terracotta">đẳng cấp</span>
           </h2>
-          <p className="text-gray-400 mt-6">
+          <p className="text-cream/60 mt-6 text-body">
             Đội ngũ huấn luyện viên được chứng nhận quốc tế, tận tâm đồng hành
             cùng bạn trên hành trình chinh phục mục tiêu sức khỏe.
           </p>
         </motion.div>
 
         {/* Trainers Grid */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
           {trainers.map((trainer, index) => (
             <motion.div
               key={trainer.name}
-              initial={{ opacity: 0, y: 30 }}
+              initial={{ opacity: 0, y: 50 }}
               animate={isInView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.6, delay: index * 0.1 }}
-              className="group"
+              onMouseEnter={() => setHoveredIndex(index)}
+              onMouseLeave={() => setHoveredIndex(null)}
+              className="group cursor-pointer"
             >
               {/* Image */}
-              <div className="relative aspect-[3/4] overflow-hidden mb-4">
-                <img
+              <div className="relative aspect-[3/4] overflow-hidden mb-6">
+                <motion.img
                   src={trainer.image}
                   alt={trainer.name}
-                  className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500"
+                  className="w-full h-full object-cover"
+                  animate={{
+                    scale: hoveredIndex === index ? 1.05 : 1,
+                    filter: hoveredIndex === index ? "grayscale(0%)" : "grayscale(100%)",
+                  }}
+                  transition={{ duration: 0.6 }}
                 />
+                
+                {/* Gradient overlay */}
+                <motion.div
+                  className="absolute inset-0 bg-gradient-to-t from-charcoal via-transparent to-transparent"
+                  animate={{
+                    opacity: hoveredIndex === index ? 0.5 : 0.3,
+                  }}
+                  transition={{ duration: 0.3 }}
+                />
+
                 {/* Social Overlay */}
-                <div className="absolute inset-0 bg-accent/80 flex items-center justify-center gap-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <a
-                    href={trainer.socials.instagram}
-                    className="w-10 h-10 bg-white/20 flex items-center justify-center hover:bg-white/30 transition-colors"
-                  >
-                    <Instagram className="w-5 h-5 text-white" />
-                  </a>
-                  <a
-                    href={trainer.socials.facebook}
-                    className="w-10 h-10 bg-white/20 flex items-center justify-center hover:bg-white/30 transition-colors"
-                  >
-                    <Facebook className="w-5 h-5 text-white" />
-                  </a>
-                  <a
-                    href={trainer.socials.linkedin}
-                    className="w-10 h-10 bg-white/20 flex items-center justify-center hover:bg-white/30 transition-colors"
-                  >
-                    <Linkedin className="w-5 h-5 text-white" />
-                  </a>
-                </div>
+                <motion.div
+                  className="absolute inset-0 bg-terracotta/80 flex items-center justify-center gap-4"
+                  initial={{ opacity: 0 }}
+                  animate={{
+                    opacity: hoveredIndex === index ? 1 : 0,
+                  }}
+                  transition={{ duration: 0.3 }}
+                >
+                  {[
+                    { icon: Instagram, href: trainer.socials.instagram },
+                    { icon: Facebook, href: trainer.socials.facebook },
+                    { icon: Linkedin, href: trainer.socials.linkedin },
+                  ].map((social, socialIndex) => (
+                    <motion.a
+                      key={socialIndex}
+                      href={social.href}
+                      className="w-11 h-11 bg-cream/20 flex items-center justify-center hover:bg-cream/30 transition-colors"
+                      initial={{ y: 20, opacity: 0 }}
+                      animate={{
+                        y: hoveredIndex === index ? 0 : 20,
+                        opacity: hoveredIndex === index ? 1 : 0,
+                      }}
+                      transition={{ duration: 0.3, delay: socialIndex * 0.05 }}
+                    >
+                      <social.icon className="w-5 h-5 text-cream" />
+                    </motion.a>
+                  ))}
+                </motion.div>
+
+                {/* Decorative corner */}
+                <motion.div
+                  className="absolute top-0 right-0 w-16 h-16 bg-terracotta"
+                  initial={{ scale: 0 }}
+                  animate={{
+                    scale: hoveredIndex === index ? 1 : 0,
+                  }}
+                  transition={{ duration: 0.3 }}
+                  style={{ clipPath: "polygon(100% 0, 0 0, 100% 100%)" }}
+                />
               </div>
 
               {/* Info */}
               <div className="text-center">
-                <h3 className="font-display text-xl font-medium">
+                <motion.h3
+                  className="font-display text-xl font-medium text-cream"
+                  animate={{
+                    y: hoveredIndex === index ? -5 : 0,
+                  }}
+                  transition={{ duration: 0.3 }}
+                >
                   {trainer.name}
-                </h3>
-                <p className="text-accent text-sm font-medium mt-1">
+                </motion.h3>
+                <p className="text-terracotta text-label mt-2">
                   {trainer.role}
                 </p>
-                <p className="text-gray-400 text-sm mt-1">{trainer.specialty}</p>
+                <motion.p
+                  className="text-cream/50 text-sm mt-1"
+                  animate={{
+                    opacity: hoveredIndex === index ? 1 : 0.5,
+                  }}
+                  transition={{ duration: 0.3 }}
+                >
+                  {trainer.specialty}
+                </motion.p>
               </div>
             </motion.div>
           ))}

@@ -57,16 +57,19 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
-        // Custom gym colors
-        gym: {
-          gold: "hsl(var(--gym-gold))",
-          charcoal: "hsl(var(--gym-charcoal))",
-          cream: "hsl(var(--gym-cream))",
-          "warm-gray": "hsl(var(--gym-warm-gray))",
+        // Custom luxury palette
+        terracotta: {
+          DEFAULT: "hsl(var(--terracotta))",
+          light: "hsl(var(--terracotta-light))",
         },
+        peach: "hsl(var(--peach))",
+        cream: "hsl(var(--cream))",
+        "warm-beige": "hsl(var(--warm-beige))",
+        charcoal: "hsl(var(--charcoal))",
+        "soft-brown": "hsl(var(--soft-brown))",
       },
       fontFamily: {
-        display: ["Playfair Display", "serif"],
+        display: ["Cormorant Garamond", "serif"],
         body: ["Inter", "sans-serif"],
       },
       borderRadius: {

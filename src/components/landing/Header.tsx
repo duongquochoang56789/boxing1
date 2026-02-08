@@ -26,9 +26,9 @@ const Header = () => {
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-700 ${
         isScrolled
-          ? "bg-background/95 backdrop-blur-md shadow-sm py-4"
+          ? "bg-background/95 backdrop-blur-xl shadow-sm py-4"
           : "bg-transparent py-6"
       }`}
     >
@@ -39,28 +39,33 @@ const Header = () => {
             href="#home"
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5 }}
-            className="font-display text-2xl md:text-3xl font-semibold tracking-tight"
+            transition={{ duration: 0.6 }}
+            className="font-display text-2xl md:text-3xl font-semibold tracking-tight text-charcoal"
           >
-            ELITE<span className="text-accent">FIT</span>
+            ELITE<span className="text-terracotta">FIT</span>
           </motion.a>
 
           {/* Desktop Navigation */}
           <motion.ul
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            className="hidden lg:flex items-center gap-8"
+            transition={{ duration: 0.6, delay: 0.1 }}
+            className="hidden lg:flex items-center gap-10"
           >
-            {navLinks.map((link) => (
-              <li key={link.name}>
+            {navLinks.map((link, index) => (
+              <motion.li
+                key={link.name}
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: 0.1 + index * 0.05 }}
+              >
                 <a
                   href={link.href}
-                  className="text-sm font-medium tracking-wide uppercase text-foreground/80 hover:text-accent transition-colors duration-300"
+                  className="text-label text-soft-brown hover:text-terracotta transition-colors duration-300 link-underline"
                 >
                   {link.name}
                 </a>
-              </li>
+              </motion.li>
             ))}
           </motion.ul>
 
@@ -68,7 +73,7 @@ const Header = () => {
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5 }}
+            transition={{ duration: 0.6 }}
             className="hidden lg:block"
           >
             <Button className="btn-primary rounded-none">
@@ -77,17 +82,37 @@ const Header = () => {
           </motion.div>
 
           {/* Mobile Menu Button */}
-          <button
-            className="lg:hidden p-2 -mr-2"
+          <motion.button
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="lg:hidden p-2 -mr-2 text-charcoal hover:text-terracotta transition-colors"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             aria-label="Toggle menu"
           >
-            {isMobileMenuOpen ? (
-              <X className="w-6 h-6" />
-            ) : (
-              <Menu className="w-6 h-6" />
-            )}
-          </button>
+            <AnimatePresence mode="wait">
+              {isMobileMenuOpen ? (
+                <motion.div
+                  key="close"
+                  initial={{ rotate: -90, opacity: 0 }}
+                  animate={{ rotate: 0, opacity: 1 }}
+                  exit={{ rotate: 90, opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <X className="w-6 h-6" />
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="menu"
+                  initial={{ rotate: 90, opacity: 0 }}
+                  animate={{ rotate: 0, opacity: 1 }}
+                  exit={{ rotate: -90, opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <Menu className="w-6 h-6" />
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.button>
         </nav>
       </div>
 
@@ -96,30 +121,46 @@ const Header = () => {
         {isMobileMenuOpen && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
+            animate={{ opacity: 1, height: "100vh" }}
             exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.3 }}
-            className="lg:hidden bg-background border-t border-border"
+            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+            className="lg:hidden fixed inset-0 top-0 bg-cream/98 backdrop-blur-xl z-40"
           >
-            <div className="container-custom py-6">
-              <ul className="space-y-4">
-                {navLinks.map((link) => (
-                  <li key={link.name}>
+            <div className="container-custom pt-24 pb-12 h-full flex flex-col">
+              <ul className="space-y-1 flex-1">
+                {navLinks.map((link, index) => (
+                  <motion.li
+                    key={link.name}
+                    initial={{ opacity: 0, x: -30 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -30 }}
+                    transition={{ duration: 0.4, delay: index * 0.08 }}
+                  >
                     <a
                       href={link.href}
                       onClick={() => setIsMobileMenuOpen(false)}
-                      className="block text-base font-medium tracking-wide uppercase text-foreground/80 hover:text-accent transition-colors"
+                      className="block py-4 font-display text-3xl md:text-4xl text-charcoal hover:text-terracotta transition-colors duration-300"
                     >
                       {link.name}
                     </a>
-                  </li>
+                  </motion.li>
                 ))}
-                <li className="pt-4">
-                  <Button className="btn-primary rounded-none w-full">
-                    Đặt lịch ngay
-                  </Button>
-                </li>
               </ul>
+              
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 20 }}
+                transition={{ duration: 0.4, delay: 0.4 }}
+                className="pt-8 border-t border-border"
+              >
+                <Button className="btn-primary rounded-none w-full h-14">
+                  Đặt lịch ngay
+                </Button>
+                <p className="text-center text-sm text-muted-foreground mt-6">
+                  Hotline: <a href="tel:1900xxxx" className="text-terracotta">1900 xxxx</a>
+                </p>
+              </motion.div>
             </div>
           </motion.div>
         )}

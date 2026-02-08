@@ -1,96 +1,237 @@
 
-
-# 🏋️ Kế hoạch phát triển Gym/Fitness Center Website
+# Kế hoạch Nâng cấp UI/UX Toàn diện
 
 ## Tổng quan
-Website cho phòng tập gym với giao diện sang trọng như Pilates Circles, kèm hệ thống CMS, đặt lịch và quản lý thành viên.
+
+Sau khi phân tích trang web tham chiếu **Pilates Circles by Cult** và ứng dụng hiện tại, tôi nhận thấy có nhiều điểm khác biệt về hiệu ứng, animation và thiết kế tổng thể. Kế hoạch này sẽ nâng cấp toàn bộ giao diện để đạt được vẻ đẹp tinh tế, sang trọng như trang web mẫu.
 
 ---
 
-## 📅 Phase 1: Landing Page & Nền tảng cơ bản
-**Mục tiêu**: Tạo website giới thiệu đẹp mắt có thể chỉnh sửa nội dung
+## So sánh hiện tại vs Mục tiêu
 
-### Tính năng:
-- **Hero Section** với video/hình ảnh ấn tượng, slogan và form liên hệ
-- **Giới thiệu phòng tập** - Các điểm nổi bật về không gian, thiết bị
-- **Tour ảo studio** - Gallery hình ảnh/video các khu vực
-- **Danh sách dịch vụ** - Các loại hình tập luyện
-- **Đội ngũ huấn luyện viên** - Profile các PT
-- **Testimonials** - Đánh giá từ học viên
-- **Thông tin liên hệ & bản đồ**
-- **Footer với links và mạng xã hội**
-
-### CMS (Admin Panel):
-- Đăng nhập quản trị viên
-- Quản lý nội dung: chỉnh sửa text, hình ảnh, thông tin dịch vụ
-- Quản lý huấn luyện viên
-- Quản lý testimonials
+| Đặc điểm | Hiện tại | Mục tiêu (Pilates Circles) |
+|----------|----------|---------------------------|
+| Màu sắc | Gold & Charcoal | Warm Terracotta/Peach tones |
+| Hero Section | Static background | Full-screen video/image với form lead |
+| Animations | Cơ bản (fade-in, slide) | Parallax, smooth scroll, staggered reveals |
+| Typography | Playfair Display | Elegant serif với hiệu ứng text |
+| Hover effects | Đơn giản | Rich micro-interactions |
+| Loading states | Spinner đơn giản | Skeleton loading, shimmer effects |
+| Navigation | Basic sticky | Transparent → Solid với blur effect |
+| Sections | Square/Sharp | Elegant curves, overlapping elements |
+| Background | Solid colors | Gradients, textures, ambient music option |
 
 ---
 
-## 📅 Phase 2: Hệ thống đăng ký & Đặt lịch
-**Mục tiêu**: Khách hàng có thể đăng ký tài khoản và đặt lịch tập
+## Phase 1: Thiết kế lại Hệ thống màu sắc & Typography
 
-### Tính năng khách hàng:
-- **Đăng ký / Đăng nhập** - Email và mật khẩu
-- **Lịch lớp học nhóm** - Xem lịch các class theo tuần/tháng
-- **Đăng ký lớp học** - Chọn và đăng ký tham gia class
-- **Đặt lịch cá nhân** - Chọn PT và khung giờ trống
-- **Xác nhận qua email** - Thông báo đặt lịch thành công
+### 1.1 Cập nhật Color Palette
+- Thay đổi từ Gold/Charcoal sang tông màu ấm áp hơn (Terracotta, Warm Beige, Soft Pink)
+- Thêm CSS variables cho gradient backgrounds
+- Tạo các lớp texture overlay cho sections
 
-### CMS (Admin Panel):
-- Quản lý lịch lớp học (thêm/sửa/xóa class)
-- Quản lý khung giờ huấn luyện cá nhân
-- Xem danh sách đăng ký
+### 1.2 Typography Enhancements
+- Thêm font "Cormorant Garamond" hoặc "Playfair Display" với nhiều weight hơn
+- Text animations: Character-by-character reveal
+- Elegant text decorations (underlines, highlights)
 
 ---
 
-## 📅 Phase 3: Quản lý thành viên & Gói tập
-**Mục tiêu**: Theo dõi gói thành viên và lịch sử tập luyện
+## Phase 2: Hero Section - Complete Redesign
 
-### Tính năng khách hàng:
-- **Dashboard cá nhân** - Tổng quan thông tin thành viên
-- **Xem gói thành viên** - Số buổi còn lại, ngày hết hạn
-- **Lịch sử tập luyện** - Các buổi đã tham gia
-- **Cập nhật hồ sơ** - Thông tin cá nhân, ảnh đại diện
-- **Thông báo** - Nhắc nhở lịch tập, sắp hết hạn gói
+### 2.1 Layout mới
+- Full-screen hero với video/image background
+- Form đăng ký lead ở bên phải (giống Pilates Circles)
+- Tagline với hiệu ứng typewriter hoặc text reveal
+- Scroll indicator với animation mượt mà
 
-### CMS (Admin Panel):
-- Quản lý danh sách thành viên
-- Cấp/gia hạn gói tập cho thành viên
-- Xem thống kê: số lượng đăng ký, buổi tập...
-- Check-in thành viên (đánh dấu tham gia)
+### 2.2 Hiệu ứng mới
+- Parallax scrolling cho background
+- Text reveal animation theo từng chữ
+- Floating elements với subtle movement
+- Mouse cursor custom effects
 
 ---
 
-## 📅 Phase 4: Hoàn thiện & Nâng cao (Tuỳ chọn)
-**Mục tiêu**: Tính năng nâng cao theo nhu cầu
+## Phase 3: Advanced Scroll Animations
 
-### Có thể bổ sung:
-- Thanh toán online (Stripe/VNPAY)
-- Đánh giá & feedback sau buổi tập
-- Blog/tin tức phòng tập
-- Ưu đãi & khuyến mãi
-- Mobile responsive hoàn chỉnh
-- SEO optimization
+### 3.1 Scroll-triggered Animations
+- Parallax effect cho images và text
+- Section fade-in với staggered children
+- Horizontal scroll sections cho gallery
+- Progress indicator theo scroll
 
----
-
-## 🛠️ Công nghệ sử dụng
-- **Frontend**: React + TypeScript + Tailwind CSS
-- **Backend/Database**: Lovable Cloud (Supabase)
-- **Authentication**: Supabase Auth
-- **Lưu trữ file**: Supabase Storage
+### 3.2 Framer Motion Enhancements
+- Smooth scroll với `scroll-behavior: smooth`
+- `useScroll` và `useTransform` cho parallax
+- `AnimatePresence` cho page transitions
+- Stagger animations cho grid items
 
 ---
 
-## ⏱️ Ước tính thời gian
-| Phase | Thời gian |
-|-------|-----------|
-| Phase 1 | 2-3 ngày |
-| Phase 2 | 2-3 ngày |
-| Phase 3 | 2-3 ngày |
-| Phase 4 | Tuỳ nhu cầu |
+## Phase 4: Micro-interactions & Hover Effects
 
-**Tổng cộng: ~4 phases chính**, có thể triển khai từng phase để ra sản phẩm nhanh nhất.
+### 4.1 Button Animations
+- Ripple effect on click
+- Scale + shadow on hover
+- Magnetic cursor effect
+- Loading states với animated icons
+
+### 4.2 Card & Image Hover
+- 3D tilt effect (perspective transform)
+- Image zoom với smooth transition
+- Overlay gradient reveal
+- Social icons slide-in
+
+### 4.3 Link Underlines
+- Animated underline on hover
+- Text color transition
+- Letter-spacing change
+
+---
+
+## Phase 5: Navigation & Header Upgrade
+
+### 5.1 Header Redesign
+- Transparent background khi ở top
+- Blur backdrop khi scroll
+- Logo animation on load
+- Menu items với staggered fade-in
+
+### 5.2 Mobile Menu
+- Full-screen overlay với animation
+- Menu items slide-in one by one
+- Background blur effect
+- Close animation reverse
+
+---
+
+## Phase 6: Section-specific Enhancements
+
+### 6.1 About Section
+- Overlapping image layout
+- Text parallax khác với image
+- Floating accent elements
+- Numbered features với animation
+
+### 6.2 Services/Programs
+- Card hover với 3D effect
+- Numbered sequence animation
+- Image overlay với gradient
+- Arrow icon animation on hover
+
+### 6.3 Trainers Section
+- Grayscale → Color on hover
+- Social icons reveal animation
+- Name/role slide up effect
+- Background pattern overlay
+
+### 6.4 Testimonials
+- Smooth carousel với drag
+- Quote marks animation
+- Avatar border animation
+- Auto-play với pause on hover
+
+### 6.5 Gallery Section
+- Masonry layout với hover zoom
+- Lightbox với smooth transition
+- Category filter với animation
+- Horizontal scroll option
+
+---
+
+## Phase 7: Internal Pages Enhancement
+
+### 7.1 Auth Page
+- Split screen với animated background
+- Form field focus animations
+- Password strength indicator
+- Success/error animations
+
+### 7.2 Dashboard
+- Animated stat counters
+- Card entrance animations
+- Progress rings/bars
+- Activity timeline với animation
+
+### 7.3 Schedule Page
+- Calendar với smooth transitions
+- Time slot hover effects
+- Registration confirmation animation
+- Loading skeleton states
+
+### 7.4 Booking Page
+- Multi-step form với progress
+- Trainer card selection animation
+- Date/time picker custom styling
+- Confirmation celebration animation
+
+---
+
+## Phase 8: Polish & Performance
+
+### 8.1 Loading States
+- Skeleton loading cho content
+- Shimmer effect cho images
+- Spinners với brand styling
+- Page transition animations
+
+### 8.2 Accessibility
+- Focus states với styling đẹp
+- Reduced motion preferences
+- High contrast support
+- Keyboard navigation visual
+
+### 8.3 Performance Optimization
+- Lazy loading cho images
+- Animation performance (GPU acceleration)
+- Debounced scroll handlers
+- Code splitting cho animations
+
+---
+
+## Chi tiết Kỹ thuật
+
+### Dependencies cần thêm
+```text
+- @react-spring/web (cho smooth animations)
+- lenis hoặc locomotive-scroll (smooth scroll)
+- framer-motion (đã có - sử dụng nhiều hơn)
+```
+
+### Custom Hooks cần tạo
+```text
+- useScrollProgress: Theo dõi scroll position
+- useParallax: Tính toán parallax offset
+- useMouse: Theo dõi cursor position
+- useReducedMotion: Respect user preferences
+```
+
+### Animation Utilities
+```text
+- Stagger delay calculator
+- Easing functions custom
+- Animation variants reusable
+- Transition presets
+```
+
+---
+
+## Thứ tự triển khai đề xuất
+
+1. **Tuần 1**: Phase 1-2 (Colors, Typography, Hero)
+2. **Tuần 2**: Phase 3-4 (Scroll animations, Micro-interactions)
+3. **Tuần 3**: Phase 5-6 (Navigation, Section enhancements)
+4. **Tuần 4**: Phase 7-8 (Internal pages, Polish)
+
+---
+
+## Kết quả mong đợi
+
+Sau khi hoàn thành:
+- Giao diện sang trọng, hiện đại như Pilates Circles
+- Animations mượt mà, tinh tế
+- Trải nghiệm người dùng cao cấp
+- Responsive hoàn hảo trên mọi thiết bị
+- Performance tối ưu với lazy loading
 

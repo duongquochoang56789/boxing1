@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { Eye, EyeOff, Dumbbell, ArrowLeft } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Eye, EyeOff, ArrowLeft, ArrowRight } from 'lucide-react';
+import { MagneticButton } from '@/components/ui/magnetic-button';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -42,35 +42,20 @@ const Auth = () => {
               : error.message,
           });
         } else {
-          toast({
-            title: 'Đăng nhập thành công',
-            description: 'Chào mừng bạn trở lại!',
-          });
+          toast({ title: 'Đăng nhập thành công', description: 'Chào mừng bạn trở lại!' });
           navigate('/dashboard');
         }
       } else {
         if (!fullName.trim()) {
-          toast({
-            variant: 'destructive',
-            title: 'Lỗi',
-            description: 'Vui lòng nhập họ tên',
-          });
+          toast({ variant: 'destructive', title: 'Lỗi', description: 'Vui lòng nhập họ tên' });
           setIsSubmitting(false);
           return;
         }
-        
         const { error } = await signUp(email, password, fullName);
         if (error) {
-          toast({
-            variant: 'destructive',
-            title: 'Đăng ký thất bại',
-            description: error.message,
-          });
+          toast({ variant: 'destructive', title: 'Đăng ký thất bại', description: error.message });
         } else {
-          toast({
-            title: 'Đăng ký thành công',
-            description: 'Vui lòng kiểm tra email để xác nhận tài khoản.',
-          });
+          toast({ title: 'Đăng ký thành công', description: 'Vui lòng kiểm tra email để xác nhận tài khoản.' });
         }
       }
     } finally {
@@ -80,134 +65,213 @@ const Auth = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-accent"></div>
+      <div className="min-h-screen flex items-center justify-center bg-cream">
+        <motion.div
+          className="w-12 h-12 border-2 border-terracotta border-t-transparent rounded-full"
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+        />
       </div>
     );
   }
 
+  const inputClasses = "h-14 px-5 rounded-none border-border/50 bg-background/50 focus:border-terracotta focus:ring-terracotta/20 transition-all duration-300 font-body";
+
   return (
-    <div className="min-h-screen flex">
+    <div className="min-h-screen flex bg-cream">
       {/* Left - Form */}
-      <div className="flex-1 flex flex-col justify-center px-8 lg:px-16 py-12">
-        <Link to="/" className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground mb-8 w-fit">
+      <div className="flex-1 flex flex-col justify-center px-8 lg:px-20 py-12 relative">
+        {/* Decorative elements */}
+        <div className="absolute top-20 right-20 w-64 h-64 bg-terracotta/5 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-20 left-10 w-48 h-48 bg-peach/30 rounded-full blur-3xl pointer-events-none" />
+
+        <Link 
+          to="/" 
+          className="inline-flex items-center gap-2 text-soft-brown hover:text-terracotta transition-colors duration-300 mb-12 w-fit relative z-10"
+        >
           <ArrowLeft className="w-4 h-4" />
-          Về trang chủ
+          <span className="text-label">Về trang chủ</span>
         </Link>
 
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="max-w-md w-full mx-auto lg:mx-0"
+          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+          className="max-w-md w-full mx-auto lg:mx-0 relative z-10"
         >
-          <div className="flex items-center gap-3 mb-8">
-            <Dumbbell className="w-8 h-8 text-accent" />
-            <span className="font-display text-2xl font-semibold">ELITE FIT</span>
-          </div>
+          <motion.a 
+            href="/"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+            className="font-display text-2xl font-semibold tracking-tight text-charcoal block mb-10"
+          >
+            ELITE<span className="text-terracotta">FIT</span>
+          </motion.a>
 
-          <h1 className="font-display text-3xl md:text-4xl font-medium mb-2">
-            {isLogin ? 'Chào mừng trở lại' : 'Tạo tài khoản'}
-          </h1>
-          <p className="text-muted-foreground mb-8">
-            {isLogin 
-              ? 'Đăng nhập để quản lý lịch tập của bạn' 
-              : 'Đăng ký để bắt đầu hành trình fitness'}
-          </p>
-
-          <form onSubmit={handleSubmit} className="space-y-5">
-            {!isLogin && (
-              <div>
-                <label htmlFor="fullName" className="block text-sm font-medium mb-2">
-                  Họ và tên
-                </label>
-                <Input
-                  id="fullName"
-                  type="text"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  placeholder="Nguyễn Văn A"
-                  className="h-12 rounded-none border-border"
-                  required={!isLogin}
-                />
-              </div>
-            )}
-
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium mb-2">
-                Email
-              </label>
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="email@example.com"
-                className="h-12 rounded-none border-border"
-                required
-              />
-            </div>
-
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium mb-2">
-                Mật khẩu
-              </label>
-              <div className="relative">
-                <Input
-                  id="password"
-                  type={showPassword ? 'text' : 'password'}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="h-12 rounded-none border-border pr-12"
-                  required
-                  minLength={6}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                </button>
-              </div>
-            </div>
-
-            <Button 
-              type="submit" 
-              className="btn-primary rounded-none w-full h-12"
-              disabled={isSubmitting}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={isLogin ? 'login' : 'register'}
+              initial={{ opacity: 0, x: isLogin ? -20 : 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: isLogin ? 20 : -20 }}
+              transition={{ duration: 0.4 }}
             >
-              {isSubmitting ? 'Đang xử lý...' : (isLogin ? 'Đăng nhập' : 'Đăng ký')}
-            </Button>
-          </form>
+              <h1 className="heading-section text-charcoal mb-3">
+                {isLogin ? 'Chào mừng\ntrở lại' : 'Tạo tài khoản'}
+              </h1>
+              <p className="text-body text-soft-brown mb-10">
+                {isLogin 
+                  ? 'Đăng nhập để quản lý lịch tập của bạn' 
+                  : 'Đăng ký để bắt đầu hành trình fitness'}
+              </p>
 
-          <p className="mt-6 text-center text-muted-foreground">
-            {isLogin ? 'Chưa có tài khoản?' : 'Đã có tài khoản?'}
-            <button
-              onClick={() => setIsLogin(!isLogin)}
-              className="ml-2 text-accent hover:underline font-medium"
-            >
-              {isLogin ? 'Đăng ký ngay' : 'Đăng nhập'}
-            </button>
-          </p>
+              <form onSubmit={handleSubmit} className="space-y-5">
+                {!isLogin && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <label htmlFor="fullName" className="text-label text-soft-brown mb-2 block">
+                      Họ và tên
+                    </label>
+                    <Input
+                      id="fullName"
+                      type="text"
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      placeholder="Nguyễn Văn A"
+                      className={inputClasses}
+                      required={!isLogin}
+                    />
+                  </motion.div>
+                )}
+
+                <div>
+                  <label htmlFor="email" className="text-label text-soft-brown mb-2 block">
+                    Email
+                  </label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="email@example.com"
+                    className={inputClasses}
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="password" className="text-label text-soft-brown mb-2 block">
+                    Mật khẩu
+                  </label>
+                  <div className="relative">
+                    <Input
+                      id="password"
+                      type={showPassword ? 'text' : 'password'}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="••••••••"
+                      className={`${inputClasses} pr-12`}
+                      required
+                      minLength={6}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-soft-brown hover:text-terracotta transition-colors duration-300"
+                    >
+                      {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="pt-2">
+                  <MagneticButton 
+                    type="submit" 
+                    className="btn-primary rounded-none w-full h-14 group"
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? (
+                      <motion.div
+                        className="w-5 h-5 border-2 border-primary-foreground border-t-transparent rounded-full"
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                      />
+                    ) : (
+                      <>
+                        {isLogin ? 'Đăng nhập' : 'Đăng ký'}
+                        <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
+                      </>
+                    )}
+                  </MagneticButton>
+                </div>
+              </form>
+
+              <div className="mt-8 pt-8 border-t border-border/50 text-center">
+                <p className="text-body-sm text-soft-brown">
+                  {isLogin ? 'Chưa có tài khoản?' : 'Đã có tài khoản?'}
+                  <button
+                    onClick={() => setIsLogin(!isLogin)}
+                    className="ml-2 text-terracotta hover:text-terracotta/80 font-medium link-underline transition-colors duration-300"
+                  >
+                    {isLogin ? 'Đăng ký ngay' : 'Đăng nhập'}
+                  </button>
+                </p>
+              </div>
+            </motion.div>
+          </AnimatePresence>
         </motion.div>
       </div>
 
-      {/* Right - Image */}
-      <div className="hidden lg:block lg:w-1/2 relative bg-secondary">
-        <div className="absolute inset-0 bg-gradient-to-br from-accent/20 to-transparent" />
-        <div className="absolute inset-0 flex items-center justify-center p-12">
-          <div className="text-center">
-            <h2 className="font-display text-4xl font-medium mb-4">
+      {/* Right - Visual Panel */}
+      <div className="hidden lg:block lg:w-[45%] relative overflow-hidden">
+        <div
+          className="absolute inset-0 bg-cover bg-center"
+          style={{
+            backgroundImage: `url('https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=1200')`,
+          }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-br from-charcoal/80 via-charcoal/60 to-terracotta/40" />
+        
+        {/* Content overlay */}
+        <div className="absolute inset-0 flex flex-col justify-end p-16">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1, delay: 0.5 }}
+          >
+            <h2 className="heading-section text-cream mb-4">
               Bắt đầu hành trình
               <br />
-              <span className="text-accent">thay đổi bản thân</span>
+              <span className="text-terracotta-light">thay đổi bản thân</span>
             </h2>
-            <p className="text-muted-foreground max-w-md">
+            <p className="text-cream/70 text-body max-w-sm">
               Đặt lịch tập luyện, theo dõi tiến trình và kết nối với huấn luyện viên chuyên nghiệp.
             </p>
-          </div>
+          </motion.div>
+
+          {/* Decorative stats */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.8 }}
+            className="flex gap-12 mt-12 pt-8 border-t border-cream/20"
+          >
+            {[
+              { value: "5K+", label: "Học viên" },
+              { value: "20+", label: "HLV" },
+              { value: "98%", label: "Hài lòng" },
+            ].map((stat) => (
+              <div key={stat.label}>
+                <div className="font-display text-3xl text-cream font-medium">{stat.value}</div>
+                <div className="text-label text-cream/50 mt-1">{stat.label}</div>
+              </div>
+            ))}
+          </motion.div>
         </div>
       </div>
     </div>

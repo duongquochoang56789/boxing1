@@ -7,10 +7,15 @@ import TestimonialsSection from "@/components/landing/TestimonialsSection";
 import GallerySection from "@/components/landing/GallerySection";
 import ContactSection from "@/components/landing/ContactSection";
 import Footer from "@/components/landing/Footer";
+import { ScrollProgress } from "@/components/ui/scroll-progress";
+import { useLenis } from "@/hooks/useLenis";
 
 const Index = () => {
+  useLenis();
+
   return (
     <div className="min-h-screen bg-background">
+      <ScrollProgress />
       <Header />
       <main>
         <HeroSection />

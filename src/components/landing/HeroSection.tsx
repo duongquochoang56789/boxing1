@@ -1,6 +1,6 @@
 import { motion, useScroll, useTransform } from "framer-motion";
 import { ArrowRight, ChevronDown } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { MagneticButton } from "@/components/ui/magnetic-button";
 import { Input } from "@/components/ui/input";
 import { useRef, useState } from "react";
 import { TextReveal } from "@/components/ui/text-reveal";
@@ -108,16 +108,16 @@ const HeroSection = () => {
               transition={{ duration: 0.8, delay: 0.8 }}
               className="flex flex-wrap gap-4 pt-4"
             >
-              <Button className="btn-primary rounded-none group">
+              <MagneticButton className="btn-primary rounded-none group">
                 Khám phá ngay
                 <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
-              </Button>
-              <Button
+              </MagneticButton>
+              <MagneticButton
                 variant="ghost"
                 className="btn-outline rounded-none"
               >
                 Đặt lịch tư vấn
-              </Button>
+              </MagneticButton>
             </motion.div>
 
             {/* Elegant Stats */}
@@ -200,13 +200,13 @@ const HeroSection = () => {
                       className="h-14 px-5 bg-secondary/50 border-border/50 rounded-none focus:border-terracotta focus:ring-terracotta/20 transition-all duration-300"
                     />
                   </div>
-                  <Button
+                   <MagneticButton
                     type="submit"
                     className="w-full btn-primary rounded-none h-14 group"
                   >
                     Đăng ký ngay
                     <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                  </Button>
+                  </MagneticButton>
                 </form>
 
                 <p className="text-xs text-muted-foreground text-center mt-6">

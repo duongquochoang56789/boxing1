@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { Instagram, Facebook, Youtube, Mail, MapPin, Phone } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { MagneticButton } from "@/components/ui/magnetic-button";
 import { Input } from "@/components/ui/input";
 
 const footerLinks = {
@@ -55,9 +55,9 @@ const Footer = () => {
                 placeholder="Email của bạn"
                 className="h-14 px-5 bg-cream/5 border-cream/20 text-cream placeholder:text-cream/40 rounded-none w-full lg:w-80 focus:border-terracotta focus:ring-terracotta/20"
               />
-              <Button className="h-14 px-8 bg-terracotta hover:bg-terracotta/90 text-cream rounded-none whitespace-nowrap">
+              <MagneticButton className="h-14 px-8 bg-terracotta hover:bg-terracotta/90 text-cream rounded-none whitespace-nowrap">
                 Đăng ký
-              </Button>
+              </MagneticButton>
             </div>
           </div>
         </div>

@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { useInView } from "framer-motion";
 import { useRef, useState } from "react";
 import { ArrowUpRight } from "lucide-react";
+import { TiltCard } from "@/components/ui/tilt-card";
 
 const services = [
   {
@@ -69,8 +70,8 @@ const ServicesSection = () => {
         {/* Services Grid */}
         <div className="grid md:grid-cols-2 gap-8">
           {services.map((service, index) => (
+            <TiltCard key={service.number} tiltStrength={8}>
             <motion.div
-              key={service.number}
               initial={{ opacity: 0, y: 50 }}
               animate={isInView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.6, delay: index * 0.15 }}
@@ -160,6 +161,7 @@ const ServicesSection = () => {
                 transition={{ duration: 0.3 }}
               />
             </motion.div>
+            </TiltCard>
           ))}
         </div>
       </div>

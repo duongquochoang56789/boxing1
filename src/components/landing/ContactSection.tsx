@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { useInView } from "framer-motion";
 import { useRef } from "react";
 import { MapPin, Phone, Mail, Clock, ArrowRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { MagneticButton } from "@/components/ui/magnetic-button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -200,10 +200,10 @@ const ContactSection = () => {
                   />
                 </div>
                 
-                <Button type="submit" className="btn-primary rounded-none w-full h-14 group">
+                <MagneticButton type="submit" className="btn-primary rounded-none w-full h-14 group">
                   Gửi đăng ký
                   <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                </Button>
+                </MagneticButton>
                 
                 <p className="text-xs text-soft-brown text-center">
                   Bằng việc đăng ký, bạn đồng ý với{" "}

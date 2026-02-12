@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { MagneticButton } from "@/components/ui/magnetic-button";
 
 const navLinks = [
   { name: "Trang chủ", href: "#home" },
@@ -76,9 +76,9 @@ const Header = () => {
             transition={{ duration: 0.6 }}
             className="hidden lg:block"
           >
-            <Button className="btn-primary rounded-none">
+            <MagneticButton className="btn-primary rounded-none">
               Đặt lịch ngay
-            </Button>
+            </MagneticButton>
           </motion.div>
 
           {/* Mobile Menu Button */}
@@ -154,9 +154,9 @@ const Header = () => {
                 transition={{ duration: 0.4, delay: 0.4 }}
                 className="pt-8 border-t border-border"
               >
-                <Button className="btn-primary rounded-none w-full h-14">
+                <MagneticButton className="btn-primary rounded-none w-full h-14">
                   Đặt lịch ngay
-                </Button>
+                </MagneticButton>
                 <p className="text-center text-sm text-muted-foreground mt-6">
                   Hotline: <a href="tel:1900xxxx" className="text-terracotta">1900 xxxx</a>
                 </p>

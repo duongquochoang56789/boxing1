@@ -22,8 +22,8 @@ serve(async (req) => {
 
   try {
     const { section, keys, context } = await req.json();
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
+    const GEMINI_API_KEY = Deno.env.get("GOOGLE_GEMINI_API_KEY");
+    if (!GEMINI_API_KEY) throw new Error("GOOGLE_GEMINI_API_KEY not configured");
 
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -41,49 +41,54 @@ Ví dụ format output:
 ${JSON.stringify(keys.reduce((acc: Record<string, string>, k: string) => { acc[k] = "nội dung mẫu"; return acc; }, {}))}
 `;
 
-    const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
-        messages: [
-          { role: "system", content: STYLE_GUIDE },
-          { role: "user", content: prompt },
-        ],
-      }),
-    });
+    // Call Google Gemini API directly
+    const aiResponse = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [
+            {
+              role: "user",
+              parts: [{ text: prompt }],
+            },
+          ],
+          systemInstruction: {
+            parts: [{ text: STYLE_GUIDE }],
+          },
+          generationConfig: {
+            responseMimeType: "application/json",
+          },
+        }),
+      }
+    );
 
     if (!aiResponse.ok) {
       const status = aiResponse.status;
+      const errorText = await aiResponse.text();
+      console.error("Gemini API error:", status, errorText);
       if (status === 429) {
         return new Response(JSON.stringify({ error: "Rate limit exceeded." }), {
           status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-      if (status === 402) {
-        return new Response(JSON.stringify({ error: "Payment required." }), {
-          status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      throw new Error(`AI error: ${status}`);
+      throw new Error(`Gemini API error: ${status}`);
     }
 
     const aiData = await aiResponse.json();
-    let textContent = aiData.choices?.[0]?.message?.content || "";
-    
+    let textContent = aiData.candidates?.[0]?.content?.parts?.[0]?.text || "";
+
     // Extract JSON from response (may be wrapped in markdown code blocks)
     const jsonMatch = textContent.match(/```(?:json)?\s*([\s\S]*?)```/);
     if (jsonMatch) textContent = jsonMatch[1].trim();
-    
+
     let parsed: Record<string, string>;
     try {
       parsed = JSON.parse(textContent);
     } catch {
-      console.error("Failed to parse AI response:", textContent);
-      throw new Error("AI returned invalid JSON");
+      console.error("Failed to parse Gemini response:", textContent);
+      throw new Error("Gemini returned invalid JSON");
     }
 
     // Save each key to database

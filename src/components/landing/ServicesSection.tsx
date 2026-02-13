@@ -3,6 +3,7 @@ import { useInView } from "framer-motion";
 import { useRef, useState } from "react";
 import { ArrowUpRight } from "lucide-react";
 import { TiltCard } from "@/components/ui/tilt-card";
+import { ShimmerImage } from "@/components/ui/shimmer-image";
 
 const services = [
   {
@@ -81,15 +82,16 @@ const ServicesSection = () => {
             >
               {/* Image with zoom effect */}
               <div className="aspect-[4/3] overflow-hidden relative">
-                <motion.img
+                <ShimmerImage
                   src={service.image}
                   alt={service.title}
                   className="w-full h-full object-cover"
-                  animate={{
+                  wrapperClassName="w-full h-full"
+                  style={{
                     scale: hoveredIndex === index ? 1.1 : 1,
                     filter: hoveredIndex === index ? "grayscale(0%)" : "grayscale(20%)",
+                    transition: "all 0.7s ease-out",
                   }}
-                  transition={{ duration: 0.7, ease: "easeOut" }}
                 />
                 {/* Gradient overlay */}
                 <motion.div

@@ -88,8 +88,39 @@ const BookPT = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-cream">
-        <motion.div className="w-12 h-12 border-2 border-terracotta border-t-transparent rounded-full" animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: "linear" }} />
+      <div className="min-h-screen bg-cream">
+        <header className="bg-background/80 backdrop-blur-xl border-b border-border/50 sticky top-0 z-30">
+          <div className="container-custom py-4 flex items-center gap-4">
+            <div className="h-5 w-5 shimmer rounded" />
+            <div className="h-6 w-32 shimmer rounded" />
+          </div>
+        </header>
+        <main className="container-custom py-10">
+          <div className="mb-10">
+            <div className="h-4 w-20 shimmer rounded mb-3" />
+            <div className="h-10 w-64 shimmer rounded mb-2" />
+            <div className="h-5 w-80 shimmer rounded" />
+          </div>
+          <div className="flex items-center gap-2 mb-10">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="flex items-center gap-2">
+                <div className="w-9 h-9 shimmer rounded" />
+                <div className="h-3 w-16 shimmer rounded hidden sm:block" />
+                {i < 2 && <div className="w-8 h-px bg-border" />}
+              </div>
+            ))}
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="p-7 border border-border/50 bg-background">
+                <div className="w-16 h-16 shimmer rounded mb-5" />
+                <div className="h-6 w-3/4 shimmer rounded mb-2" />
+                <div className="h-4 w-1/2 shimmer rounded mb-3" />
+                <div className="h-4 w-2/3 shimmer rounded" />
+              </div>
+            ))}
+          </div>
+        </main>
       </div>
     );
   }

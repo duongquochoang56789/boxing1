@@ -151,8 +151,25 @@ const Schedule = () => {
           </div>
 
           {loading ? (
-            <div className="flex items-center justify-center py-20">
-              <motion.div className="w-12 h-12 border-2 border-terracotta border-t-transparent rounded-full" animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: "linear" }} />
+            <div className="grid grid-cols-1 md:grid-cols-7 gap-4">
+              {[...Array(7)].map((_, i) => (
+                <div key={i} className="border border-border/50 bg-background">
+                  <div className="p-3 border-b border-border/50 bg-cream">
+                    <div className="h-3 w-16 shimmer rounded mx-auto mb-1" />
+                    <div className="h-5 w-12 shimmer rounded mx-auto" />
+                  </div>
+                  <div className="p-2 space-y-2 min-h-[200px]">
+                    {[...Array(2)].map((_, j) => (
+                      <div key={j} className="p-3 border border-border/30 bg-cream">
+                        <div className="h-4 w-3/4 shimmer rounded mb-2" />
+                        <div className="h-3 w-1/2 shimmer rounded mb-1" />
+                        <div className="h-3 w-2/3 shimmer rounded mb-2" />
+                        <div className="h-7 w-full shimmer rounded mt-2" />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-7 gap-4">

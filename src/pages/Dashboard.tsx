@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Calendar, Users, Dumbbell, Clock, LogOut, User, ChevronRight, ArrowUpRight } from 'lucide-react';
+import { Calendar, Users, Dumbbell, Clock, LogOut, User, ChevronRight, ArrowUpRight, TrendingUp, Target, Flame } from 'lucide-react';
+import AnimatedCounter from '@/components/AnimatedCounter';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -195,6 +196,40 @@ const Dashboard = () => {
           <p className="text-body text-soft-brown mt-3">
             Hôm nay bạn muốn tập luyện gì?
           </p>
+        </motion.div>
+
+        {/* Animated Stats */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3 }}
+          className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-12"
+        >
+          <AnimatedCounter
+            end={upcomingClasses.length + upcomingPT.length}
+            label="Buổi tập sắp tới"
+            icon={<Calendar className="w-6 h-6 text-terracotta" />}
+            duration={1.5}
+          />
+          <AnimatedCounter
+            end={upcomingClasses.length}
+            label="Lớp học đã đăng ký"
+            icon={<Users className="w-6 h-6 text-terracotta" />}
+            duration={1.5}
+          />
+          <AnimatedCounter
+            end={upcomingPT.length}
+            label="Buổi PT đã đặt"
+            icon={<Target className="w-6 h-6 text-terracotta" />}
+            duration={1.5}
+          />
+          <AnimatedCounter
+            end={7}
+            label="Chuỗi ngày tập"
+            suffix=" ngày"
+            icon={<Flame className="w-6 h-6 text-terracotta" />}
+            duration={1.5}
+          />
         </motion.div>
 
         {/* Quick Links */}

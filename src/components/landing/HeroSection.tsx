@@ -3,10 +3,12 @@ import { ArrowRight, ChevronDown } from "lucide-react";
 import { MagneticButton } from "@/components/ui/magnetic-button";
 import { Input } from "@/components/ui/input";
 import { useRef, useState } from "react";
+import { useSiteContent, getContent } from "@/hooks/useSiteContent";
 
 const HeroSection = () => {
   const containerRef = useRef<HTMLElement>(null);
   const [email, setEmail] = useState("");
+  const { data: content } = useSiteContent("hero");
 
   const { scrollYProgress } = useScroll({
     target: containerRef,
@@ -23,36 +25,25 @@ const HeroSection = () => {
     setEmail("");
   };
 
+  const bgImage = getContent(content, "image", "background", "https://images.unsplash.com/photo-1571902943202-507ec2618e8f?q=80&w=2075");
+
   return (
-    <section
-      ref={containerRef}
-      id="home"
-      className="relative h-screen overflow-hidden"
-    >
-      {/* Full-bleed Background Image */}
-      <motion.div
-        className="absolute inset-0 z-0"
-        style={{ scale: backgroundScale }}
-      >
+    <section ref={containerRef} id="home" className="relative h-screen overflow-hidden">
+      <motion.div className="absolute inset-0 z-0" style={{ scale: backgroundScale }}>
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{
-            backgroundImage: `url('https://images.unsplash.com/photo-1571902943202-507ec2618e8f?q=80&w=2075')`,
-          }}
+          style={{ backgroundImage: `url('${bgImage}')` }}
         />
-        {/* Minimal gradient for text readability */}
         <div className="absolute inset-0 bg-gradient-to-t from-charcoal/70 via-charcoal/20 to-charcoal/10" />
         <div className="absolute inset-0 bg-gradient-to-r from-charcoal/40 to-transparent" />
       </motion.div>
 
-      {/* Content overlay - bottom aligned */}
       <motion.div
         className="absolute inset-0 z-10 flex flex-col justify-end"
         style={{ opacity: contentOpacity, y: contentY }}
       >
         <div className="container-custom pb-24 md:pb-32">
           <div className="grid lg:grid-cols-2 gap-12 items-end">
-            {/* Bottom-left - Large Heading */}
             <div className="space-y-6">
               <motion.span
                 initial={{ opacity: 0, y: 20 }}
@@ -60,32 +51,28 @@ const HeroSection = () => {
                 transition={{ duration: 0.8, delay: 0.2 }}
                 className="text-label text-cream/80 block"
               >
-                Premium Wellness Experience
+                {getContent(content, "text", "label", "Premium Wellness Experience")}
               </motion.span>
-
               <motion.h1
                 initial={{ opacity: 0, y: 40 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 1, delay: 0.4 }}
                 className="heading-display text-cream"
               >
-                Cân bằng,
+                {getContent(content, "text", "heading_1", "Cân bằng,")}
                 <br />
-                <span className="text-peach">trọn vẹn.</span>
+                <span className="text-peach">{getContent(content, "text", "heading_2", "trọn vẹn.")}</span>
               </motion.h1>
-
               <motion.p
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.7 }}
                 className="text-body text-cream/70 max-w-md"
               >
-                Không gian luyện tập sang trọng, nơi sự tinh tế 
-                gặp gỡ hiệu quả.
+                {getContent(content, "text", "description", "Không gian luyện tập sang trọng, nơi sự tinh tế gặp gỡ hiệu quả.")}
               </motion.p>
             </div>
 
-            {/* Bottom-right - Glassmorphism Lead Form */}
             <motion.div
               initial={{ opacity: 0, y: 40 }}
               animate={{ opacity: 1, y: 0 }}
@@ -94,49 +81,27 @@ const HeroSection = () => {
             >
               <div className="bg-cream/10 backdrop-blur-xl border border-cream/20 p-8">
                 <h3 className="heading-subsection text-cream mb-2">
-                  Đăng ký trải nghiệm
+                  {getContent(content, "text", "form_title", "Đăng ký trải nghiệm")}
                 </h3>
                 <p className="text-body-sm text-cream/60 mb-6">
-                  Nhận ưu đãi và lịch tập thử miễn phí
+                  {getContent(content, "text", "form_description", "Nhận ưu đãi và lịch tập thử miễn phí")}
                 </p>
-
                 <form onSubmit={handleSubmit} className="space-y-4">
-                  <Input
-                    type="text"
-                    placeholder="Họ và tên"
-                    className="h-12 px-4 bg-cream/10 border-cream/20 text-cream placeholder:text-cream/40 rounded-none focus:border-peach focus:ring-peach/20"
-                  />
-                  <Input
-                    type="email"
-                    placeholder="Email của bạn"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="h-12 px-4 bg-cream/10 border-cream/20 text-cream placeholder:text-cream/40 rounded-none focus:border-peach focus:ring-peach/20"
-                  />
-                  <Input
-                    type="tel"
-                    placeholder="Số điện thoại"
-                    className="h-12 px-4 bg-cream/10 border-cream/20 text-cream placeholder:text-cream/40 rounded-none focus:border-peach focus:ring-peach/20"
-                  />
-                  <MagneticButton
-                    type="submit"
-                    className="w-full btn-primary rounded-none h-12 group"
-                  >
+                  <Input type="text" placeholder="Họ và tên" className="h-12 px-4 bg-cream/10 border-cream/20 text-cream placeholder:text-cream/40 rounded-none focus:border-peach focus:ring-peach/20" />
+                  <Input type="email" placeholder="Email của bạn" value={email} onChange={(e) => setEmail(e.target.value)} className="h-12 px-4 bg-cream/10 border-cream/20 text-cream placeholder:text-cream/40 rounded-none focus:border-peach focus:ring-peach/20" />
+                  <Input type="tel" placeholder="Số điện thoại" className="h-12 px-4 bg-cream/10 border-cream/20 text-cream placeholder:text-cream/40 rounded-none focus:border-peach focus:ring-peach/20" />
+                  <MagneticButton type="submit" className="w-full btn-primary rounded-none h-12 group">
                     Đăng ký ngay
                     <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
                   </MagneticButton>
                 </form>
-
-                <p className="text-xs text-cream/40 text-center mt-4">
-                  Chúng tôi tôn trọng quyền riêng tư của bạn
-                </p>
+                <p className="text-xs text-cream/40 text-center mt-4">Chúng tôi tôn trọng quyền riêng tư của bạn</p>
               </div>
             </motion.div>
           </div>
         </div>
       </motion.div>
 
-      {/* Scroll Indicator - bottom center */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}

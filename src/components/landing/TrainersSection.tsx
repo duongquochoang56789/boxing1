@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { useInView } from "framer-motion";
 import { useRef, useState } from "react";
 import { Instagram, Facebook, Linkedin } from "lucide-react";
+import { ShimmerImage } from "@/components/ui/shimmer-image";
 
 const trainers = [
   {
@@ -87,15 +88,16 @@ const TrainersSection = () => {
             >
               {/* Image */}
               <div className="relative aspect-[3/4] overflow-hidden mb-6">
-                <motion.img
+                <ShimmerImage
                   src={trainer.image}
                   alt={trainer.name}
                   className="w-full h-full object-cover"
-                  animate={{
+                  wrapperClassName="w-full h-full"
+                  style={{
                     scale: hoveredIndex === index ? 1.05 : 1,
                     filter: hoveredIndex === index ? "grayscale(0%)" : "grayscale(100%)",
+                    transition: "all 0.6s ease",
                   }}
-                  transition={{ duration: 0.6 }}
                 />
                 
                 {/* Gradient overlay */}

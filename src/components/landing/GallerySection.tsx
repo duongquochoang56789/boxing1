@@ -3,6 +3,7 @@ import { useInView } from "framer-motion";
 import { useRef, useState } from "react";
 import { X, ChevronLeft, ChevronRight } from "lucide-react";
 import { AnimatePresence } from "framer-motion";
+import { ShimmerImage } from "@/components/ui/shimmer-image";
 
 const galleryImages = [
   {
@@ -115,15 +116,16 @@ const GallerySection = () => {
               onClick={() => openLightbox(index)}
               className={`${image.span} overflow-hidden cursor-pointer relative group`}
             >
-              <motion.img
+              <ShimmerImage
                 src={image.src}
                 alt={image.alt}
                 className="w-full h-full object-cover"
-                animate={{
+                wrapperClassName="w-full h-full"
+                style={{
                   scale: hoveredIndex === index ? 1.1 : 1,
                   filter: hoveredIndex === index ? "grayscale(0%)" : "grayscale(30%)",
+                  transition: "all 0.7s ease-out",
                 }}
-                transition={{ duration: 0.7, ease: "easeOut" }}
               />
               
               {/* Overlay */}

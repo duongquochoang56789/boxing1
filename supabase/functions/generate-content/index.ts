@@ -11,8 +11,8 @@ serve(async (req) => {
 
   try {
     const { prompt, section, key } = await req.json();
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
+    const GEMINI_API_KEY = Deno.env.get("GOOGLE_GEMINI_API_KEY");
+    if (!GEMINI_API_KEY) throw new Error("GOOGLE_GEMINI_API_KEY not configured");
 
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -21,50 +21,61 @@ serve(async (req) => {
     console.log(`Generating image for section: ${section}, key: ${key}`);
     console.log(`Prompt: ${prompt}`);
 
-    // Call Lovable AI to generate image
-    const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash-image",
-        messages: [{ role: "user", content: prompt }],
-        modalities: ["image", "text"],
-      }),
-    });
+    // Call Google Gemini API directly for image generation
+    const aiResponse = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${GEMINI_API_KEY}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [{ text: prompt }],
+            },
+          ],
+          generationConfig: {
+            responseModalities: ["IMAGE", "TEXT"],
+            responseMimeType: "image/png",
+          },
+        }),
+      }
+    );
 
     if (!aiResponse.ok) {
       const status = aiResponse.status;
+      const errorText = await aiResponse.text();
+      console.error("Gemini API error:", status, errorText);
       if (status === 429) {
         return new Response(JSON.stringify({ error: "Rate limit exceeded. Please try again later." }), {
           status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-      if (status === 402) {
-        return new Response(JSON.stringify({ error: "Payment required. Please add credits." }), {
-          status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      const errorText = await aiResponse.text();
-      console.error("AI error:", status, errorText);
-      throw new Error(`AI gateway error: ${status}`);
+      throw new Error(`Gemini API error: ${status} - ${errorText}`);
     }
 
     const aiData = await aiResponse.json();
-    const imageData = aiData.choices?.[0]?.message?.images?.[0]?.image_url?.url;
-
-    if (!imageData) {
-      throw new Error("No image generated from AI");
+    
+    // Extract image from Gemini response
+    let base64Content: string | null = null;
+    let mimeType = "image/png";
+    
+    const candidates = aiData.candidates || [];
+    for (const candidate of candidates) {
+      const parts = candidate.content?.parts || [];
+      for (const part of parts) {
+        if (part.inlineData) {
+          base64Content = part.inlineData.data;
+          mimeType = part.inlineData.mimeType || "image/png";
+          break;
+        }
+      }
+      if (base64Content) break;
     }
 
-    // Extract base64 data
-    const base64Match = imageData.match(/^data:image\/(png|jpeg|jpg|webp);base64,(.+)$/);
-    if (!base64Match) throw new Error("Invalid image data format");
-
-    const imageFormat = base64Match[1];
-    const base64Content = base64Match[2];
+    if (!base64Content) {
+      console.error("Gemini response:", JSON.stringify(aiData).substring(0, 500));
+      throw new Error("No image generated from Gemini API");
+    }
 
     // Decode base64 to Uint8Array
     const binaryString = atob(base64Content);
@@ -73,12 +84,15 @@ serve(async (req) => {
       bytes[i] = binaryString.charCodeAt(i);
     }
 
+    // Determine file extension
+    const ext = mimeType.includes("jpeg") || mimeType.includes("jpg") ? "jpg" : "png";
+
     // Upload to storage
-    const fileName = `${section}/${key}_${Date.now()}.${imageFormat}`;
+    const fileName = `${section}/${key}_${Date.now()}.${ext}`;
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from("site-images")
       .upload(fileName, bytes, {
-        contentType: `image/${imageFormat}`,
+        contentType: mimeType,
         upsert: true,
       });
 

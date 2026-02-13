@@ -13,6 +13,7 @@ import Dashboard from "./pages/Dashboard";
 import Schedule from "./pages/Schedule";
 import BookPT from "./pages/BookPT";
 import NotFound from "./pages/NotFound";
+import AdminContent from "./pages/AdminContent";
 
 const queryClient = new QueryClient();
 
@@ -45,6 +46,14 @@ const AnimatedRoutes = () => {
           element={
             <ProtectedRoute>
               <PageTransition><BookPT /></PageTransition>
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/admin/content" 
+          element={
+            <ProtectedRoute>
+              <PageTransition><AdminContent /></PageTransition>
             </ProtectedRoute>
           } 
         />

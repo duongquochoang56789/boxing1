@@ -129,10 +129,10 @@ const Auth = () => {
               <form onSubmit={handleSubmit} className="space-y-5">
                 {!isLogin && (
                   <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    exit={{ opacity: 0, height: 0 }}
-                    transition={{ duration: 0.3 }}
+                    initial={{ opacity: 0, height: 0, y: -10 }}
+                    animate={{ opacity: 1, height: 'auto', y: 0 }}
+                    exit={{ opacity: 0, height: 0, y: -10 }}
+                    transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
                   >
                     <label htmlFor="fullName" className="text-label text-soft-brown mb-2 block">
                       Họ và tên
@@ -149,7 +149,11 @@ const Auth = () => {
                   </motion.div>
                 )}
 
-                <div>
+                <motion.div
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                >
                   <label htmlFor="email" className="text-label text-soft-brown mb-2 block">
                     Email
                   </label>
@@ -162,9 +166,13 @@ const Auth = () => {
                     className={inputClasses}
                     required
                   />
-                </div>
+                </motion.div>
 
-                <div>
+                <motion.div
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                >
                   <label htmlFor="password" className="text-label text-soft-brown mb-2 block">
                     Mật khẩu
                   </label>
@@ -184,12 +192,27 @@ const Auth = () => {
                       onClick={() => setShowPassword(!showPassword)}
                       className="absolute right-4 top-1/2 -translate-y-1/2 text-soft-brown hover:text-terracotta transition-colors duration-300"
                     >
-                      {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                      <AnimatePresence mode="wait">
+                        <motion.span
+                          key={showPassword ? 'hide' : 'show'}
+                          initial={{ opacity: 0, scale: 0.8 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.8 }}
+                          transition={{ duration: 0.15 }}
+                        >
+                          {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                        </motion.span>
+                      </AnimatePresence>
                     </button>
                   </div>
-                </div>
+                </motion.div>
 
-                <div className="pt-2">
+                <motion.div 
+                  className="pt-2"
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                >
                   <MagneticButton 
                     type="submit" 
                     className="btn-primary rounded-none w-full h-14 group"
@@ -208,7 +231,7 @@ const Auth = () => {
                       </>
                     )}
                   </MagneticButton>
-                </div>
+                </motion.div>
               </form>
 
               <div className="mt-8 pt-8 border-t border-border/50 text-center">

@@ -61,7 +61,6 @@ const TestimonialsSection = () => {
     setProgress(0);
   }, []);
 
-  // Auto-play with progress
   useEffect(() => {
     if (isPaused) return;
     const progressInterval = setInterval(() => {
@@ -86,20 +85,6 @@ const TestimonialsSection = () => {
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >
-      {/* Decorative */}
-      <div className="absolute top-20 right-20 w-64 h-64 bg-terracotta/5 rounded-full blur-3xl" />
-      <div className="absolute bottom-20 left-20 w-80 h-80 bg-peach/20 rounded-full blur-3xl" />
-
-      {/* Large quote watermark */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.5, rotate: -10 }}
-        animate={isInView ? { opacity: 0.03, scale: 1, rotate: 0 } : {}}
-        transition={{ duration: 1.2 }}
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none"
-      >
-        <Quote className="w-[400px] h-[400px] text-charcoal" />
-      </motion.div>
-
       <div className="container-custom relative z-10" ref={ref}>
         <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
           {/* Left - Content */}
@@ -114,18 +99,7 @@ const TestimonialsSection = () => {
               về <span className="text-terracotta">chúng tôi</span>
             </h2>
 
-            {/* Testimonial Card */}
             <div className="mt-12 relative min-h-[280px]">
-              {/* Animated quote icon */}
-              <motion.div
-                initial={{ scale: 0, rotate: -20 }}
-                animate={isInView ? { scale: 1, rotate: 0 } : {}}
-                transition={{ duration: 0.6, delay: 0.3, type: "spring" }}
-                className="absolute -top-6 -left-4 z-0"
-              >
-                <Quote className="w-20 h-20 text-terracotta/10" />
-              </motion.div>
-
               <AnimatePresence mode="wait" custom={direction}>
                 <motion.div
                   key={current}
@@ -137,17 +111,9 @@ const TestimonialsSection = () => {
                   transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
                   className="relative z-10"
                 >
-                  {/* Star rating */}
                   <div className="flex gap-1 mb-5">
                     {[...Array(testimonials[current].rating)].map((_, i) => (
-                      <motion.div
-                        key={i}
-                        initial={{ opacity: 0, scale: 0 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: i * 0.08, duration: 0.3 }}
-                      >
-                        <Star className="w-5 h-5 fill-terracotta text-terracotta" />
-                      </motion.div>
+                      <Star key={i} className="w-4 h-4 fill-terracotta text-terracotta" />
                     ))}
                   </div>
 
@@ -156,16 +122,11 @@ const TestimonialsSection = () => {
                   </p>
 
                   <div className="flex items-center gap-4 mt-8">
-                    <motion.div className="relative" whileHover={{ scale: 1.05 }}>
-                      <img
-                        src={testimonials[current].image}
-                        alt={testimonials[current].name}
-                        className="w-16 h-16 rounded-full object-cover border-2 border-terracotta/30"
-                      />
-                      <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-terracotta rounded-full flex items-center justify-center">
-                        <span className="text-primary-foreground text-xs">✓</span>
-                      </div>
-                    </motion.div>
+                    <img
+                      src={testimonials[current].image}
+                      alt={testimonials[current].name}
+                      className="w-14 h-14 rounded-full object-cover border-2 border-terracotta/20"
+                    />
                     <div>
                       <h4 className="font-display font-medium text-lg text-charcoal">
                         {testimonials[current].name}
@@ -176,40 +137,35 @@ const TestimonialsSection = () => {
                 </motion.div>
               </AnimatePresence>
 
-              {/* Navigation + Progress */}
               <div className="flex items-center gap-4 mt-10">
                 <motion.button
                   onClick={prev}
-                  className="w-12 h-12 border border-charcoal/20 flex items-center justify-center hover:bg-terracotta hover:text-primary-foreground hover:border-terracotta transition-all duration-300"
+                  className="w-11 h-11 border border-charcoal/15 flex items-center justify-center hover:bg-terracotta hover:text-primary-foreground hover:border-terracotta transition-all duration-300"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
-                  <ChevronLeft className="w-5 h-5" />
+                  <ChevronLeft className="w-4 h-4" />
                 </motion.button>
                 <motion.button
                   onClick={next}
-                  className="w-12 h-12 border border-charcoal/20 flex items-center justify-center hover:bg-terracotta hover:text-primary-foreground hover:border-terracotta transition-all duration-300"
+                  className="w-11 h-11 border border-charcoal/15 flex items-center justify-center hover:bg-terracotta hover:text-primary-foreground hover:border-terracotta transition-all duration-300"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
-                  <ChevronRight className="w-5 h-5" />
+                  <ChevronRight className="w-4 h-4" />
                 </motion.button>
 
-                {/* Progress dots with fill animation */}
                 <div className="flex gap-2 ml-4">
                   {testimonials.map((_, index) => (
                     <button
                       key={index}
                       onClick={() => { setDirection(index > current ? 1 : -1); setCurrent(index); setProgress(0); }}
-                      className="relative h-2 rounded-full overflow-hidden transition-all duration-300"
-                      style={{ width: index === current ? 40 : 8 }}
+                      className="relative h-1.5 rounded-full overflow-hidden transition-all duration-300"
+                      style={{ width: index === current ? 36 : 8 }}
                     >
-                      <div className="absolute inset-0 bg-charcoal/15 rounded-full" />
+                      <div className="absolute inset-0 bg-charcoal/10 rounded-full" />
                       {index === current && (
-                        <motion.div
-                          className="absolute inset-0 bg-terracotta rounded-full origin-left"
-                          style={{ scaleX: progress / 100 }}
-                        />
+                        <motion.div className="absolute inset-0 bg-terracotta rounded-full origin-left" style={{ scaleX: progress / 100 }} />
                       )}
                       {index < current && (
                         <div className="absolute inset-0 bg-terracotta rounded-full" />
@@ -221,7 +177,7 @@ const TestimonialsSection = () => {
             </div>
           </motion.div>
 
-          {/* Right - Image with floating cards */}
+          {/* Right - Image */}
           <motion.div
             initial={{ opacity: 0, x: 50 }}
             animate={isInView ? { opacity: 1, x: 0 } : {}}
@@ -237,35 +193,30 @@ const TestimonialsSection = () => {
               />
             </div>
 
-            {/* Stats Overlay */}
             <motion.div
-              initial={{ x: -50, opacity: 0 }}
+              initial={{ x: -40, opacity: 0 }}
               animate={isInView ? { x: 0, opacity: 1 } : {}}
               transition={{ duration: 0.6, delay: 0.5 }}
-              className="absolute -bottom-8 -left-8 bg-terracotta text-primary-foreground p-8 shadow-2xl"
+              className="absolute -bottom-6 -left-6 bg-terracotta text-primary-foreground p-6 shadow-2xl"
             >
-              <div className="text-5xl md:text-6xl font-display font-medium">98%</div>
-              <div className="text-label text-primary-foreground/80 mt-2">Khách hàng hài lòng</div>
+              <div className="text-4xl md:text-5xl font-display font-medium">98%</div>
+              <div className="text-label text-primary-foreground/80 mt-1 text-[10px]">Khách hàng hài lòng</div>
             </motion.div>
 
-            {/* Floating review count */}
             <motion.div
-              initial={{ y: 30, opacity: 0 }}
+              initial={{ y: 20, opacity: 0 }}
               animate={isInView ? { y: 0, opacity: 1 } : {}}
               transition={{ duration: 0.6, delay: 0.7 }}
-              className="absolute -top-4 -right-4 bg-background/90 backdrop-blur-xl p-5 shadow-xl border border-border/50"
+              className="absolute -top-3 -right-3 bg-cream/95 backdrop-blur-xl p-4 shadow-lg border border-border/30"
             >
-              <div className="flex gap-0.5 mb-1">
+              <div className="flex gap-0.5 mb-0.5">
                 {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="w-4 h-4 fill-terracotta text-terracotta" />
+                  <Star key={i} className="w-3.5 h-3.5 fill-terracotta text-terracotta" />
                 ))}
               </div>
-              <p className="font-display text-lg font-medium text-charcoal">4.9/5</p>
-              <p className="text-xs text-soft-brown">500+ đánh giá</p>
+              <p className="font-display text-base font-medium text-charcoal">4.9/5</p>
+              <p className="text-[10px] text-soft-brown">500+ đánh giá</p>
             </motion.div>
-
-            {/* Decorative frame */}
-            <div className="absolute -top-4 -right-4 w-full h-full border-2 border-terracotta/20 -z-10" />
           </motion.div>
         </div>
       </div>

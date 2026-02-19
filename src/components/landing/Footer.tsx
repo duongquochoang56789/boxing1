@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { Instagram, Facebook, Youtube } from "lucide-react";
+import useScrollTo from "@/hooks/useScrollTo";
 
 const footerLinks = {
   services: [
@@ -23,6 +24,7 @@ const socialLinks = [
 ];
 
 const Footer = () => {
+  const { handleClick } = useScrollTo();
   return (
     <footer className="bg-charcoal text-cream">
       {/* Top divider line */}
@@ -33,7 +35,7 @@ const Footer = () => {
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-16">
           {/* Brand */}
           <div className="lg:col-span-2">
-            <a href="#home" className="inline-block font-display text-3xl font-semibold tracking-tight mb-6">
+            <a href="#home" onClick={(e) => handleClick(e, "#home")} className="inline-block font-display text-3xl font-semibold tracking-tight mb-6">
               ELITE<span className="text-terracotta">FIT</span>
             </a>
             <p className="text-cream/50 text-sm leading-relaxed max-w-xs">
@@ -72,6 +74,7 @@ const Footer = () => {
                 <li key={link.name}>
                   <a
                     href={link.href}
+                    onClick={(e) => handleClick(e, link.href)}
                     className="text-sm text-cream/60 hover:text-cream transition-colors duration-200"
                   >
                     {link.name}
@@ -88,6 +91,7 @@ const Footer = () => {
                 <li key={link.name}>
                   <a
                     href={link.href}
+                    onClick={(e) => handleClick(e, link.href)}
                     className="text-sm text-cream/60 hover:text-cream transition-colors duration-200"
                   >
                     {link.name}

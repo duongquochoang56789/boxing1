@@ -34,13 +34,17 @@ serve(async (req) => {
 Section: ${section}
 Context: ${context || "Landing page cho phòng tập gym/wellness cao cấp"}
 
-Hãy tạo nội dung tiếng Việt cho các key sau dưới dạng JSON object thuần túy. 
-QUAN TRỌNG: Chỉ trả về JSON object hợp lệ, KHÔNG có markdown, KHÔNG có code block, KHÔNG có giải thích.
-Keys cần tạo: ${JSON.stringify(keys)}`;
+Hãy tạo nội dung tiếng Việt cho các key sau. Quy tắc BẮT BUỘC:
+- Chỉ trả về JSON object hợp lệ, KHÔNG có markdown, KHÔNG có code block
+- Mỗi value PHẢI ngắn gọn: label/heading <= 6 từ, description/title <= 15 từ
+- KHÔNG được viết câu dài, KHÔNG giải thích, KHÔNG thêm bất kỳ text nào ngoài JSON
+Keys: ${JSON.stringify(keys)}
 
-    // Use gemini-2.5-flash for text generation
+Ví dụ format: {"label":"Tour our Space","heading_1":"Khám phá","heading_2":"không gian"}`;
+
+    // Use gemini-2.0-flash for text - fast, reliable JSON output
     const aiResponse = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -53,8 +57,8 @@ Keys cần tạo: ${JSON.stringify(keys)}`;
           ],
           generationConfig: {
             responseMimeType: "application/json",
-            temperature: 0.8,
-            maxOutputTokens: 2048,
+            temperature: 0.7,
+            maxOutputTokens: 800,
           },
         }),
       }

@@ -2,8 +2,8 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Image, Type, RefreshCw, Check } from "lucide-react";
-import { useQueryClient } from "@tanstack/react-query";
+import { Loader2, Image, Type, RefreshCw, Check, Zap, Eye, EyeOff } from "lucide-react";
+import { useQueryClient, useQuery } from "@tanstack/react-query";
 
 interface SectionConfig {
   section: string;
@@ -79,6 +79,21 @@ const AdminContent = () => {
   const queryClient = useQueryClient();
   const [generating, setGenerating] = useState<Record<string, boolean>>({});
   const [results, setResults] = useState<Record<string, string>>({});
+  const [generatingAll, setGeneratingAll] = useState(false);
+  const [showExisting, setShowExisting] = useState<Record<string, boolean>>({});
+
+  // Load existing DB content
+  const { data: dbContent } = useQuery({
+    queryKey: ["site-content-all"],
+    queryFn: async () => {
+      const { data } = await supabase.from("site_content").select("*").order("section");
+      return data || [];
+    },
+  });
+
+  const getDbCount = (section: string) => dbContent?.filter((d) => d.section === section).length ?? 0;
+  const getDbImages = (section: string) => dbContent?.filter((d) => d.section === section && d.content_type === "image") ?? [];
+  const getDbTexts = (section: string) => dbContent?.filter((d) => d.section === section && d.content_type === "text") ?? [];
 
   const generateImage = async (section: string, key: string, prompt: string) => {
     const id = `img:${section}:${key}`;
@@ -91,7 +106,8 @@ const AdminContent = () => {
       if (data?.error) throw new Error(data.error);
       setResults((prev) => ({ ...prev, [id]: data.url }));
       queryClient.invalidateQueries({ queryKey: ["site-content", section] });
-      toast({ title: "Ảnh đã tạo thành công!", description: `${section}/${key}` });
+      queryClient.invalidateQueries({ queryKey: ["site-content-all"] });
+      toast({ title: "✓ Ảnh tạo thành công", description: `${section}/${key}` });
     } catch (e: any) {
       toast({ title: "Lỗi tạo ảnh", description: e.message, variant: "destructive" });
     } finally {
@@ -110,7 +126,8 @@ const AdminContent = () => {
       if (data?.error) throw new Error(data.error);
       setResults((prev) => ({ ...prev, [id]: JSON.stringify(data.content) }));
       queryClient.invalidateQueries({ queryKey: ["site-content", config.section] });
-      toast({ title: "Text đã tạo thành công!", description: config.section });
+      queryClient.invalidateQueries({ queryKey: ["site-content-all"] });
+      toast({ title: "✓ Text tạo thành công", description: config.section });
     } catch (e: any) {
       toast({ title: "Lỗi tạo text", description: e.message, variant: "destructive" });
     } finally {
@@ -124,89 +141,227 @@ const AdminContent = () => {
     }
   };
 
+  const generateAllSections = async () => {
+    setGeneratingAll(true);
+    toast({ title: "🚀 Bắt đầu generate toàn bộ content...", description: "Sẽ mất vài phút, hãy chờ đợi" });
+    for (const config of sections) {
+      // Generate text first (faster)
+      await generateText(config);
+      // Then generate all images for this section
+      for (const img of config.images) {
+        await generateImage(config.section, img.key, img.prompt);
+      }
+    }
+    setGeneratingAll(false);
+    toast({ title: "🎉 Hoàn thành!", description: "Tất cả content đã được tạo và lưu vào database" });
+  };
+
+  const totalItems = sections.reduce((acc, s) => acc + s.images.length + 1, 0);
+  const totalDbItems = dbContent?.length ?? 0;
+
   return (
     <div className="min-h-screen bg-background p-6 md:p-10">
       <div className="max-w-5xl mx-auto">
-        <div className="mb-10">
-          <h1 className="text-3xl font-display font-bold text-charcoal">Quản lý Content AI</h1>
-          <p className="text-soft-brown mt-2">Tạo hình ảnh và nội dung bằng AI cho landing page</p>
+        {/* Header */}
+        <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-display font-bold text-charcoal">Quản lý Content AI</h1>
+            <p className="text-soft-brown mt-1">
+              Tạo nội dung bằng Google Gemini API •{" "}
+              <span className="text-terracotta font-medium">{totalDbItems} items</span> đã lưu trong database
+            </p>
+          </div>
+          <div className="flex gap-3 flex-wrap">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => window.open("/", "_blank")}
+            >
+              <Eye className="w-4 h-4 mr-1.5" /> Xem Landing Page
+            </Button>
+            <Button
+              onClick={generateAllSections}
+              disabled={generatingAll}
+              className="bg-terracotta hover:bg-terracotta/90 text-cream"
+            >
+              {generatingAll ? (
+                <Loader2 className="w-4 h-4 animate-spin mr-2" />
+              ) : (
+                <Zap className="w-4 h-4 mr-2" />
+              )}
+              {generatingAll ? "Đang generate tất cả..." : "Generate Toàn Bộ"}
+            </Button>
+          </div>
         </div>
 
-        <div className="space-y-8">
-          {sections.map((config) => (
-            <div key={config.section} className="border border-border rounded-lg p-6 bg-cream/30">
-              <h2 className="text-xl font-display font-semibold text-charcoal mb-4">{config.label}</h2>
+        {/* Progress overview */}
+        <div className="grid grid-cols-5 gap-3 mb-8">
+          {sections.map((config) => {
+            const count = getDbCount(config.section);
+            const total = config.images.length + config.textKeys.length;
+            const pct = total > 0 ? Math.round((count / total) * 100) : 0;
+            return (
+              <div key={config.section} className="border border-border rounded-lg p-3 bg-cream/20 text-center">
+                <div className="text-xs font-medium text-charcoal mb-1">{config.label.replace(" Section", "")}</div>
+                <div className="text-2xl font-display font-bold text-terracotta">{pct}%</div>
+                <div className="text-[10px] text-soft-brown">{count}/{total}</div>
+              </div>
+            );
+          })}
+        </div>
 
-              {/* Image Generation */}
-              <div className="mb-6">
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-sm font-medium text-soft-brown flex items-center gap-2">
-                    <Image className="w-4 h-4" /> Hình ảnh ({config.images.length})
-                  </h3>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => generateAllImages(config)}
-                    disabled={config.images.some((img) => generating[`img:${config.section}:${img.key}`])}
-                  >
-                    <RefreshCw className="w-3 h-3 mr-1" /> Tạo tất cả ảnh
-                  </Button>
+        <div className="space-y-6">
+          {sections.map((config) => {
+            const dbImages = getDbImages(config.section);
+            const dbTexts = getDbTexts(config.section);
+            const showEx = showExisting[config.section];
+
+            return (
+              <div key={config.section} className="border border-border rounded-lg p-6 bg-cream/30">
+                <div className="flex items-center justify-between mb-5">
+                  <h2 className="text-xl font-display font-semibold text-charcoal">{config.label}</h2>
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => setShowExisting((p) => ({ ...p, [config.section]: !showEx }))}
+                      className="text-xs text-soft-brown"
+                    >
+                      {showEx ? <EyeOff className="w-3 h-3 mr-1" /> : <Eye className="w-3 h-3 mr-1" />}
+                      DB ({getDbCount(config.section)})
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => { generateText(config); generateAllImages(config); }}
+                      disabled={generatingAll || config.images.some((img) => generating[`img:${config.section}:${img.key}`]) || generating[`text:${config.section}`]}
+                      className="text-xs"
+                    >
+                      <RefreshCw className="w-3 h-3 mr-1" /> Generate Section
+                    </Button>
+                  </div>
                 </div>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                  {config.images.map((img) => {
-                    const id = `img:${config.section}:${img.key}`;
-                    const isGen = generating[id];
-                    const result = results[id];
-                    return (
-                      <div key={img.key} className="relative">
-                        <div className="aspect-video bg-muted rounded overflow-hidden flex items-center justify-center">
-                          {result ? (
-                            <img src={result} alt={img.key} className="w-full h-full object-cover" />
-                          ) : (
-                            <span className="text-xs text-muted-foreground">{img.key}</span>
-                          )}
+
+                {/* Existing DB Content Preview */}
+                {showEx && (
+                  <div className="mb-5 p-4 bg-muted/50 rounded-lg">
+                    {dbImages.length > 0 && (
+                      <div className="mb-3">
+                        <p className="text-xs font-medium text-soft-brown mb-2 flex items-center gap-1"><Image className="w-3 h-3" /> {dbImages.length} ảnh trong DB</p>
+                        <div className="flex gap-2 flex-wrap">
+                          {dbImages.map((img) => (
+                            <div key={img.id} className="relative group">
+                              <img src={img.value} alt={img.key} className="w-20 h-14 object-cover rounded" />
+                              <div className="absolute inset-0 bg-charcoal/60 opacity-0 group-hover:opacity-100 transition-opacity rounded flex items-center justify-center">
+                                <span className="text-[9px] text-cream">{img.key}</span>
+                              </div>
+                            </div>
+                          ))}
                         </div>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="mt-1 w-full text-xs"
-                          onClick={() => generateImage(config.section, img.key, img.prompt)}
-                          disabled={isGen}
-                        >
-                          {isGen ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : result ? <Check className="w-3 h-3 mr-1" /> : null}
-                          {isGen ? "Đang tạo..." : result ? "Tạo lại" : "Tạo ảnh"}
-                        </Button>
                       </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Text Generation */}
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-sm font-medium text-soft-brown flex items-center gap-2">
-                    <Type className="w-4 h-4" /> Nội dung text ({config.textKeys.length} keys)
-                  </h3>
-                  <Button
-                    size="sm"
-                    onClick={() => generateText(config)}
-                    disabled={generating[`text:${config.section}`]}
-                  >
-                    {generating[`text:${config.section}`] ? (
-                      <Loader2 className="w-3 h-3 animate-spin mr-1" />
-                    ) : null}
-                    {generating[`text:${config.section}`] ? "Đang tạo..." : "Tạo text"}
-                  </Button>
-                </div>
-                {results[`text:${config.section}`] && (
-                  <pre className="text-xs bg-muted p-3 rounded overflow-auto max-h-40">
-                    {JSON.stringify(JSON.parse(results[`text:${config.section}`]), null, 2)}
-                  </pre>
+                    )}
+                    {dbTexts.length > 0 && (
+                      <div>
+                        <p className="text-xs font-medium text-soft-brown mb-2 flex items-center gap-1"><Type className="w-3 h-3" /> {dbTexts.length} texts trong DB</p>
+                        <div className="grid grid-cols-2 gap-1">
+                          {dbTexts.map((t) => (
+                            <div key={t.id} className="text-[10px] text-soft-brown bg-background/50 px-2 py-1 rounded">
+                              <span className="font-medium text-charcoal">{t.key}:</span> {t.value.substring(0, 50)}{t.value.length > 50 ? "..." : ""}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {dbImages.length === 0 && dbTexts.length === 0 && (
+                      <p className="text-xs text-soft-brown italic">Chưa có content nào trong database</p>
+                    )}
+                  </div>
                 )}
+
+                {/* Image Generation */}
+                <div className="mb-5">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-sm font-medium text-soft-brown flex items-center gap-2">
+                      <Image className="w-4 h-4" /> Hình ảnh ({config.images.length})
+                    </h3>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => generateAllImages(config)}
+                      disabled={generatingAll || config.images.some((img) => generating[`img:${config.section}:${img.key}`])}
+                      className="text-xs"
+                    >
+                      <RefreshCw className="w-3 h-3 mr-1" /> Tạo tất cả ảnh
+                    </Button>
+                  </div>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    {config.images.map((img) => {
+                      const id = `img:${config.section}:${img.key}`;
+                      const isGen = generating[id];
+                      const result = results[id] || dbImages.find((d) => d.key === img.key)?.value;
+                      return (
+                        <div key={img.key} className="relative">
+                          <div className="aspect-video bg-muted rounded overflow-hidden flex items-center justify-center relative">
+                            {result ? (
+                              <>
+                                <img src={result} alt={img.key} className="w-full h-full object-cover" />
+                                {isGen && (
+                                  <div className="absolute inset-0 bg-charcoal/50 flex items-center justify-center">
+                                    <Loader2 className="w-6 h-6 animate-spin text-cream" />
+                                  </div>
+                                )}
+                              </>
+                            ) : isGen ? (
+                              <div className="flex flex-col items-center gap-2">
+                                <Loader2 className="w-6 h-6 animate-spin text-terracotta" />
+                                <span className="text-[10px] text-soft-brown">Đang tạo...</span>
+                              </div>
+                            ) : (
+                              <span className="text-xs text-muted-foreground">{img.key}</span>
+                            )}
+                          </div>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="mt-1 w-full text-xs"
+                            onClick={() => generateImage(config.section, img.key, img.prompt)}
+                            disabled={isGen}
+                          >
+                            {result && !isGen ? <Check className="w-3 h-3 mr-1 text-green-600" /> : null}
+                            {isGen ? "Đang tạo..." : result ? "Tạo lại" : "Tạo ảnh"}
+                          </Button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Text Generation */}
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-sm font-medium text-soft-brown flex items-center gap-2">
+                      <Type className="w-4 h-4" /> Nội dung text ({config.textKeys.length} keys)
+                    </h3>
+                    <Button
+                      size="sm"
+                      onClick={() => generateText(config)}
+                      disabled={generatingAll || generating[`text:${config.section}`]}
+                    >
+                      {generating[`text:${config.section}`] ? (
+                        <Loader2 className="w-3 h-3 animate-spin mr-1" />
+                      ) : null}
+                      {generating[`text:${config.section}`] ? "Đang tạo..." : "Tạo text"}
+                    </Button>
+                  </div>
+                  {results[`text:${config.section}`] && (
+                    <pre className="text-xs bg-muted p-3 rounded overflow-auto max-h-40">
+                      {JSON.stringify(JSON.parse(results[`text:${config.section}`]), null, 2)}
+                    </pre>
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>

@@ -75,6 +75,23 @@ const sections: SectionConfig[] = [
     textContext: "Trainers section. label = tag. heading two parts. description = intro about team. 4 trainers with Vietnamese names, role (e.g. Head Coach, Yoga Master), and specialty.",
   },
   {
+    section: "virtual-training",
+    label: "Virtual Training Section",
+    images: [
+      { key: "hero", prompt: "A person doing an online fitness training session at home via laptop, spacious bright living room, yoga mat, resistance bands, natural light. Modern lifestyle fitness photography, warm tones. Ultra high resolution, 16:9." },
+      { key: "session", prompt: "Split screen showing a fitness trainer coaching online via video call with small group of 5-7 participants working out at home. Professional remote fitness training concept. Warm modern tones. Ultra high resolution." },
+    ],
+    textKeys: ["label", "heading_1", "heading_2", "description", "feature_1_title", "feature_1_desc", "feature_2_title", "feature_2_desc", "feature_3_title", "feature_3_desc", "badge_text", "cta"],
+    textContext: "Virtual Training section: giới thiệu mô hình tập online nhóm nhỏ 5-7 người. label = tag section. heading_1 + heading_2 = tiêu đề 2 dòng (heading_2 có màu nhấn). description = 1-2 câu giới thiệu mô hình hybrid online+offline. feature_1 = Tiện lợi (tập mọi nơi). feature_2 = Nhóm nhỏ (5-7 người). feature_3 = Tiết kiệm (50-100k/buổi). badge_text = ghi chú về buổi offline kết hợp. cta = call to action button text.",
+  },
+  {
+    section: "pricing",
+    label: "Pricing Section",
+    images: [],
+    textKeys: ["label", "heading_1", "heading_2", "description", "plan_1_name", "plan_1_tagline", "plan_1_price", "plan_1_unit", "plan_2_name", "plan_2_tagline", "plan_2_price", "plan_2_unit", "plan_3_name", "plan_3_tagline", "plan_3_price", "plan_3_unit", "bottom_note"],
+    textContext: "Pricing section: bảng giá 3 gói dịch vụ Virtual Training. label = tag section. heading_1 + heading_2 = tiêu đề 2 dòng. description = mô tả ngắn về chính sách không hợp đồng. plan_1 = Gói Khởi Đầu (thử 2-3 buổi, 200-300k). plan_2 = Gói Tháng phổ biến (8-12 buổi, 800k-1.2tr). plan_3 = Gói Premium (trọn gói, 1.5-2tr). Mỗi gói có name, tagline ngắn, price, unit. bottom_note = ghi chú cuối về điều khoản thanh toán.",
+  },
+  {
     section: "testimonials",
     label: "Testimonials Section",
     images: [
@@ -301,7 +318,7 @@ const AdminContent = () => {
 
           <TabsContent value="content">
             {/* Progress overview */}
-            <div className="grid grid-cols-5 gap-3 mb-8">
+            <div className="grid grid-cols-4 md:grid-cols-7 gap-3 mb-8">
               {sections.map((config) => {
                 const count = getDbCount(config.section);
                 const total = config.images.length + config.textKeys.length;

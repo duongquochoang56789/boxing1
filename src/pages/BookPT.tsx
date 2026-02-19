@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Video, MapPin } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Dumbbell, ArrowLeft, Star, Clock, ChevronLeft, ChevronRight, Check, ArrowRight, Sparkles } from 'lucide-react';
@@ -35,6 +36,7 @@ const BookPT = () => {
   const [loading, setLoading] = useState(true);
   const [booking, setBooking] = useState(false);
   const [step, setStep] = useState(1);
+  const [sessionType, setSessionType] = useState<"offline" | "online">("offline");
 
   const next7Days = Array.from({ length: 7 }, (_, i) => addDays(startOfDay(new Date()), i));
 
@@ -296,6 +298,39 @@ const BookPT = () => {
                         <Sparkles className="w-5 h-5 text-terracotta" />
                         <h3 className="font-display text-xl font-medium text-charcoal">Xác nhận đặt lịch</h3>
                       </div>
+
+                      {/* Session Type Toggle */}
+                      <div className="mb-6">
+                        <span className="text-label text-soft-brown block mb-3">Hình thức tập</span>
+                        <div className="flex gap-3">
+                          <button
+                            onClick={() => setSessionType("offline")}
+                            className={`flex items-center gap-2 px-5 py-3 border text-sm font-medium transition-all duration-300 ${
+                              sessionType === "offline"
+                                ? "border-terracotta bg-terracotta text-cream"
+                                : "border-border text-soft-brown hover:border-terracotta/50"
+                            }`}
+                          >
+                            <MapPin className="w-4 h-4" /> Tại phòng gym
+                          </button>
+                          <button
+                            onClick={() => setSessionType("online")}
+                            className={`flex items-center gap-2 px-5 py-3 border text-sm font-medium transition-all duration-300 ${
+                              sessionType === "online"
+                                ? "border-terracotta bg-terracotta text-cream"
+                                : "border-border text-soft-brown hover:border-terracotta/50"
+                            }`}
+                          >
+                            <Video className="w-4 h-4" /> Online qua Zoom
+                          </button>
+                        </div>
+                        {sessionType === "online" && (
+                          <div className="mt-3 p-3 bg-terracotta/5 border border-terracotta/20 text-sm text-soft-brown">
+                            📹 Link Zoom sẽ được gửi qua email sau khi xác nhận đặt lịch
+                          </div>
+                        )}
+                      </div>
+
                       <div className="grid sm:grid-cols-3 gap-4 mb-8">
                         <div className="p-4 bg-cream">
                           <span className="text-label text-soft-brown block mb-1">Huấn luyện viên</span>

@@ -7,7 +7,7 @@ const corsHeaders = {
 };
 
 const STYLE_GUIDE = `
-Bạn là copywriter chuyên nghiệp cho một phòng tập gym/wellness cao cấp tại Việt Nam.
+Bạn là copywriter chuyên nghiệp cho một phòng tập gym/wellness cao cấp tại Việt Nam tên "EliteFit".
 Phong cách viết:
 - Tiếng Việt tự nhiên, tinh tế, sang trọng
 - Ngắn gọn, súc tích, tránh sáo rỗng
@@ -34,16 +34,13 @@ serve(async (req) => {
 Section: ${section}
 Context: ${context || "Landing page cho phòng tập gym/wellness cao cấp"}
 
-Hãy tạo nội dung cho các key sau dưới dạng JSON object. Chỉ trả về JSON, không giải thích thêm:
-${JSON.stringify(keys)}
+Hãy tạo nội dung tiếng Việt cho các key sau dưới dạng JSON object thuần túy. 
+QUAN TRỌNG: Chỉ trả về JSON object hợp lệ, KHÔNG có markdown, KHÔNG có code block, KHÔNG có giải thích.
+Keys cần tạo: ${JSON.stringify(keys)}`;
 
-Ví dụ format output:
-${JSON.stringify(keys.reduce((acc: Record<string, string>, k: string) => { acc[k] = "nội dung mẫu"; return acc; }, {}))}
-`;
-
-    // Call Google Gemini API directly
+    // Use gemini-2.5-flash for text generation
     const aiResponse = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -54,11 +51,10 @@ ${JSON.stringify(keys.reduce((acc: Record<string, string>, k: string) => { acc[k
               parts: [{ text: prompt }],
             },
           ],
-          systemInstruction: {
-            parts: [{ text: STYLE_GUIDE }],
-          },
           generationConfig: {
             responseMimeType: "application/json",
+            temperature: 0.8,
+            maxOutputTokens: 2048,
           },
         }),
       }
@@ -73,22 +69,25 @@ ${JSON.stringify(keys.reduce((acc: Record<string, string>, k: string) => { acc[k
           status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-      throw new Error(`Gemini API error: ${status}`);
+      throw new Error(`Gemini API error: ${status} - ${errorText.substring(0, 300)}`);
     }
 
     const aiData = await aiResponse.json();
     let textContent = aiData.candidates?.[0]?.content?.parts?.[0]?.text || "";
 
-    // Extract JSON from response (may be wrapped in markdown code blocks)
+    console.log("Raw Gemini text response:", textContent.substring(0, 300));
+
+    // Strip markdown code blocks if present
     const jsonMatch = textContent.match(/```(?:json)?\s*([\s\S]*?)```/);
     if (jsonMatch) textContent = jsonMatch[1].trim();
+    textContent = textContent.trim();
 
     let parsed: Record<string, string>;
     try {
       parsed = JSON.parse(textContent);
     } catch {
-      console.error("Failed to parse Gemini response:", textContent);
-      throw new Error("Gemini returned invalid JSON");
+      console.error("Failed to parse Gemini response:", textContent.substring(0, 500));
+      throw new Error("Gemini returned invalid JSON. Raw: " + textContent.substring(0, 200));
     }
 
     // Save each key to database
@@ -105,6 +104,8 @@ ${JSON.stringify(keys.reduce((acc: Record<string, string>, k: string) => { acc[k
         .upsert(item, { onConflict: "section,content_type,key" });
       if (error) console.error("DB upsert error:", error);
     }
+
+    console.log(`Saved ${upserts.length} text items for section: ${section}`);
 
     return new Response(JSON.stringify({ content: parsed, section }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

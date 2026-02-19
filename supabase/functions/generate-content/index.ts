@@ -19,11 +19,10 @@ serve(async (req) => {
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
     console.log(`Generating image for section: ${section}, key: ${key}`);
-    console.log(`Prompt: ${prompt}`);
 
-    // Call Google Gemini API directly for image generation
+    // Use gemini-2.5-flash-image (native image generation via Gemini API)
     const aiResponse = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${GEMINI_API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${GEMINI_API_KEY}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -34,8 +33,7 @@ serve(async (req) => {
             },
           ],
           generationConfig: {
-            responseModalities: ["IMAGE", "TEXT"],
-            responseMimeType: "image/png",
+            responseModalities: ["IMAGE"],
           },
         }),
       }
@@ -44,26 +42,27 @@ serve(async (req) => {
     if (!aiResponse.ok) {
       const status = aiResponse.status;
       const errorText = await aiResponse.text();
-      console.error("Gemini API error:", status, errorText);
+      console.error("Gemini Image API error:", status, errorText.substring(0, 500));
       if (status === 429) {
         return new Response(JSON.stringify({ error: "Rate limit exceeded. Please try again later." }), {
           status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-      throw new Error(`Gemini API error: ${status} - ${errorText}`);
+      throw new Error(`Image API error: ${status} - ${errorText.substring(0, 200)}`);
     }
 
     const aiData = await aiResponse.json();
-    
-    // Extract image from Gemini response
+    console.log("Image response candidates count:", aiData.candidates?.length);
+
+    // Extract base64 image from response
     let base64Content: string | null = null;
     let mimeType = "image/png";
-    
+
     const candidates = aiData.candidates || [];
     for (const candidate of candidates) {
       const parts = candidate.content?.parts || [];
       for (const part of parts) {
-        if (part.inlineData) {
+        if (part.inlineData?.data) {
           base64Content = part.inlineData.data;
           mimeType = part.inlineData.mimeType || "image/png";
           break;
@@ -73,8 +72,8 @@ serve(async (req) => {
     }
 
     if (!base64Content) {
-      console.error("Gemini response:", JSON.stringify(aiData).substring(0, 500));
-      throw new Error("No image generated from Gemini API");
+      console.error("Full response:", JSON.stringify(aiData).substring(0, 800));
+      throw new Error("No image data in Gemini response");
     }
 
     // Decode base64 to Uint8Array
@@ -84,28 +83,18 @@ serve(async (req) => {
       bytes[i] = binaryString.charCodeAt(i);
     }
 
-    // Determine file extension
     const ext = mimeType.includes("jpeg") || mimeType.includes("jpg") ? "jpg" : "png";
-
-    // Upload to storage
     const fileName = `${section}/${key}_${Date.now()}.${ext}`;
-    const { data: uploadData, error: uploadError } = await supabase.storage
+
+    const { error: uploadError } = await supabase.storage
       .from("site-images")
-      .upload(fileName, bytes, {
-        contentType: mimeType,
-        upsert: true,
-      });
+      .upload(fileName, bytes, { contentType: mimeType, upsert: true });
 
-    if (uploadError) {
-      console.error("Upload error:", uploadError);
-      throw new Error(`Upload failed: ${uploadError.message}`);
-    }
+    if (uploadError) throw new Error(`Upload failed: ${uploadError.message}`);
 
-    // Get public URL
     const { data: urlData } = supabase.storage.from("site-images").getPublicUrl(fileName);
     const publicUrl = urlData.publicUrl;
 
-    // Save to site_content table
     const { error: dbError } = await supabase
       .from("site_content")
       .upsert(
@@ -113,10 +102,7 @@ serve(async (req) => {
         { onConflict: "section,content_type,key" }
       );
 
-    if (dbError) {
-      console.error("DB error:", dbError);
-      throw new Error(`Database save failed: ${dbError.message}`);
-    }
+    if (dbError) throw new Error(`Database save failed: ${dbError.message}`);
 
     return new Response(JSON.stringify({ url: publicUrl, section, key }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

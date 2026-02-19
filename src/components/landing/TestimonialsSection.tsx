@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useInView } from "framer-motion";
 import { useRef, useState, useEffect, useCallback } from "react";
-import { ChevronLeft, ChevronRight, Quote, Star } from "lucide-react";
+import { ChevronLeft, ChevronRight, Star } from "lucide-react";
 import { ShimmerImage } from "@/components/ui/shimmer-image";
 
 const testimonials = [
@@ -81,25 +81,32 @@ const TestimonialsSection = () => {
   return (
     <section
       id="testimonials"
-      className="section-padding bg-warm-beige relative overflow-hidden"
+      className="section-padding bg-cream"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >
-      <div className="container-custom relative z-10" ref={ref}>
-        <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
-          {/* Left - Content */}
-          <motion.div
-            initial={{ opacity: 0, x: -50 }}
-            animate={isInView ? { opacity: 1, x: 0 } : {}}
-            transition={{ duration: 0.8 }}
-          >
-            <span className="text-label text-terracotta">Đánh giá từ học viên</span>
-            <h2 className="heading-section text-charcoal mt-4">
-              Học viên nói gì<br />
-              về <span className="text-terracotta">chúng tôi</span>
-            </h2>
+      <div className="container-custom" ref={ref}>
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.7 }}
+          className="mb-16"
+        >
+          <span className="text-label text-terracotta">Đánh giá từ học viên</span>
+          <h2 className="heading-section text-charcoal mt-3">
+            Học viên nói gì về <span className="text-terracotta">chúng tôi</span>
+          </h2>
+        </motion.div>
 
-            <div className="mt-12 relative min-h-[280px]">
+        <div className="grid lg:grid-cols-2 gap-16 lg:gap-32 items-start">
+          {/* Left - Quote */}
+          <motion.div
+            initial={{ opacity: 0, x: -30 }}
+            animate={isInView ? { opacity: 1, x: 0 } : {}}
+            transition={{ duration: 0.8, delay: 0.1 }}
+          >
+            <div className="relative min-h-[260px]">
               <AnimatePresence mode="wait" custom={direction}>
                 <motion.div
                   key={current}
@@ -108,114 +115,100 @@ const TestimonialsSection = () => {
                   initial="enter"
                   animate="center"
                   exit="exit"
-                  transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-                  className="relative z-10"
+                  transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
                 >
-                  <div className="flex gap-1 mb-5">
-                    {[...Array(testimonials[current].rating)].map((_, i) => (
-                      <Star key={i} className="w-4 h-4 fill-terracotta text-terracotta" />
-                    ))}
-                  </div>
+                  {/* Large quote mark */}
+                  <div className="text-[80px] leading-none font-display text-terracotta/20 select-none mb-2">"</div>
 
-                  <p className="text-xl md:text-2xl font-display leading-relaxed text-charcoal/90 italic">
-                    "{testimonials[current].content}"
+                  <p className="text-xl md:text-2xl font-display leading-relaxed text-charcoal/80 italic -mt-6">
+                    {testimonials[current].content}
                   </p>
 
-                  <div className="flex items-center gap-4 mt-8">
+                  <div className="flex items-center gap-3 mt-8 pt-8 border-t border-charcoal/8">
                     <img
                       src={testimonials[current].image}
                       alt={testimonials[current].name}
-                      className="w-14 h-14 rounded-full object-cover border-2 border-terracotta/20"
+                      className="w-12 h-12 rounded-full object-cover"
                     />
                     <div>
-                      <h4 className="font-display font-medium text-lg text-charcoal">
+                      <h4 className="font-display font-medium text-charcoal">
                         {testimonials[current].name}
                       </h4>
-                      <p className="text-soft-brown text-sm">{testimonials[current].role}</p>
+                      <p className="text-soft-brown text-xs tracking-widest uppercase">{testimonials[current].role}</p>
+                    </div>
+                    <div className="flex gap-0.5 ml-auto">
+                      {[...Array(testimonials[current].rating)].map((_, i) => (
+                        <Star key={i} className="w-3.5 h-3.5 fill-terracotta text-terracotta" />
+                      ))}
                     </div>
                   </div>
                 </motion.div>
               </AnimatePresence>
+            </div>
 
-              <div className="flex items-center gap-4 mt-10">
-                <motion.button
-                  onClick={prev}
-                  className="w-11 h-11 border border-charcoal/15 flex items-center justify-center hover:bg-terracotta hover:text-primary-foreground hover:border-terracotta transition-all duration-300"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                </motion.button>
-                <motion.button
-                  onClick={next}
-                  className="w-11 h-11 border border-charcoal/15 flex items-center justify-center hover:bg-terracotta hover:text-primary-foreground hover:border-terracotta transition-all duration-300"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <ChevronRight className="w-4 h-4" />
-                </motion.button>
+            {/* Controls */}
+            <div className="flex items-center gap-3 mt-10">
+              <motion.button
+                onClick={prev}
+                className="w-10 h-10 border border-charcoal/15 flex items-center justify-center text-charcoal hover:border-terracotta hover:text-terracotta transition-colors duration-300"
+                whileTap={{ scale: 0.95 }}
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </motion.button>
+              <motion.button
+                onClick={next}
+                className="w-10 h-10 border border-charcoal/15 flex items-center justify-center text-charcoal hover:border-terracotta hover:text-terracotta transition-colors duration-300"
+                whileTap={{ scale: 0.95 }}
+              >
+                <ChevronRight className="w-4 h-4" />
+              </motion.button>
 
-                <div className="flex gap-2 ml-4">
-                  {testimonials.map((_, index) => (
-                    <button
-                      key={index}
-                      onClick={() => { setDirection(index > current ? 1 : -1); setCurrent(index); setProgress(0); }}
-                      className="relative h-1.5 rounded-full overflow-hidden transition-all duration-300"
-                      style={{ width: index === current ? 36 : 8 }}
-                    >
-                      <div className="absolute inset-0 bg-charcoal/10 rounded-full" />
-                      {index === current && (
-                        <motion.div className="absolute inset-0 bg-terracotta rounded-full origin-left" style={{ scaleX: progress / 100 }} />
-                      )}
-                      {index < current && (
-                        <div className="absolute inset-0 bg-terracotta rounded-full" />
-                      )}
-                    </button>
-                  ))}
-                </div>
+              <div className="flex gap-1.5 ml-3">
+                {testimonials.map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => { setDirection(index > current ? 1 : -1); setCurrent(index); setProgress(0); }}
+                    className="relative h-px overflow-hidden transition-all duration-300"
+                    style={{ width: index === current ? 32 : 12 }}
+                  >
+                    <div className="absolute inset-0 bg-charcoal/15" />
+                    {index === current && (
+                      <motion.div className="absolute inset-0 bg-terracotta origin-left" style={{ scaleX: progress / 100 }} />
+                    )}
+                    {index < current && (
+                      <div className="absolute inset-0 bg-terracotta" />
+                    )}
+                  </button>
+                ))}
               </div>
             </div>
           </motion.div>
 
-          {/* Right - Image */}
+          {/* Right - Image + stat */}
           <motion.div
-            initial={{ opacity: 0, x: 50 }}
+            initial={{ opacity: 0, x: 30 }}
             animate={isInView ? { opacity: 1, x: 0 } : {}}
             transition={{ duration: 0.8, delay: 0.2 }}
             className="relative"
           >
-            <div className="aspect-[4/5] overflow-hidden image-reveal">
+            <div className="aspect-[3/4] overflow-hidden">
               <ShimmerImage
                 src="https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?q=80&w=800"
                 alt="Happy Member"
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover grayscale-[20%]"
                 wrapperClassName="w-full h-full"
               />
             </div>
 
-            <motion.div
-              initial={{ x: -40, opacity: 0 }}
-              animate={isInView ? { x: 0, opacity: 1 } : {}}
-              transition={{ duration: 0.6, delay: 0.5 }}
-              className="absolute -bottom-6 -left-6 bg-terracotta text-primary-foreground p-6 shadow-2xl"
-            >
-              <div className="text-4xl md:text-5xl font-display font-medium">98%</div>
-              <div className="text-label text-primary-foreground/80 mt-1 text-[10px]">Khách hàng hài lòng</div>
-            </motion.div>
-
+            {/* Stat card */}
             <motion.div
               initial={{ y: 20, opacity: 0 }}
               animate={isInView ? { y: 0, opacity: 1 } : {}}
-              transition={{ duration: 0.6, delay: 0.7 }}
-              className="absolute -top-3 -right-3 bg-cream/95 backdrop-blur-xl p-4 shadow-lg border border-border/30"
+              transition={{ duration: 0.6, delay: 0.5 }}
+              className="absolute bottom-0 left-0 bg-terracotta text-primary-foreground px-7 py-5"
             >
-              <div className="flex gap-0.5 mb-0.5">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="w-3.5 h-3.5 fill-terracotta text-terracotta" />
-                ))}
-              </div>
-              <p className="font-display text-base font-medium text-charcoal">4.9/5</p>
-              <p className="text-[10px] text-soft-brown">500+ đánh giá</p>
+              <div className="text-4xl font-display font-medium">98%</div>
+              <div className="text-[10px] tracking-[0.15em] uppercase text-primary-foreground/70 mt-0.5">Khách hàng hài lòng</div>
             </motion.div>
           </motion.div>
         </div>

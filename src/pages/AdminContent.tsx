@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Image, Type, RefreshCw, Check, Zap, Eye, EyeOff } from "lucide-react";
+import { Loader2, Image, Type, RefreshCw, Check, Zap, Eye, EyeOff, Pencil, X, Save } from "lucide-react";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 
 interface SectionConfig {
@@ -74,6 +74,105 @@ const sections: SectionConfig[] = [
   },
 ];
 
+// Inline editable text row
+const EditableTextRow = ({
+  item,
+  onSaved,
+}: {
+  item: { id: string; key: string; value: string; section: string };
+  onSaved: () => void;
+}) => {
+  const { toast } = useToast();
+  const [editing, setEditing] = useState(false);
+  const [value, setValue] = useState(item.value);
+  const [saving, setSaving] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    if (editing && textareaRef.current) {
+      textareaRef.current.focus();
+      textareaRef.current.select();
+      // Auto-resize
+      textareaRef.current.style.height = "auto";
+      textareaRef.current.style.height = textareaRef.current.scrollHeight + "px";
+    }
+  }, [editing]);
+
+  const handleSave = async () => {
+    if (value === item.value) { setEditing(false); return; }
+    setSaving(true);
+    try {
+      const { error } = await supabase
+        .from("site_content")
+        .update({ value })
+        .eq("id", item.id);
+      if (error) throw error;
+      toast({ title: "✓ Đã lưu", description: `${item.section}/${item.key}` });
+      onSaved();
+      setEditing(false);
+    } catch (e: any) {
+      toast({ title: "Lỗi lưu", description: e.message, variant: "destructive" });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Escape") { setValue(item.value); setEditing(false); }
+    if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) handleSave();
+  };
+
+  if (editing) {
+    return (
+      <div className="group rounded border border-terracotta/40 bg-cream/60 p-2">
+        <div className="text-[10px] font-medium text-terracotta mb-1">{item.key}</div>
+        <textarea
+          ref={textareaRef}
+          value={value}
+          onChange={(e) => {
+            setValue(e.target.value);
+            e.target.style.height = "auto";
+            e.target.style.height = e.target.scrollHeight + "px";
+          }}
+          onKeyDown={handleKeyDown}
+          className="w-full text-xs text-charcoal bg-transparent resize-none outline-none leading-relaxed min-h-[32px]"
+          rows={1}
+        />
+        <div className="flex items-center gap-1.5 mt-1.5">
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="flex items-center gap-1 text-[10px] text-cream bg-terracotta px-2 py-0.5 rounded hover:bg-terracotta/90 transition-colors disabled:opacity-60"
+          >
+            {saving ? <Loader2 className="w-2.5 h-2.5 animate-spin" /> : <Save className="w-2.5 h-2.5" />}
+            Lưu (Ctrl+Enter)
+          </button>
+          <button
+            onClick={() => { setValue(item.value); setEditing(false); }}
+            className="flex items-center gap-1 text-[10px] text-soft-brown px-2 py-0.5 rounded hover:bg-muted transition-colors"
+          >
+            <X className="w-2.5 h-2.5" /> Hủy
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className="group flex items-start gap-2 rounded px-2 py-1.5 cursor-pointer hover:bg-muted/60 transition-colors"
+      onClick={() => setEditing(true)}
+      title="Click để chỉnh sửa"
+    >
+      <div className="flex-1 min-w-0">
+        <span className="text-[10px] font-medium text-soft-brown">{item.key}: </span>
+        <span className="text-[10px] text-charcoal">{item.value}</span>
+      </div>
+      <Pencil className="w-3 h-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 mt-0.5" />
+    </div>
+  );
+};
+
 const AdminContent = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -82,7 +181,6 @@ const AdminContent = () => {
   const [generatingAll, setGeneratingAll] = useState(false);
   const [showExisting, setShowExisting] = useState<Record<string, boolean>>({});
 
-  // Load existing DB content
   const { data: dbContent } = useQuery({
     queryKey: ["site-content-all"],
     queryFn: async () => {
@@ -90,6 +188,11 @@ const AdminContent = () => {
       return data || [];
     },
   });
+
+  const refreshAll = () => {
+    queryClient.invalidateQueries({ queryKey: ["site-content-all"] });
+    sections.forEach((s) => queryClient.invalidateQueries({ queryKey: ["site-content", s.section] }));
+  };
 
   const getDbCount = (section: string) => dbContent?.filter((d) => d.section === section).length ?? 0;
   const getDbImages = (section: string) => dbContent?.filter((d) => d.section === section && d.content_type === "image") ?? [];
@@ -99,14 +202,11 @@ const AdminContent = () => {
     const id = `img:${section}:${key}`;
     setGenerating((prev) => ({ ...prev, [id]: true }));
     try {
-      const { data, error } = await supabase.functions.invoke("generate-content", {
-        body: { prompt, section, key },
-      });
+      const { data, error } = await supabase.functions.invoke("generate-content", { body: { prompt, section, key } });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
       setResults((prev) => ({ ...prev, [id]: data.url }));
-      queryClient.invalidateQueries({ queryKey: ["site-content", section] });
-      queryClient.invalidateQueries({ queryKey: ["site-content-all"] });
+      refreshAll();
       toast({ title: "✓ Ảnh tạo thành công", description: `${section}/${key}` });
     } catch (e: any) {
       toast({ title: "Lỗi tạo ảnh", description: e.message, variant: "destructive" });
@@ -124,9 +224,7 @@ const AdminContent = () => {
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
-      setResults((prev) => ({ ...prev, [id]: JSON.stringify(data.content) }));
-      queryClient.invalidateQueries({ queryKey: ["site-content", config.section] });
-      queryClient.invalidateQueries({ queryKey: ["site-content-all"] });
+      refreshAll();
       toast({ title: "✓ Text tạo thành công", description: config.section });
     } catch (e: any) {
       toast({ title: "Lỗi tạo text", description: e.message, variant: "destructive" });
@@ -136,27 +234,20 @@ const AdminContent = () => {
   };
 
   const generateAllImages = async (config: SectionConfig) => {
-    for (const img of config.images) {
-      await generateImage(config.section, img.key, img.prompt);
-    }
+    for (const img of config.images) await generateImage(config.section, img.key, img.prompt);
   };
 
   const generateAllSections = async () => {
     setGeneratingAll(true);
     toast({ title: "🚀 Bắt đầu generate toàn bộ content...", description: "Sẽ mất vài phút, hãy chờ đợi" });
     for (const config of sections) {
-      // Generate text first (faster)
       await generateText(config);
-      // Then generate all images for this section
-      for (const img of config.images) {
-        await generateImage(config.section, img.key, img.prompt);
-      }
+      for (const img of config.images) await generateImage(config.section, img.key, img.prompt);
     }
     setGeneratingAll(false);
     toast({ title: "🎉 Hoàn thành!", description: "Tất cả content đã được tạo và lưu vào database" });
   };
 
-  const totalItems = sections.reduce((acc, s) => acc + s.images.length + 1, 0);
   const totalDbItems = dbContent?.length ?? 0;
 
   return (
@@ -172,11 +263,7 @@ const AdminContent = () => {
             </p>
           </div>
           <div className="flex gap-3 flex-wrap">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => window.open("/", "_blank")}
-            >
+            <Button variant="outline" size="sm" onClick={() => window.open("/", "_blank")}>
               <Eye className="w-4 h-4 mr-1.5" /> Xem Landing Page
             </Button>
             <Button
@@ -184,11 +271,7 @@ const AdminContent = () => {
               disabled={generatingAll}
               className="bg-terracotta hover:bg-terracotta/90 text-cream"
             >
-              {generatingAll ? (
-                <Loader2 className="w-4 h-4 animate-spin mr-2" />
-              ) : (
-                <Zap className="w-4 h-4 mr-2" />
-              )}
+              {generatingAll ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Zap className="w-4 h-4 mr-2" />}
               {generatingAll ? "Đang generate tất cả..." : "Generate Toàn Bộ"}
             </Button>
           </div>
@@ -222,8 +305,7 @@ const AdminContent = () => {
                   <h2 className="text-xl font-display font-semibold text-charcoal">{config.label}</h2>
                   <div className="flex gap-2">
                     <Button
-                      size="sm"
-                      variant="ghost"
+                      size="sm" variant="ghost"
                       onClick={() => setShowExisting((p) => ({ ...p, [config.section]: !showEx }))}
                       className="text-xs text-soft-brown"
                     >
@@ -231,8 +313,7 @@ const AdminContent = () => {
                       DB ({getDbCount(config.section)})
                     </Button>
                     <Button
-                      size="sm"
-                      variant="outline"
+                      size="sm" variant="outline"
                       onClick={() => { generateText(config); generateAllImages(config); }}
                       disabled={generatingAll || config.images.some((img) => generating[`img:${config.section}:${img.key}`]) || generating[`text:${config.section}`]}
                       className="text-xs"
@@ -242,51 +323,14 @@ const AdminContent = () => {
                   </div>
                 </div>
 
-                {/* Existing DB Content Preview */}
-                {showEx && (
-                  <div className="mb-5 p-4 bg-muted/50 rounded-lg">
-                    {dbImages.length > 0 && (
-                      <div className="mb-3">
-                        <p className="text-xs font-medium text-soft-brown mb-2 flex items-center gap-1"><Image className="w-3 h-3" /> {dbImages.length} ảnh trong DB</p>
-                        <div className="flex gap-2 flex-wrap">
-                          {dbImages.map((img) => (
-                            <div key={img.id} className="relative group">
-                              <img src={img.value} alt={img.key} className="w-20 h-14 object-cover rounded" />
-                              <div className="absolute inset-0 bg-charcoal/60 opacity-0 group-hover:opacity-100 transition-opacity rounded flex items-center justify-center">
-                                <span className="text-[9px] text-cream">{img.key}</span>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                    {dbTexts.length > 0 && (
-                      <div>
-                        <p className="text-xs font-medium text-soft-brown mb-2 flex items-center gap-1"><Type className="w-3 h-3" /> {dbTexts.length} texts trong DB</p>
-                        <div className="grid grid-cols-2 gap-1">
-                          {dbTexts.map((t) => (
-                            <div key={t.id} className="text-[10px] text-soft-brown bg-background/50 px-2 py-1 rounded">
-                              <span className="font-medium text-charcoal">{t.key}:</span> {t.value.substring(0, 50)}{t.value.length > 50 ? "..." : ""}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                    {dbImages.length === 0 && dbTexts.length === 0 && (
-                      <p className="text-xs text-soft-brown italic">Chưa có content nào trong database</p>
-                    )}
-                  </div>
-                )}
-
-                {/* Image Generation */}
+                {/* Image Grid */}
                 <div className="mb-5">
                   <div className="flex items-center justify-between mb-3">
                     <h3 className="text-sm font-medium text-soft-brown flex items-center gap-2">
                       <Image className="w-4 h-4" /> Hình ảnh ({config.images.length})
                     </h3>
                     <Button
-                      size="sm"
-                      variant="outline"
+                      size="sm" variant="outline"
                       onClick={() => generateAllImages(config)}
                       disabled={generatingAll || config.images.some((img) => generating[`img:${config.section}:${img.key}`])}
                       className="text-xs"
@@ -321,13 +365,12 @@ const AdminContent = () => {
                             )}
                           </div>
                           <Button
-                            size="sm"
-                            variant="ghost"
+                            size="sm" variant="ghost"
                             className="mt-1 w-full text-xs"
                             onClick={() => generateImage(config.section, img.key, img.prompt)}
                             disabled={isGen}
                           >
-                            {result && !isGen ? <Check className="w-3 h-3 mr-1 text-green-600" /> : null}
+                            {result && !isGen ? <Check className="w-3 h-3 mr-1 text-terracotta" /> : null}
                             {isGen ? "Đang tạo..." : result ? "Tạo lại" : "Tạo ảnh"}
                           </Button>
                         </div>
@@ -336,11 +379,14 @@ const AdminContent = () => {
                   </div>
                 </div>
 
-                {/* Text Generation */}
+                {/* Text — inline editable */}
                 <div>
-                  <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center justify-between mb-2">
                     <h3 className="text-sm font-medium text-soft-brown flex items-center gap-2">
                       <Type className="w-4 h-4" /> Nội dung text ({config.textKeys.length} keys)
+                      {dbTexts.length > 0 && (
+                        <span className="text-[10px] text-terracotta/70 font-normal">· click để chỉnh sửa</span>
+                      )}
                     </h3>
                     <Button
                       size="sm"
@@ -353,10 +399,19 @@ const AdminContent = () => {
                       {generating[`text:${config.section}`] ? "Đang tạo..." : "Tạo text"}
                     </Button>
                   </div>
-                  {results[`text:${config.section}`] && (
-                    <pre className="text-xs bg-muted p-3 rounded overflow-auto max-h-40">
-                      {JSON.stringify(JSON.parse(results[`text:${config.section}`]), null, 2)}
-                    </pre>
+
+                  {dbTexts.length > 0 ? (
+                    <div className="border border-border/60 rounded-lg overflow-hidden divide-y divide-border/40">
+                      {dbTexts.map((t) => (
+                        <EditableTextRow
+                          key={t.id}
+                          item={{ id: t.id, key: t.key, value: t.value, section: t.section }}
+                          onSaved={refreshAll}
+                        />
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-xs text-muted-foreground italic px-2">Chưa có text — nhấn "Tạo text" để generate bằng AI</p>
                   )}
                 </div>
               </div>

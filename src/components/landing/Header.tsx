@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import { MagneticButton } from "@/components/ui/magnetic-button";
+import useScrollTo from "@/hooks/useScrollTo";
 
 const navLinks = [
   { name: "Trang chủ", href: "#home" },
@@ -13,6 +14,7 @@ const navLinks = [
 ];
 
 const Header = () => {
+  const { handleClick } = useScrollTo();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -53,7 +55,7 @@ const Header = () => {
           {/* Logo */}
           <motion.a
             href="#home"
-            initial={{ opacity: 0, x: -20 }}
+            onClick={(e) => handleClick(e, "#home")}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6 }}
             className={`font-display text-2xl md:text-3xl font-semibold tracking-tight transition-colors duration-500 ${
@@ -79,6 +81,7 @@ const Header = () => {
               >
                 <a
                   href={link.href}
+                  onClick={(e) => handleClick(e, link.href)}
                   className={`text-label transition-colors duration-300 link-underline ${
                     isScrolled
                       ? "text-soft-brown hover:text-terracotta"
@@ -142,7 +145,7 @@ const Header = () => {
               <ul className="space-y-1 flex-1">
                 {navLinks.map((link, index) => (
                   <motion.li key={link.name} initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }} transition={{ duration: 0.4, delay: index * 0.08 }}>
-                    <a href={link.href} onClick={() => setIsMobileMenuOpen(false)} className="block py-4 font-display text-3xl md:text-4xl text-charcoal hover:text-terracotta transition-colors duration-300">
+                    <a href={link.href} onClick={(e) => handleClick(e, link.href, () => setIsMobileMenuOpen(false))} className="block py-4 font-display text-3xl md:text-4xl text-charcoal hover:text-terracotta transition-colors duration-300">
                       {link.name}
                     </a>
                   </motion.li>

@@ -88,7 +88,10 @@ Ví dụ format: {"label":"Tour our Space","heading_1":"Khám phá","heading_2":
 
     let parsed: Record<string, string>;
     try {
-      parsed = JSON.parse(textContent);
+      let raw = JSON.parse(textContent);
+      // Handle if model returns an array wrapping the object
+      if (Array.isArray(raw)) raw = raw[0];
+      parsed = raw;
     } catch {
       console.error("Failed to parse Gemini response:", textContent.substring(0, 500));
       throw new Error("Gemini returned invalid JSON. Raw: " + textContent.substring(0, 200));

@@ -72,6 +72,25 @@ const sections: SectionConfig[] = [
     textKeys: ["label", "heading_1", "heading_2", "description", "trainer_1_name", "trainer_1_role", "trainer_1_specialty", "trainer_2_name", "trainer_2_role", "trainer_2_specialty", "trainer_3_name", "trainer_3_role", "trainer_3_specialty", "trainer_4_name", "trainer_4_role", "trainer_4_specialty"],
     textContext: "Trainers section. label = tag. heading two parts. description = intro about team. 4 trainers with Vietnamese names, role (e.g. Head Coach, Yoga Master), and specialty.",
   },
+  {
+    section: "testimonials",
+    label: "Testimonials Section",
+    images: [
+      { key: "hero_member", prompt: "Happy Vietnamese woman in premium gym, athletic wear, confident smile, warm terracotta ambient lighting, bokeh background. Professional fitness lifestyle photography, 3:4 portrait ratio. Ultra high resolution." },
+      { key: "member_1", prompt: "Portrait of a confident Vietnamese businesswoman, 30s, warm smile, professional headshot style, soft studio lighting. Ultra high resolution." },
+      { key: "member_2", prompt: "Portrait of a Vietnamese man in his 30s, friendly professional expression, clean background, warm lighting. Headshot photography. Ultra high resolution." },
+      { key: "member_3", prompt: "Portrait of a Vietnamese woman doctor, 35s, kind smile, clean white background, professional headshot. Ultra high resolution." },
+      { key: "member_4", prompt: "Portrait of a young Vietnamese male athlete, confident pose, gym background, warm lighting. Professional headshot. Ultra high resolution." },
+    ],
+    textKeys: [
+      "label", "heading_1", "heading_2", "stat_number", "stat_label",
+      "t1_name", "t1_role", "t1_quote",
+      "t2_name", "t2_role", "t2_quote",
+      "t3_name", "t3_role", "t3_quote",
+      "t4_name", "t4_role", "t4_quote",
+    ],
+    textContext: "Testimonials section. label = section tag (3-4 words). heading_1 + heading_2 = two-part heading. stat_number = satisfaction % (e.g. 98%). stat_label = short label. t1-t4 = 4 members with Vietnamese names, roles (e.g. Doanh nhân, Bác sĩ), and authentic short quotes (1-2 sentences) praising EliteFit gym.",
+  },
 ];
 
 // Inline editable text row

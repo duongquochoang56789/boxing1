@@ -51,11 +51,7 @@ const AnimatedRoutes = () => {
         />
         <Route 
           path="/admin/content" 
-          element={
-            <ProtectedRoute>
-              <PageTransition><AdminContent /></PageTransition>
-            </ProtectedRoute>
-          } 
+          element={<PageTransition><AdminContent /></PageTransition>}
         />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />

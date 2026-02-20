@@ -1,137 +1,122 @@
 
-# Kế Hoạch Tích Hợp Mô Hình Kinh Doanh & Lưu Trữ Tài Liệu Admin
+# Ke Hoach Hoan Thien UI & UX Toan Bo Trang Web EliteFit
 
-## Đánh Giá Sơ Bộ — Mô Hình Small Group Virtual Training
+## Danh Gia Hien Trang
 
-### Điểm Mạnh (từ tài liệu)
-- Thị trường fitness online tăng 17.2%/năm, dự kiến đạt 34.72 tỷ USD (2026-2030)
-- Doanh thu/giờ gấp 3-5 lần PT 1-1 (trainer thu nhiều hơn, khách trả ít hơn: 50-100k/buổi thay vì 300-400k)
-- Chi phí vận hành thấp: 3-7 triệu setup, 3-5 triệu/tháng
-- Retention rate tăng 25-30% so với video tự học
+Sau khi xem xet toan bo codebase va kiem tra tren ca desktop (1920px) va mobile (375px), day la nhung van de can xu ly:
 
-### Rủi Ro Cần Xử Lý
-- Kỹ thuật: internet, âm thanh, hình ảnh
-- Khó kiểm soát form/động tác qua camera
-- Cạnh tranh với nội dung miễn phí (YouTube)
-- Người tập dễ bỏ cuộc vì thiếu cộng đồng
+### Van De Phat Hien
 
-### Khuyến Nghị Tích Hợp
-- Kết hợp hybrid: offline 1-2 buổi/tháng + online phần còn lại
-- 3 gói dịch vụ rõ ràng: Gói thử, Gói tháng, Gói premium (kèm dinh dưỡng)
-- Marketing: TikTok/Reels + Zalo community + lead magnet 7 ngày free
+**Landing Page:**
+1. **Header (Mobile)**: Nav links bi ngat dong (2 dong) tren desktop khi co nhieu link — "HUAN LUYEN VIEN" va "LIEN HE" bi xuong dong 2, tao cam giac khong chuyen nghiep
+2. **Hero (Mobile)**: Tieu de va form chong cheo nhau, form bi ep sat, khong co khoang cach voi header — text bi de len logo
+3. **Gallery Section**: Carousel tu dong nhung khong co indicator so luong anh, khong co swipe gesture tren mobile
+4. **Virtual Training Section**: Chua dung noi dung dong tu CMS (useSiteContent), dang hard-code text
+5. **Pricing Section**: Chua dung noi dung dong tu CMS, dang hard-code text
+6. **Contact form**: Chua luu du lieu xuong database — form submit khong lam gi ca
+7. **Hero form**: Tuong tu — submit chi console.log, khong luu lead
+8. **Footer**: Thieu link den Virtual Training va Pricing trong phan "Kham pha"
+9. **NotFound page**: Qua don gian, khong theo design system cua trang
 
----
+**User Portal (Dashboard, BookPT, Schedule):**
+10. **Dashboard**: Hardcode "7 ngay" cho chuoi ngay tap — khong chinh xac
+11. **Schedule (Mobile)**: Grid 7 cot bi be tren mobile, kho doc
+12. **BookPT**: Khong co back link ve trang chu cho nguoi chua dang nhap
 
-## Phần 1 — Trang Admin Quản Lý Tài Liệu
-
-Xây dựng một tab "Tài Liệu" trong khu vực admin (`/admin/content`) để lưu trữ, xem lại, và bổ sung file PDF, tài liệu chiến lược.
-
-### Database — Bảng mới `admin_documents`
-
-```text
-admin_documents
-  - id: uuid (PK)
-  - title: text (tên tài liệu)
-  - description: text (mô tả ngắn)
-  - category: text (business-plan, marketing, operations...)
-  - file_url: text (URL file trong Storage)
-  - file_name: text
-  - file_size: integer
-  - uploaded_by: uuid (user_id)
-  - created_at: timestamptz
-  - updated_at: timestamptz
-```
-
-### Storage Bucket
-- Tạo bucket `admin-documents` (private — chỉ authenticated user có thể đọc)
-
-### RLS Policies
-- Chỉ admin mới có thể đọc/ghi/xóa tài liệu
-- Public không thể truy cập
-
-### UI — Tab "Tài Liệu" trong Admin
-
-Tab mới bên cạnh tab "Content" hiện có, gồm:
-- **Upload zone**: kéo thả hoặc chọn file (PDF, DOCX, XLSX)
-- **Danh sách tài liệu**: hiển thị theo category (Business Plan, Marketing, Vận hành...)
-- **Preview PDF**: click mở xem trực tiếp trong browser
-- **Metadata**: tên, mô tả, ngày upload, kích thước file
-- **Xóa tài liệu**: có confirm dialog
+**Accessibility & UX:**
+13. **Form inputs**: Khong co validation feedback tren Hero form va Contact form
+14. **Loading states**: Mot so trang chua co skeleton loading dong bo voi design
+15. **Scroll-to-top**: Khong co nut quay lai dau trang khi cuon xuong cuoi
 
 ---
 
-## Phần 2 — Tích Hợp Mô Hình Kinh Doanh Vào Landing Page
+## Ke Hoach Thuc Hien (Theo Thu Tu Uu Tien)
 
-### 2a. Section "Virtual Training" mới trên landing page
+### Giai Doan 1 — Sua Loi UI Co Ban (Uu Tien Cao)
 
-Thêm một section giữa Services và Trainers, giới thiệu mô hình hybrid online/offline:
+**1.1 — Fix Header Desktop: Nav links bi ngat dong**
+- Giam font size hoac rut gon ten nav links (vd: "Huan luyen vien" -> "HLV", hoac giam tracking/gap)
+- Dam bao tat ca links nam tren 1 dong
 
-```text
-[Icon] Luyện tập không giới hạn không gian
-Headline: "Tập cùng chuyên gia — dù bạn ở đâu"
-Sub: Nhóm nhỏ 5-7 người, trainer theo dõi trực tiếp qua video
-3 điểm nổi bật: Tiện lợi | Tiết kiệm | Hiệu quả
-CTA: "Xem các gói dịch vụ"
-```
+**1.2 — Fix Hero Section Mobile**
+- Them padding-top de tranh bi header che
+- Stack layout dung (text tren, form duoi) voi khoang cach hop ly
+- Giam font size heading tren mobile
 
-### 2b. Bảng Pricing 3 Gói
+**1.3 — Fix NotFound Page**
+- Redesign theo design system: dung font Cormorant Garamond, mau terracotta, animation nhẹ
+- Them link quay ve trang chu va dashboard
 
-Section mới `/pricing` hoặc anchor `#pricing` trên landing page:
+### Giai Doan 2 — Ket Noi CMS & Database
 
-```text
-┌─────────────────┬─────────────────┬─────────────────┐
-│   Gói Khởi Đầu  │   Gói Tháng     │   Gói Premium   │
-│   2-3 buổi thử  │   8-12 buổi     │  + Dinh dưỡng   │
-│   ~200-300k     │   ~800k-1.2tr   │   ~1.5-2tr      │
-│ [Đăng ký thử]  │  [Chọn gói]     │  [Tư vấn]       │
-└─────────────────┴─────────────────┴─────────────────┘
-```
+**2.1 — Virtual Training Section dung CMS**
+- Ket noi voi useSiteContent("virtual-training") de lay noi dung dong
+- Hien thi fallback text khi chua co content
 
-### 2c. Cập nhật Booking Flow
+**2.2 — Pricing Section dung CMS**
+- Ket noi voi useSiteContent("pricing") de lay noi dung dong
 
-Thêm option "Online" / "Offline" khi đặt lịch PT (trang `/book-pt` hiện có):
-- Chọn hình thức: Tập tại phòng / Tập online qua Zoom
-- Nếu online: hiển thị link Zoom sau khi xác nhận booking
+**2.3 — Luu Lead Form vao Database**
+- Tao bang `leads` (name, email, phone, source, created_at)
+- RLS: chi admin doc, anyone insert
+- Ket noi Hero form va Contact form de luu du lieu
+- Hien thi toast thanh cong/that bai
+
+### Giai Doan 3 — Nang Cap UX
+
+**3.1 — Nut Scroll-to-Top**
+- Hien thi khi cuon xuong > 500px
+- Animation fade-in/out muot ma
+- Vi tri: goc duoi ben phai
+
+**3.2 — Footer cap nhat links**
+- Them "Virtual Training" va "Bang gia" vao phan "Kham pha"
+
+**3.3 — Contact form validation**
+- Them validation cho cac truong bat buoc (ten, SDT, email)
+- Hien thi loi inline va toast feedback
+
+**3.4 — Schedule mobile responsive**
+- Chuyen tu grid 7 cot sang list view tren mobile
+- Moi ngay la 1 card co the mo rong (accordion)
+
+### Giai Doan 4 — Polish & Micro-interactions
+
+**4.1 — Gallery mobile swipe**
+- Them touch swipe support cho carousel
+- Them dot indicators hien thi vi tri hien tai
+
+**4.2 — Dashboard fix hardcode stats**
+- Thay "7 ngay" bang du lieu thuc tu database hoac hien thi 0 khi chua co
+
+**4.3 — Page transition consistency**
+- Dam bao tat ca trang deu co PageTransition wrapper dong nhat
 
 ---
 
-## Thứ Tự Thực Hiện
+## Chi Tiet Ky Thuat
 
-### Bước 1 — Nền tảng lưu trữ tài liệu (ưu tiên trước)
-1. Tạo migration: bảng `admin_documents` + RLS policies
-2. Tạo storage bucket `admin-documents` (private)
-3. Thêm tab "Tài Liệu" vào trang `/admin/content`
-4. Upload ngay file PDF hiện tại vào hệ thống
+### Database Migration Moi
+- Bang `leads`: id (uuid PK), full_name (text), email (text), phone (text), service (text nullable), message (text nullable), source (text — 'hero' | 'contact'), created_at (timestamptz default now())
+- RLS: INSERT cho anon/authenticated, SELECT chi admin
 
-### Bước 2 — Landing page tích hợp mô hình
-5. Thêm section "Virtual Training" giữa Services và Trainers
-6. Thêm section Pricing với 3 gói dịch vụ
-7. Cập nhật form đặt lịch thêm option Online/Offline
+### Files Can Tao Moi
+- `src/components/ui/scroll-to-top.tsx` — nut quay lai dau trang
 
-### Bước 3 — Admin content cho section mới
-8. Thêm "Virtual Training" và "Pricing" vào `/admin/content` để generate AI content
+### Files Can Chinh Sua
+- `src/components/landing/Header.tsx` — fix nav overflow
+- `src/components/landing/HeroSection.tsx` — fix mobile layout + luu lead
+- `src/components/landing/VirtualTrainingSection.tsx` — ket noi CMS
+- `src/components/landing/PricingSection.tsx` — ket noi CMS
+- `src/components/landing/ContactSection.tsx` — validation + luu lead
+- `src/components/landing/Footer.tsx` — them links
+- `src/components/landing/GallerySection.tsx` — mobile touch
+- `src/pages/NotFound.tsx` — redesign
+- `src/pages/Index.tsx` — them ScrollToTop component
+- `src/pages/Dashboard.tsx` — fix hardcode stat
+- `src/pages/Schedule.tsx` — mobile responsive
 
----
-
-## Chi Tiết Kỹ Thuật
-
-### Files cần tạo mới
-- `src/components/landing/VirtualTrainingSection.tsx`
-- `src/components/landing/PricingSection.tsx`
-- `src/components/admin/DocumentsTab.tsx`
-
-### Files cần chỉnh sửa
-- `src/pages/AdminContent.tsx` — thêm tab Documents
-- `src/pages/Index.tsx` — thêm 2 section mới
-- `src/pages/BookPT.tsx` — thêm option Online/Offline
-
-### Database migration
-- Tạo bảng `admin_documents`
-- Tạo bucket `admin-documents` qua SQL (storage.buckets)
-- RLS: chỉ admin đọc/ghi
-
-### Lưu ý quan trọng
-- File PDF sẽ được lưu vĩnh viễn trong hệ thống
-- Admin có thể upload thêm tài liệu bất kỳ lúc nào
-- Tài liệu được phân loại theo category để dễ tìm kiếm
-- Chỉ tài khoản admin mới truy cập được
+### Khong Thay Doi
+- Khong thay doi design system (mau sac, font, animation style)
+- Khong thay doi cau truc routing
+- Khong thay doi cac file auto-generated (client.ts, types.ts, .env)

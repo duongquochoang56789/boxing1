@@ -29,7 +29,10 @@ const GallerySection = () => {
     description: getContent(content, "text", `${img.key}_desc`, img.description),
   }));
 
+  const [activeIndex, setActiveIndex] = useState(0);
   const loopImages = [...galleryImages, ...galleryImages];
+  const touchStartX = useRef(0);
+  const touchEndX = useRef(0);
 
   useEffect(() => {
     const el = scrollRef.current;
@@ -38,11 +41,15 @@ const GallerySection = () => {
     let scrollPos = 0;
     const speed = 0.5;
     const halfWidth = el.scrollWidth / 2;
+    const itemWidth = el.scrollWidth / loopImages.length;
 
     const animate = () => {
       scrollPos += speed;
       if (scrollPos >= halfWidth) scrollPos = 0;
       el.scrollLeft = scrollPos;
+      // Update active index
+      const idx = Math.round(scrollPos / itemWidth) % galleryImages.length;
+      setActiveIndex(idx);
       animId = requestAnimationFrame(animate);
     };
 
@@ -52,10 +59,34 @@ const GallerySection = () => {
     el.addEventListener("mouseenter", pause);
     el.addEventListener("mouseleave", resume);
 
+    // Touch swipe support
+    const handleTouchStart = (e: TouchEvent) => {
+      pause();
+      touchStartX.current = e.touches[0].clientX;
+    };
+    const handleTouchMove = (e: TouchEvent) => {
+      touchEndX.current = e.touches[0].clientX;
+      const diff = touchStartX.current - touchEndX.current;
+      el.scrollLeft = scrollPos + diff;
+    };
+    const handleTouchEnd = () => {
+      const diff = touchStartX.current - touchEndX.current;
+      scrollPos = el.scrollLeft;
+      if (scrollPos >= halfWidth) scrollPos = 0;
+      resume();
+    };
+
+    el.addEventListener("touchstart", handleTouchStart, { passive: true });
+    el.addEventListener("touchmove", handleTouchMove, { passive: true });
+    el.addEventListener("touchend", handleTouchEnd);
+
     return () => {
       cancelAnimationFrame(animId);
       el.removeEventListener("mouseenter", pause);
       el.removeEventListener("mouseleave", resume);
+      el.removeEventListener("touchstart", handleTouchStart);
+      el.removeEventListener("touchmove", handleTouchMove);
+      el.removeEventListener("touchend", handleTouchEnd);
     };
   }, []);
 
@@ -90,6 +121,20 @@ const GallerySection = () => {
             <h4 className="font-display text-xl text-charcoal font-medium">{image.alt}</h4>
             <p className="text-body-sm text-soft-brown mt-1">{image.description}</p>
           </motion.div>
+        ))}
+      </div>
+
+      {/* Dot indicators */}
+      <div className="flex justify-center gap-2 mt-8">
+        {galleryImages.map((_, i) => (
+          <button
+            key={i}
+            onClick={() => setSelectedImage(i)}
+            className={`w-2 h-2 rounded-full transition-all duration-300 ${
+              i === activeIndex ? "bg-terracotta w-6" : "bg-charcoal/20 hover:bg-charcoal/40"
+            }`}
+            aria-label={`View image ${i + 1}`}
+          />
         ))}
       </div>
 

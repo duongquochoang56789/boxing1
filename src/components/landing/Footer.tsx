@@ -11,8 +11,9 @@ const footerLinks = {
   ],
   company: [
     { name: "Về chúng tôi", href: "#about" },
+    { name: "Virtual Training", href: "#virtual-training" },
+    { name: "Bảng giá", href: "#pricing" },
     { name: "Huấn luyện viên", href: "#trainers" },
-    { name: "Không gian", href: "#gallery" },
     { name: "Liên hệ", href: "#contact" },
   ],
 };

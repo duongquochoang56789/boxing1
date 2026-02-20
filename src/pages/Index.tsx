@@ -10,6 +10,7 @@ import GallerySection from "@/components/landing/GallerySection";
 import ContactSection from "@/components/landing/ContactSection";
 import Footer from "@/components/landing/Footer";
 import { ScrollProgress } from "@/components/ui/scroll-progress";
+import { ScrollToTop } from "@/components/ui/scroll-to-top";
 import { useLenis } from "@/hooks/useLenis";
 
 const Index = () => {
@@ -31,6 +32,7 @@ const Index = () => {
         <ContactSection />
       </main>
       <Footer />
+      <ScrollToTop />
     </div>
   );
 };

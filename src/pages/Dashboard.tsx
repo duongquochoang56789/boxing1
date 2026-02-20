@@ -224,7 +224,7 @@ const Dashboard = () => {
             duration={1.5}
           />
           <AnimatedCounter
-            end={7}
+            end={0}
             label="Chuỗi ngày tập"
             suffix=" ngày"
             icon={<Flame className="w-6 h-6 text-terracotta" />}

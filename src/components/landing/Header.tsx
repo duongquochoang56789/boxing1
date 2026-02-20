@@ -8,9 +8,9 @@ const navLinks = [
   { name: "Trang chủ", href: "#home" },
   { name: "Giới thiệu", href: "#about" },
   { name: "Dịch vụ", href: "#services" },
-  { name: "Virtual Training", href: "#virtual-training" },
+  { name: "Online", href: "#virtual-training" },
   { name: "Bảng giá", href: "#pricing" },
-  { name: "Huấn luyện viên", href: "#trainers" },
+  { name: "HLV", href: "#trainers" },
   { name: "Liên hệ", href: "#contact" },
 ];
 
@@ -71,7 +71,7 @@ const Header = () => {
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className="hidden lg:flex items-center gap-7"
+            className="hidden lg:flex items-center gap-5 xl:gap-7"
           >
             {navLinks.map((link, index) => (
               <motion.li

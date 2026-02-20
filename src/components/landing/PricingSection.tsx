@@ -1,10 +1,12 @@
 import { motion } from "framer-motion";
 import { Check, Star, Zap, Crown } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useSiteContent, getContent } from "@/hooks/useSiteContent";
 
 const plans = [
   {
     icon: Zap,
+    key: "plan_1",
     name: "Gói Khởi Đầu",
     tagline: "Thử nghiệm miễn rủi ro",
     price: "200k–300k",
@@ -24,6 +26,7 @@ const plans = [
   },
   {
     icon: Star,
+    key: "plan_2",
     name: "Gói Tháng",
     tagline: "Phổ biến nhất",
     price: "800k–1.2tr",
@@ -44,6 +47,7 @@ const plans = [
   },
   {
     icon: Crown,
+    key: "plan_3",
     name: "Gói Premium",
     tagline: "Toàn diện · Nhanh nhất",
     price: "1.5tr–2tr",
@@ -65,6 +69,8 @@ const plans = [
 ];
 
 const PricingSection = () => {
+  const { data: content } = useSiteContent("pricing");
+
   return (
     <section id="pricing" className="py-24 bg-background">
       <div className="container-custom">
@@ -78,15 +84,17 @@ const PricingSection = () => {
         >
           <div className="inline-flex items-center gap-2 mb-6">
             <div className="w-8 h-px bg-terracotta" />
-            <span className="text-label text-terracotta uppercase tracking-widest">Bảng giá</span>
+            <span className="text-label text-terracotta uppercase tracking-widest">
+              {getContent(content, "text", "label", "Bảng giá")}
+            </span>
             <div className="w-8 h-px bg-terracotta" />
           </div>
           <h2 className="font-display text-4xl md:text-5xl font-bold text-charcoal mb-4">
-            Chọn gói phù hợp{" "}
-            <span className="text-terracotta">với bạn</span>
+            {getContent(content, "text", "heading_1", "Chọn gói phù hợp")}{" "}
+            <span className="text-terracotta">{getContent(content, "text", "heading_2", "với bạn")}</span>
           </h2>
           <p className="text-body text-soft-brown max-w-xl mx-auto">
-            Không có hợp đồng ẩn — bắt đầu với gói thử, nâng cấp bất cứ lúc nào khi bạn sẵn sàng
+            {getContent(content, "text", "description", "Không có hợp đồng ẩn — bắt đầu với gói thử, nâng cấp bất cứ lúc nào khi bạn sẵn sàng")}
           </p>
         </motion.div>
 
@@ -94,7 +102,7 @@ const PricingSection = () => {
         <div className="grid md:grid-cols-3 gap-6 items-stretch">
           {plans.map((plan, i) => (
             <motion.div
-              key={plan.name}
+              key={plan.key}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -107,7 +115,7 @@ const PricingSection = () => {
             >
               {plan.badge && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 bg-terracotta text-cream text-xs font-medium">
-                  {plan.badge}
+                  {getContent(content, "text", `${plan.key}_badge`, plan.badge)}
                 </div>
               )}
 
@@ -116,14 +124,22 @@ const PricingSection = () => {
                 <div className={`w-10 h-10 flex items-center justify-center mb-4 ${plan.highlight ? "bg-terracotta" : "bg-terracotta/10"}`}>
                   <plan.icon className={`w-5 h-5 ${plan.highlight ? "text-cream" : "text-terracotta"}`} />
                 </div>
-                <h3 className="font-display text-xl font-bold text-charcoal mb-1">{plan.name}</h3>
-                <p className="text-body-sm text-soft-brown">{plan.tagline}</p>
+                <h3 className="font-display text-xl font-bold text-charcoal mb-1">
+                  {getContent(content, "text", `${plan.key}_name`, plan.name)}
+                </h3>
+                <p className="text-body-sm text-soft-brown">
+                  {getContent(content, "text", `${plan.key}_tagline`, plan.tagline)}
+                </p>
               </div>
 
               {/* Price */}
               <div className="mb-8">
-                <div className="font-display text-3xl font-bold text-charcoal">{plan.price}</div>
-                <div className="text-body-sm text-soft-brown mt-1">{plan.unit}</div>
+                <div className="font-display text-3xl font-bold text-charcoal">
+                  {getContent(content, "text", `${plan.key}_price`, plan.price)}
+                </div>
+                <div className="text-body-sm text-soft-brown mt-1">
+                  {getContent(content, "text", `${plan.key}_unit`, plan.unit)}
+                </div>
               </div>
 
               {/* Features */}
@@ -147,7 +163,7 @@ const PricingSection = () => {
                     : "border border-terracotta text-terracotta hover:bg-terracotta hover:text-cream"
                 }`}
               >
-                {plan.cta}
+                {getContent(content, "text", `${plan.key}_cta`, plan.cta)}
               </Link>
             </motion.div>
           ))}
@@ -161,7 +177,7 @@ const PricingSection = () => {
           transition={{ duration: 0.5, delay: 0.4 }}
           className="text-center text-body-sm text-muted-foreground mt-10"
         >
-          Tất cả các gói đều bao gồm buổi đánh giá thể lực miễn phí · Thanh toán linh hoạt qua chuyển khoản
+          {getContent(content, "text", "bottom_note", "Tất cả các gói đều bao gồm buổi đánh giá thể lực miễn phí · Thanh toán linh hoạt qua chuyển khoản")}
         </motion.p>
       </div>
     </section>

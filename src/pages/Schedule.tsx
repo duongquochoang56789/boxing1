@@ -1,14 +1,13 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { ChevronLeft, ChevronRight, Dumbbell, Users, Clock, MapPin, ArrowLeft } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ChevronLeft, ChevronRight, ChevronDown, Users, Clock, MapPin, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { format, startOfWeek, addDays, isSameDay, parseISO } from 'date-fns';
 import { vi } from 'date-fns/locale';
-import { MagneticButton } from '@/components/ui/magnetic-button';
 
 interface ClassSchedule {
   id: string;
@@ -31,12 +30,19 @@ const Schedule = () => {
   const [loading, setLoading] = useState(true);
   const [currentWeekStart, setCurrentWeekStart] = useState(startOfWeek(new Date(), { weekStartsOn: 1 }));
   const [registering, setRegistering] = useState<string | null>(null);
+  const [expandedDay, setExpandedDay] = useState<number | null>(null);
 
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(currentWeekStart, i));
 
   useEffect(() => {
     fetchSchedules();
   }, [currentWeekStart, user]);
+
+  // Auto-expand today on mobile
+  useEffect(() => {
+    const todayIdx = weekDays.findIndex(d => isSameDay(d, new Date()));
+    if (todayIdx >= 0) setExpandedDay(todayIdx);
+  }, [currentWeekStart]);
 
   const fetchSchedules = async () => {
     setLoading(true);
@@ -117,9 +123,36 @@ const Schedule = () => {
   const getSchedulesForDay = (date: Date) => schedules.filter(s => isSameDay(parseISO(s.start_time), date));
   const formatTime = (dateStr: string) => format(parseISO(dateStr), 'HH:mm');
 
+  const renderScheduleCard = (schedule: ClassSchedule) => {
+    const isFull = schedule.current_participants >= schedule.max_participants;
+    return (
+      <motion.div
+        key={schedule.id}
+        whileHover={{ scale: 1.02 }}
+        className={`p-3 border transition-colors duration-300 ${schedule.is_registered ? 'border-terracotta bg-terracotta/5' : 'border-border/30 bg-cream hover:border-terracotta/30'}`}
+      >
+        <p className="font-display font-medium text-sm text-charcoal mb-1">{schedule.class_name}</p>
+        <div className="space-y-0.5 text-xs text-soft-brown">
+          <p className="flex items-center gap-1"><Clock className="w-3 h-3 text-terracotta/60" />{formatTime(schedule.start_time)} - {formatTime(schedule.end_time)}</p>
+          {schedule.trainer_name && <p className="flex items-center gap-1"><Users className="w-3 h-3 text-terracotta/60" />{schedule.trainer_name}</p>}
+          <p className="flex items-center gap-1"><MapPin className="w-3 h-3 text-terracotta/60" />{schedule.room}</p>
+          <p className="text-terracotta font-medium">{schedule.current_participants}/{schedule.max_participants}</p>
+        </div>
+        {schedule.is_registered ? (
+          <Button size="sm" variant="outline" className="w-full mt-2 rounded-none text-xs h-7 border-terracotta/30 text-terracotta hover:bg-terracotta/10" onClick={() => handleCancelRegistration(schedule.id)} disabled={registering === schedule.id}>
+            {registering === schedule.id ? '...' : 'Hủy đăng ký'}
+          </Button>
+        ) : (
+          <Button size="sm" className="w-full mt-2 rounded-none text-xs h-7 bg-terracotta hover:bg-terracotta/90 text-primary-foreground" onClick={() => handleRegister(schedule.id)} disabled={isFull || registering === schedule.id}>
+            {registering === schedule.id ? '...' : (isFull ? 'Đã đầy' : 'Đăng ký')}
+          </Button>
+        )}
+      </motion.div>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-cream">
-      {/* Header */}
       <header className="bg-background/80 backdrop-blur-xl border-b border-border/50 sticky top-0 z-30">
         <div className="container-custom py-4 flex items-center gap-4">
           <Link to="/dashboard" className="text-soft-brown hover:text-terracotta transition-colors duration-300">
@@ -151,78 +184,104 @@ const Schedule = () => {
           </div>
 
           {loading ? (
-            <div className="grid grid-cols-1 md:grid-cols-7 gap-4">
+            <div className="space-y-4 md:grid md:grid-cols-7 md:gap-4 md:space-y-0">
               {[...Array(7)].map((_, i) => (
                 <div key={i} className="border border-border/50 bg-background">
                   <div className="p-3 border-b border-border/50 bg-cream">
                     <div className="h-3 w-16 shimmer rounded mx-auto mb-1" />
                     <div className="h-5 w-12 shimmer rounded mx-auto" />
                   </div>
-                  <div className="p-2 space-y-2 min-h-[200px]">
-                    {[...Array(2)].map((_, j) => (
-                      <div key={j} className="p-3 border border-border/30 bg-cream">
-                        <div className="h-4 w-3/4 shimmer rounded mb-2" />
-                        <div className="h-3 w-1/2 shimmer rounded mb-1" />
-                        <div className="h-3 w-2/3 shimmer rounded mb-2" />
-                        <div className="h-7 w-full shimmer rounded mt-2" />
-                      </div>
-                    ))}
+                  <div className="p-2 space-y-2 min-h-[100px] md:min-h-[200px]">
+                    <div className="p-3 border border-border/30 bg-cream">
+                      <div className="h-4 w-3/4 shimmer rounded mb-2" />
+                      <div className="h-3 w-1/2 shimmer rounded" />
+                    </div>
                   </div>
                 </div>
               ))}
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-7 gap-4">
-              {weekDays.map((day, dayIdx) => {
-                const daySchedules = getSchedulesForDay(day);
-                const isToday = isSameDay(day, new Date());
-                return (
-                  <motion.div 
-                    key={day.toISOString()}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.4, delay: dayIdx * 0.05 }}
-                    className={`border bg-background ${isToday ? 'border-terracotta shadow-lg shadow-terracotta/10' : 'border-border/50'}`}
-                  >
-                    <div className={`p-3 text-center border-b ${isToday ? 'bg-terracotta text-primary-foreground border-terracotta' : 'bg-cream border-border/50'}`}>
-                      <p className="text-label">{format(day, 'EEEE', { locale: vi })}</p>
-                      <p className="font-display text-lg mt-0.5">{format(day, 'dd/MM')}</p>
-                    </div>
-                    <div className="p-2 space-y-2 min-h-[200px]">
-                      {daySchedules.length > 0 ? daySchedules.map((schedule) => {
-                        const isFull = schedule.current_participants >= schedule.max_participants;
-                        return (
-                          <motion.div 
-                            key={schedule.id}
-                            whileHover={{ scale: 1.02 }}
-                            className={`p-3 border transition-colors duration-300 ${schedule.is_registered ? 'border-terracotta bg-terracotta/5' : 'border-border/30 bg-cream hover:border-terracotta/30'}`}
+            <>
+              {/* Desktop: 7-column grid */}
+              <div className="hidden md:grid md:grid-cols-7 gap-4">
+                {weekDays.map((day, dayIdx) => {
+                  const daySchedules = getSchedulesForDay(day);
+                  const isToday = isSameDay(day, new Date());
+                  return (
+                    <motion.div
+                      key={day.toISOString()}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.4, delay: dayIdx * 0.05 }}
+                      className={`border bg-background ${isToday ? 'border-terracotta shadow-lg shadow-terracotta/10' : 'border-border/50'}`}
+                    >
+                      <div className={`p-3 text-center border-b ${isToday ? 'bg-terracotta text-primary-foreground border-terracotta' : 'bg-cream border-border/50'}`}>
+                        <p className="text-label">{format(day, 'EEEE', { locale: vi })}</p>
+                        <p className="font-display text-lg mt-0.5">{format(day, 'dd/MM')}</p>
+                      </div>
+                      <div className="p-2 space-y-2 min-h-[200px]">
+                        {daySchedules.length > 0 ? daySchedules.map(renderScheduleCard) : (
+                          <p className="text-xs text-soft-brown/50 text-center py-8">Không có lớp</p>
+                        )}
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </div>
+
+              {/* Mobile: Accordion list */}
+              <div className="md:hidden space-y-2">
+                {weekDays.map((day, dayIdx) => {
+                  const daySchedules = getSchedulesForDay(day);
+                  const isToday = isSameDay(day, new Date());
+                  const isExpanded = expandedDay === dayIdx;
+                  return (
+                    <motion.div
+                      key={day.toISOString()}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3, delay: dayIdx * 0.03 }}
+                      className={`border bg-background overflow-hidden ${isToday ? 'border-terracotta' : 'border-border/50'}`}
+                    >
+                      <button
+                        onClick={() => setExpandedDay(isExpanded ? null : dayIdx)}
+                        className={`w-full flex items-center justify-between p-4 ${isToday ? 'bg-terracotta text-primary-foreground' : 'bg-cream'}`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <span className="font-display text-lg font-medium">{format(day, 'dd/MM')}</span>
+                          <span className="text-label">{format(day, 'EEEE', { locale: vi })}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {daySchedules.length > 0 && (
+                            <span className={`text-xs px-2 py-0.5 ${isToday ? 'bg-cream/20 text-cream' : 'bg-terracotta/10 text-terracotta'}`}>
+                              {daySchedules.length} lớp
+                            </span>
+                          )}
+                          <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`} />
+                        </div>
+                      </button>
+                      <AnimatePresence>
+                        {isExpanded && (
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: "auto", opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.3 }}
+                            className="overflow-hidden"
                           >
-                            <p className="font-display font-medium text-sm text-charcoal mb-1">{schedule.class_name}</p>
-                            <div className="space-y-0.5 text-xs text-soft-brown">
-                              <p className="flex items-center gap-1"><Clock className="w-3 h-3 text-terracotta/60" />{formatTime(schedule.start_time)} - {formatTime(schedule.end_time)}</p>
-                              {schedule.trainer_name && <p className="flex items-center gap-1"><Users className="w-3 h-3 text-terracotta/60" />{schedule.trainer_name}</p>}
-                              <p className="flex items-center gap-1"><MapPin className="w-3 h-3 text-terracotta/60" />{schedule.room}</p>
-                              <p className="text-terracotta font-medium">{schedule.current_participants}/{schedule.max_participants}</p>
+                            <div className="p-3 space-y-2">
+                              {daySchedules.length > 0 ? daySchedules.map(renderScheduleCard) : (
+                                <p className="text-sm text-soft-brown/50 text-center py-6">Không có lớp học nào</p>
+                              )}
                             </div>
-                            {schedule.is_registered ? (
-                              <Button size="sm" variant="outline" className="w-full mt-2 rounded-none text-xs h-7 border-terracotta/30 text-terracotta hover:bg-terracotta/10" onClick={() => handleCancelRegistration(schedule.id)} disabled={registering === schedule.id}>
-                                {registering === schedule.id ? '...' : 'Hủy đăng ký'}
-                              </Button>
-                            ) : (
-                              <Button size="sm" className="w-full mt-2 rounded-none text-xs h-7 bg-terracotta hover:bg-terracotta/90 text-primary-foreground" onClick={() => handleRegister(schedule.id)} disabled={isFull || registering === schedule.id}>
-                                {registering === schedule.id ? '...' : (isFull ? 'Đã đầy' : 'Đăng ký')}
-                              </Button>
-                            )}
                           </motion.div>
-                        );
-                      }) : (
-                        <p className="text-xs text-soft-brown/50 text-center py-8">Không có lớp</p>
-                      )}
-                    </div>
-                  </motion.div>
-                );
-              })}
-            </div>
+                        )}
+                      </AnimatePresence>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            </>
           )}
         </motion.div>
       </main>

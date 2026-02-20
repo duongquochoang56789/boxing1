@@ -1,10 +1,21 @@
 import { motion } from "framer-motion";
 import { useInView } from "framer-motion";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { MapPin, Phone, Mail, Clock, ArrowRight } from "lucide-react";
 import { MagneticButton } from "@/components/ui/magnetic-button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { z } from "zod";
+
+const contactSchema = z.object({
+  full_name: z.string().trim().min(1, "Vui lòng nhập họ tên").max(100),
+  phone: z.string().trim().min(1, "Vui lòng nhập số điện thoại").max(20),
+  email: z.string().trim().email("Email không hợp lệ").max(255),
+  service: z.string().optional(),
+  message: z.string().max(1000).optional(),
+});
 
 const contactInfo = [
   { icon: MapPin, label: "Địa chỉ", value: "123 Nguyễn Huệ, Quận 1\nTP. Hồ Chí Minh" },
@@ -16,6 +27,48 @@ const contactInfo = [
 const ContactSection = () => {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
+  const [formData, setFormData] = useState({ full_name: "", phone: "", email: "", service: "", message: "" });
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrors({});
+
+    const result = contactSchema.safeParse(formData);
+    if (!result.success) {
+      const fieldErrors: Record<string, string> = {};
+      result.error.errors.forEach((err) => {
+        if (err.path[0]) fieldErrors[err.path[0] as string] = err.message;
+      });
+      setErrors(fieldErrors);
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const { error } = await supabase.from("leads").insert({
+        full_name: result.data.full_name,
+        email: result.data.email,
+        phone: result.data.phone,
+        service: result.data.service || null,
+        message: result.data.message || null,
+        source: "contact",
+      });
+      if (error) throw error;
+      toast.success("Đăng ký thành công! Chúng tôi sẽ phản hồi trong 24h.");
+      setFormData({ full_name: "", phone: "", email: "", service: "", message: "" });
+    } catch {
+      toast.error("Có lỗi xảy ra, vui lòng thử lại.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const updateField = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    if (errors[field]) setErrors(prev => { const n = { ...prev }; delete n[field]; return n; });
+  };
 
   return (
     <section id="contact" className="section-padding bg-warm-beige relative overflow-hidden">
@@ -41,7 +94,6 @@ const ContactSection = () => {
         <div className="grid lg:grid-cols-2 gap-16 lg:gap-24">
           {/* Left – Info + Map */}
           <div>
-            {/* Contact info grid */}
             <div className="grid sm:grid-cols-2 gap-px bg-border">
               {contactInfo.map((item, i) => (
                 <motion.div
@@ -60,7 +112,6 @@ const ContactSection = () => {
               ))}
             </div>
 
-            {/* Map */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={isInView ? { opacity: 1 } : {}}
@@ -93,15 +144,18 @@ const ContactSection = () => {
               </h3>
               <p className="text-body-sm text-soft-brown mb-8">Miễn phí · Không ràng buộc</p>
 
-              <form className="space-y-5">
+              <form onSubmit={handleSubmit} className="space-y-5">
                 <div className="grid sm:grid-cols-2 gap-5">
                   <div className="space-y-1.5">
                     <label htmlFor="name" className="text-label text-soft-brown">Họ và tên</label>
                     <Input
                       id="name"
                       placeholder="Nguyễn Văn A"
+                      value={formData.full_name}
+                      onChange={(e) => updateField("full_name", e.target.value)}
                       className="h-12 px-4 rounded-none border-border bg-background focus:border-terracotta focus:ring-0 focus-visible:ring-0 focus-visible:border-terracotta"
                     />
+                    {errors.full_name && <p className="text-red-500 text-xs">{errors.full_name}</p>}
                   </div>
                   <div className="space-y-1.5">
                     <label htmlFor="phone" className="text-label text-soft-brown">Số điện thoại</label>
@@ -109,8 +163,11 @@ const ContactSection = () => {
                       id="phone"
                       type="tel"
                       placeholder="09xx xxx xxx"
+                      value={formData.phone}
+                      onChange={(e) => updateField("phone", e.target.value)}
                       className="h-12 px-4 rounded-none border-border bg-background focus:border-terracotta focus:ring-0 focus-visible:ring-0 focus-visible:border-terracotta"
                     />
+                    {errors.phone && <p className="text-red-500 text-xs">{errors.phone}</p>}
                   </div>
                 </div>
 
@@ -120,14 +177,19 @@ const ContactSection = () => {
                     id="email"
                     type="email"
                     placeholder="email@example.com"
+                    value={formData.email}
+                    onChange={(e) => updateField("email", e.target.value)}
                     className="h-12 px-4 rounded-none border-border bg-background focus:border-terracotta focus:ring-0 focus-visible:ring-0 focus-visible:border-terracotta"
                   />
+                  {errors.email && <p className="text-red-500 text-xs">{errors.email}</p>}
                 </div>
 
                 <div className="space-y-1.5">
                   <label htmlFor="service" className="text-label text-soft-brown">Dịch vụ quan tâm</label>
                   <select
                     id="service"
+                    value={formData.service}
+                    onChange={(e) => updateField("service", e.target.value)}
                     className="w-full h-12 px-4 border border-border bg-background rounded-none focus:outline-none focus:border-terracotta text-charcoal text-sm"
                   >
                     <option value="">Chọn dịch vụ...</option>
@@ -144,13 +206,15 @@ const ContactSection = () => {
                     id="message"
                     rows={3}
                     placeholder="Bạn muốn đạt được điều gì?"
+                    value={formData.message}
+                    onChange={(e) => updateField("message", e.target.value)}
                     className="rounded-none border-border bg-background resize-none focus:border-terracotta focus:ring-0 focus-visible:ring-0 focus-visible:border-terracotta text-sm"
                   />
                 </div>
 
-                <MagneticButton type="submit" className="btn-primary rounded-none w-full h-12 group text-sm">
-                  Gửi đăng ký
-                  <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                <MagneticButton type="submit" className="btn-primary rounded-none w-full h-12 group text-sm" disabled={submitting}>
+                  {submitting ? "Đang gửi..." : "Gửi đăng ký"}
+                  {!submitting && <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />}
                 </MagneticButton>
 
                 <p className="text-[11px] text-soft-brown/60 text-center">

@@ -20,7 +20,7 @@ const contactSchema = z.object({
 const contactInfo = [
   { icon: MapPin, label: "Địa chỉ", value: "123 Nguyễn Huệ, Quận 1\nTP. Hồ Chí Minh" },
   { icon: Phone, label: "Điện thoại", value: "1900 1234" },
-  { icon: Mail, label: "Email", value: "info@elitefit.vn" },
+  { icon: Mail, label: "Email", value: "info@flyfit.vn" },
   { icon: Clock, label: "Giờ mở cửa", value: "05:00 – 22:00\nThứ Hai – Chủ Nhật" },
 ];
 
@@ -193,10 +193,10 @@ const ContactSection = () => {
                     className="w-full h-12 px-4 border border-border bg-background rounded-none focus:outline-none focus:border-terracotta text-charcoal text-sm"
                   >
                     <option value="">Chọn dịch vụ...</option>
-                    <option value="personal">Personal Training</option>
-                    <option value="group">Group Fitness</option>
-                    <option value="strength">Strength Training</option>
-                    <option value="nutrition">Nutrition Coaching</option>
+                    <option value="flyclass">FLY Class — Nhóm nhỏ</option>
+                    <option value="flyzen">FLY Zen — Yoga & Pilates</option>
+                    <option value="flyburn">FLY Burn — HIIT & Cardio</option>
+                    <option value="flyfuel">FLY Fuel — Dinh dưỡng</option>
                   </select>
                 </div>
 

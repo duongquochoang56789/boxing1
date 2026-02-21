@@ -17,7 +17,7 @@ const ZaloButton = () => {
             exit={{ opacity: 0, y: 10, scale: 0.9 }}
             className="bg-foreground text-background px-4 py-2.5 rounded-lg shadow-lg text-sm font-medium max-w-[200px]"
           >
-            <p>Chat với EliteFit qua Zalo!</p>
+            <p>Chat với FLYFIT qua Zalo!</p>
             <div className="absolute -bottom-1.5 right-6 w-3 h-3 bg-foreground rotate-45" />
           </motion.div>
         )}

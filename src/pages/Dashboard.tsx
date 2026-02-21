@@ -158,7 +158,7 @@ const Dashboard = () => {
       <header className="bg-background/80 backdrop-blur-xl border-b border-border/50 sticky top-0 z-30">
         <div className="container-custom py-4 flex items-center justify-between">
           <Link to="/" className="font-display text-xl font-semibold tracking-tight text-charcoal">
-            ELITE<span className="text-terracotta">FIT</span>
+            FLY<span className="text-terracotta">FIT</span>
           </Link>
           <div className="flex items-center gap-4">
             {isAdmin && (

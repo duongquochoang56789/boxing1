@@ -42,7 +42,7 @@ const VirtualTrainingSection = () => {
             </h2>
 
             <p className="text-body text-cream/70 mb-10 leading-relaxed">
-              {getContent(content, "text", "description", "Mô hình nhóm nhỏ trực tuyến kết hợp hiệu quả của PT cá nhân và sự kết nối của lớp học nhóm. Trainer EliteFit theo dõi và hướng dẫn trực tiếp — bạn tập tại nhà, chúng tôi đồng hành cùng bạn.")}
+              {getContent(content, "text", "description", "Mô hình nhóm nhỏ trực tuyến kết hợp hiệu quả của PT cá nhân và sự kết nối của lớp học nhóm. Trainer FLYFIT theo dõi và hướng dẫn trực tiếp — bạn tập tại nhà, chúng tôi đồng hành cùng bạn.")}
             </p>
 
             {/* Features */}

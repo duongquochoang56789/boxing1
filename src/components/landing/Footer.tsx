@@ -4,10 +4,10 @@ import useScrollTo from "@/hooks/useScrollTo";
 
 const footerLinks = {
   services: [
-    { name: "Personal Training", href: "#services" },
-    { name: "Group Fitness", href: "#services" },
-    { name: "Yoga & Pilates", href: "#services" },
-    { name: "Nutrition Coaching", href: "#services" },
+    { name: "FLY Class — Nhóm nhỏ", href: "#services" },
+    { name: "FLY Zen — Yoga & Pilates", href: "#services" },
+    { name: "FLY Burn — HIIT & Cardio", href: "#services" },
+    { name: "FLY Fuel — Dinh dưỡng", href: "#services" },
   ],
   company: [
     { name: "Về chúng tôi", href: "#about" },
@@ -38,11 +38,11 @@ const Footer = () => {
           {/* Brand */}
           <div className="lg:col-span-2">
             <a href="#home" onClick={(e) => handleClick(e, "#home")} className="inline-block font-display text-3xl font-semibold tracking-tight mb-6">
-              ELITE<span className="text-terracotta">FIT</span>
+              FLY<span className="text-terracotta">FIT</span>
             </a>
             <p className="text-cream/50 text-sm leading-relaxed max-w-xs">
-              Không gian luyện tập đẳng cấp — nơi sự cân bằng gặp gỡ tinh tế.
-              Trải nghiệm khác biệt, kết quả bền vững.
+            Bay cao. Sống khỏe. — Tập luyện nhóm nhỏ trực tuyến cùng huấn luyện viên chuyên nghiệp.
+              Tiện lợi, hiệu quả, chi phí hợp lý.
             </p>
 
             {/* Social */}
@@ -63,7 +63,7 @@ const Footer = () => {
             {/* Contact minimal */}
             <div className="mt-8 space-y-1.5 text-sm text-cream/40">
               <p>1900 1234</p>
-              <p>info@elitefit.vn</p>
+              <p>info@flyfit.vn</p>
               <p>123 Nguyễn Huệ, Quận 1, TP.HCM</p>
             </div>
           </div>
@@ -118,7 +118,7 @@ const Footer = () => {
       <div className="border-t border-cream/8">
         <div className="container-custom py-5 flex flex-col sm:flex-row justify-between items-center gap-3">
           <p className="text-cream/30 text-xs">
-            © 2025 EliteFit. Bản quyền thuộc về công ty.
+            © 2025 FLYFIT. Bản quyền thuộc về công ty.
           </p>
           <div className="flex gap-6">
             <a href="#" className="text-cream/30 text-xs hover:text-cream/60 transition-colors">Chính sách bảo mật</a>

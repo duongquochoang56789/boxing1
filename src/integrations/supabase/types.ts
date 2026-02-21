@@ -247,6 +247,51 @@ export type Database = {
         }
         Relationships: []
       }
+      project_slides: {
+        Row: {
+          background_color: string
+          content: string
+          created_at: string
+          id: string
+          image_prompt: string | null
+          image_url: string | null
+          layout: string
+          section_name: string
+          slide_order: number
+          subtitle: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          background_color?: string
+          content?: string
+          created_at?: string
+          id?: string
+          image_prompt?: string | null
+          image_url?: string | null
+          layout?: string
+          section_name?: string
+          slide_order: number
+          subtitle?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          background_color?: string
+          content?: string
+          created_at?: string
+          id?: string
+          image_prompt?: string | null
+          image_url?: string | null
+          layout?: string
+          section_name?: string
+          slide_order?: number
+          subtitle?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       pt_sessions: {
         Row: {
           created_at: string

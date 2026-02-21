@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Image, Type, RefreshCw, Check, Zap, Eye, EyeOff, Pencil, X, Save, FileText } from "lucide-react";
+import { Loader2, Image, Type, RefreshCw, Check, Zap, Eye, EyeOff, Pencil, X, Save, FileText, Presentation } from "lucide-react";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DocumentsTab } from "@/components/admin/DocumentsTab";
@@ -211,6 +211,89 @@ const EditableTextRow = ({
   );
 };
 
+const SlidesTab = () => {
+  const { toast } = useToast();
+  const [generating, setGenerating] = useState(false);
+  const queryClient = useQueryClient();
+
+  const { data: slides } = useQuery({
+    queryKey: ["project-slides-admin"],
+    queryFn: async () => {
+      const { data } = await supabase.from("project_slides").select("*").order("slide_order");
+      return data || [];
+    },
+  });
+
+  const generateSlides = async () => {
+    setGenerating(true);
+    toast({ title: "🚀 Đang tạo 30 slides...", description: "Quá trình này sẽ mất vài phút, vui lòng chờ đợi" });
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-slides", { body: {} });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      queryClient.invalidateQueries({ queryKey: ["project-slides-admin"] });
+      queryClient.invalidateQueries({ queryKey: ["project-slides"] });
+      toast({ title: "🎉 Hoàn thành!", description: `Đã tạo ${data.slides} slides với hình ảnh AI` });
+    } catch (e: any) {
+      toast({ title: "Lỗi tạo slides", description: e.message, variant: "destructive" });
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-xl font-display font-semibold text-charcoal">Slide Thuyết Trình FLYFIT</h2>
+          <p className="text-sm text-soft-brown mt-1">30 slides với nội dung và hình ảnh AI-generated</p>
+        </div>
+        <div className="flex gap-3">
+          <Button variant="outline" size="sm" onClick={() => window.open("/project", "_blank")}>
+            <Eye className="w-4 h-4 mr-1.5" /> Xem Slides
+          </Button>
+          <Button
+            onClick={generateSlides}
+            disabled={generating}
+            className="bg-terracotta hover:bg-terracotta/90 text-cream"
+          >
+            {generating ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Presentation className="w-4 h-4 mr-2" />}
+            {generating ? "Đang tạo..." : slides && slides.length > 0 ? "Tạo lại 30 Slides" : "Tạo 30 Slides"}
+          </Button>
+        </div>
+      </div>
+
+      {slides && slides.length > 0 ? (
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+          {slides.map((s) => (
+            <div key={s.id} className="border border-border rounded-lg overflow-hidden bg-[#1a1a2e]">
+              <div className="aspect-video relative">
+                {s.image_url ? (
+                  <img src={s.image_url} alt={s.title} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-white/30 text-xs">No image</div>
+                )}
+                <div className="absolute top-1 left-1 bg-black/60 text-white text-[10px] px-1.5 py-0.5 rounded">
+                  {s.slide_order}
+                </div>
+              </div>
+              <div className="p-2">
+                <p className="text-xs font-medium text-charcoal truncate">{s.title}</p>
+                <p className="text-[10px] text-soft-brown">{s.section_name} · {s.layout}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="border border-dashed border-border rounded-lg p-12 text-center">
+          <Presentation className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+          <p className="text-soft-brown">Chưa có slides. Nhấn "Tạo 30 Slides" để bắt đầu.</p>
+        </div>
+      )}
+    </div>
+  );
+};
+
 const AdminContent = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -310,6 +393,9 @@ const AdminContent = () => {
           <TabsList className="mb-8 h-11">
             <TabsTrigger value="content" className="flex items-center gap-2">
               <Zap className="w-4 h-4" /> Content AI
+            </TabsTrigger>
+            <TabsTrigger value="slides" className="flex items-center gap-2">
+              <Presentation className="w-4 h-4" /> Slides
             </TabsTrigger>
             <TabsTrigger value="documents" className="flex items-center gap-2">
               <FileText className="w-4 h-4" /> Tài Liệu
@@ -467,6 +553,10 @@ const AdminContent = () => {
                 );
               })}
             </div>
+          </TabsContent>
+
+          <TabsContent value="slides">
+            <SlidesTab />
           </TabsContent>
 
           <TabsContent value="documents">

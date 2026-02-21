@@ -5,9 +5,9 @@ import { ShimmerImage } from "@/components/ui/shimmer-image";
 import { useSiteContent, getContent } from "@/hooks/useSiteContent";
 
 const defaultFeatures = [
-  { key: "feature_1", title: "Huấn luyện cá nhân", description: "Chương trình được thiết kế riêng với huấn luyện viên chuyên nghiệp, đồng hành cùng bạn đạt mục tiêu.", image: "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?q=80&w=800" },
-  { key: "feature_2", title: "Lớp nhóm đa dạng", description: "Từ Yoga, Pilates đến HIIT – các lớp tập nhóm sôi động phù hợp mọi trình độ.", image: "https://images.unsplash.com/photo-1518611012118-696072aa579a?q=80&w=800" },
-  { key: "feature_3", title: "Không gian cao cấp", description: "Trang thiết bị nhập khẩu, không gian rộng rãi và tiện nghi đẳng cấp quốc tế.", image: "https://images.unsplash.com/photo-1540497077202-7c8a3999166f?q=80&w=800" },
+  { key: "feature_1", title: "Nhóm nhỏ trực tuyến", description: "Tập luyện nhóm 5-7 người qua Zoom, trainer quan sát và sửa động tác trực tiếp — như PT 1-1 nhưng chi phí hợp lý.", image: "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?q=80&w=800" },
+  { key: "feature_2", title: "Đa dạng chương trình", description: "Từ FLY Zen (Yoga), FLY Burn (HIIT) đến FLY Fuel (Dinh dưỡng) – phù hợp mọi mục tiêu và trình độ.", image: "https://images.unsplash.com/photo-1518611012118-696072aa579a?q=80&w=800" },
+  { key: "feature_3", title: "Mô hình Hybrid", description: "80% Online + 20% Offline tại phòng gym thực tế — kết hợp sự tiện lợi với trải nghiệm chuyên nghiệp.", image: "https://images.unsplash.com/photo-1540497077202-7c8a3999166f?q=80&w=800" },
 ];
 
 const AboutSection = () => {
@@ -33,12 +33,12 @@ const AboutSection = () => {
         >
           <span className="text-label text-terracotta">{getContent(content, "text", "label", "Về chúng tôi")}</span>
           <h2 className="heading-section text-charcoal mt-4">
-            {getContent(content, "text", "heading_1", "Nơi sự cân bằng")}
+            {getContent(content, "text", "heading_1", "Tập luyện thông minh,")}
             <br />
-            <span className="text-terracotta">{getContent(content, "text", "heading_2", "gặp gỡ sự bình yên")}</span>
+            <span className="text-terracotta">{getContent(content, "text", "heading_2", "sống khỏe mỗi ngày")}</span>
           </h2>
           <p className="text-body text-soft-brown mt-6">
-            {getContent(content, "text", "description", "Với hơn 10 năm kinh nghiệm, chúng tôi tự hào là điểm đến tin cậy của hàng nghìn học viên trên hành trình chinh phục vóc dáng lý tưởng.")}
+            {getContent(content, "text", "description", "FLYFIT xóa bỏ rào cản tập luyện — không cần đến phòng gym, không cần đầu tư đắt đỏ. Chỉ cần kết nối internet và quyết tâm thay đổi.")}
           </p>
         </motion.div>
 

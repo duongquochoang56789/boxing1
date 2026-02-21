@@ -66,7 +66,7 @@ const Header = () => {
               isScrolled ? "text-charcoal" : "text-cream"
             }`}
           >
-            ELITE<span className="text-terracotta">FIT</span>
+            FLY<span className="text-terracotta">FIT</span>
           </motion.a>
 
           {/* Desktop Navigation */}

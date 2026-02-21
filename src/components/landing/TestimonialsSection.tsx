@@ -14,7 +14,7 @@ const defaultTestimonials = [
     imageKey: "member_1",
     defaultName: "Nguyễn Thanh Hà",
     defaultRole: "Doanh nhân",
-    defaultContent: "Sau 6 tháng tập luyện tại EliteFit, tôi đã giảm được 15kg và cảm thấy tự tin hơn bao giờ hết. Đội ngũ PT ở đây thực sự tuyệt vời!",
+    defaultContent: "Sau 6 tháng tập luyện tại FLYFIT, tôi đã giảm được 15kg và cảm thấy tự tin hơn bao giờ hết. Đội ngũ PT ở đây thực sự tuyệt vời!",
     defaultImage: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=400",
   },
   {
@@ -47,7 +47,7 @@ const defaultTestimonials = [
     imageKey: "member_4",
     defaultName: "Phạm Quốc Bảo",
     defaultRole: "Vận động viên",
-    defaultContent: "EliteFit là nơi duy nhất tôi tin tưởng để tập luyện. Thiết bị chuyên nghiệp, huấn luyện viên tận tâm và không gian cực kỳ thoải mái.",
+    defaultContent: "FLYFIT là nơi duy nhất tôi tin tưởng để tập luyện. Trainer chuyên nghiệp, hướng dẫn tận tâm và mô hình nhóm nhỏ cực kỳ hiệu quả.",
     defaultImage: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=400",
   },
 ];

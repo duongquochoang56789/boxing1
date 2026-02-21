@@ -81,7 +81,7 @@ const CTASection = () => {
             {getContent(content, "text", "heading", "Bắt Đầu Hành Trình Của Bạn")}
           </h2>
           <p className="text-body text-cream/60 mb-10 max-w-2xl text-sm md:text-base">
-            {getContent(content, "text", "description", "Để lại thông tin để EliteFit đồng hành cùng bạn trên chặng đường nâng tầm sức khoẻ và phong cách sống.")}
+            {getContent(content, "text", "description", "Để lại thông tin để FLYFIT đồng hành cùng bạn trên chặng đường nâng tầm sức khoẻ và phong cách sống.")}
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-4 max-w-4xl">

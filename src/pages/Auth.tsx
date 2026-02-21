@@ -106,7 +106,7 @@ const Auth = () => {
             transition={{ delay: 0.2 }}
             className="font-display text-2xl font-semibold tracking-tight text-charcoal block mb-10"
           >
-            ELITE<span className="text-terracotta">FIT</span>
+            FLY<span className="text-terracotta">FIT</span>
           </motion.a>
 
           <AnimatePresence mode="wait">

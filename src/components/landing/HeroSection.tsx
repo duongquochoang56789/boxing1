@@ -91,7 +91,7 @@ const HeroSection = () => {
                 transition={{ duration: 0.8, delay: 0.2 }}
                 className="text-label text-cream/70 block"
               >
-                {getContent(content, "text", "label", "Premium Wellness Experience")}
+                {getContent(content, "text", "label", "Bay Cao. Sống Khỏe.")}
               </motion.span>
               <motion.h1
                 initial={{ opacity: 0, y: 40 }}
@@ -99,9 +99,9 @@ const HeroSection = () => {
                 transition={{ duration: 1, delay: 0.4 }}
                 className="heading-display text-cream text-4xl md:text-5xl lg:text-6xl xl:text-7xl"
               >
-                {getContent(content, "text", "heading_1", "Cân bằng,")}
+                {getContent(content, "text", "heading_1", "Tập tại nhà,")}
                 <br />
-                <span className="text-peach">{getContent(content, "text", "heading_2", "trọn vẹn.")}</span>
+                <span className="text-peach">{getContent(content, "text", "heading_2", "thay đổi thật.")}</span>
               </motion.h1>
               <motion.p
                 initial={{ opacity: 0, y: 20 }}
@@ -109,7 +109,7 @@ const HeroSection = () => {
                 transition={{ duration: 0.8, delay: 0.7 }}
                 className="text-body text-cream/60 max-w-md text-sm md:text-base"
               >
-                {getContent(content, "text", "description", "Không gian luyện tập sang trọng, nơi sự tinh tế gặp gỡ hiệu quả.")}
+                {getContent(content, "text", "description", "Tập luyện nhóm nhỏ trực tuyến cùng huấn luyện viên chuyên nghiệp. Tiện lợi, hiệu quả, chi phí hợp lý.")}
               </motion.p>
             </div>
 

@@ -159,7 +159,7 @@ const Schedule = () => {
             <ArrowLeft className="w-5 h-5" />
           </Link>
           <Link to="/" className="font-display text-xl font-semibold tracking-tight text-charcoal">
-            ELITE<span className="text-terracotta">FIT</span>
+            FLY<span className="text-terracotta">FIT</span>
           </Link>
         </div>
       </header>

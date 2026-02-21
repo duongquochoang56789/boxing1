@@ -108,7 +108,7 @@ const sections: SectionConfig[] = [
       "t3_name", "t3_role", "t3_quote",
       "t4_name", "t4_role", "t4_quote",
     ],
-    textContext: "Testimonials section. label = section tag (3-4 words). heading_1 + heading_2 = two-part heading. stat_number = satisfaction % (e.g. 98%). stat_label = short label. t1-t4 = 4 members with Vietnamese names, roles (e.g. Doanh nhân, Bác sĩ), and authentic short quotes (1-2 sentences) praising EliteFit gym.",
+    textContext: "Testimonials section. label = section tag (3-4 words). heading_1 + heading_2 = two-part heading. stat_number = satisfaction % (e.g. 98%). stat_label = short label. t1-t4 = 4 members with Vietnamese names, roles (e.g. Doanh nhân, Bác sĩ), and authentic short quotes (1-2 sentences) praising FLYFIT virtual training.",
   },
 ];
 

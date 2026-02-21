@@ -7,6 +7,7 @@ import { useSiteContent, getContent } from "@/hooks/useSiteContent";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { z } from "zod";
+import { trackLeadSubmission } from "@/hooks/useAnalytics";
 
 const leadSchema = z.object({
   full_name: z.string().trim().min(1, "Vui lòng nhập họ tên").max(100),
@@ -53,6 +54,7 @@ const HeroSection = () => {
         source: "hero",
       });
       if (error) throw error;
+      trackLeadSubmission("hero");
       toast.success("Đăng ký thành công! Chúng tôi sẽ liên hệ bạn sớm.");
       setFormData({ full_name: "", email: "", phone: "" });
     } catch {

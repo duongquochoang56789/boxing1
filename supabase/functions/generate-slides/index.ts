@@ -58,96 +58,124 @@ serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const lovableApiKey = Deno.env.get("LOVABLE_API_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Clear existing slides
-    await supabase.from("project_slides").delete().neq("id", "00000000-0000-0000-0000-000000000000");
+    const body = await req.json().catch(() => ({}));
+    const mode = body.mode || "content"; // "content" = just insert slides, "images" = generate images for specific slides
 
-    // Insert all slides first (without images)
-    const slidesToInsert = SLIDES_DATA.map(s => ({
-      slide_order: s.slide_order,
-      title: s.title,
-      subtitle: s.subtitle,
-      content: s.content,
-      layout: s.layout,
-      section_name: s.section_name,
-      image_prompt: s.image_prompt,
-      background_color: "#1a1a2e",
-    }));
+    if (mode === "content") {
+      // Clear existing slides
+      await supabase.from("project_slides").delete().neq("id", "00000000-0000-0000-0000-000000000000");
 
-    const { data: inserted, error: insertError } = await supabase
-      .from("project_slides")
-      .insert(slidesToInsert)
-      .select();
+      // Insert all slides (without images)
+      const slidesToInsert = SLIDES_DATA.map(s => ({
+        slide_order: s.slide_order,
+        title: s.title,
+        subtitle: s.subtitle,
+        content: s.content,
+        layout: s.layout,
+        section_name: s.section_name,
+        image_prompt: s.image_prompt,
+        background_color: "#1a1a2e",
+      }));
 
-    if (insertError) throw insertError;
+      const { data: inserted, error: insertError } = await supabase
+        .from("project_slides")
+        .insert(slidesToInsert)
+        .select();
 
-    // Generate images for each slide using Lovable AI
-    const results = [];
-    for (const slide of inserted!) {
-      try {
-        const imageResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${lovableApiKey}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            model: "google/gemini-2.5-flash-image",
-            messages: [{ role: "user", content: slide.image_prompt }],
-            modalities: ["image", "text"],
-          }),
-        });
+      if (insertError) throw insertError;
 
-        if (!imageResponse.ok) {
-          console.error(`Image gen failed for slide ${slide.slide_order}: ${imageResponse.status}`);
-          results.push({ slide_order: slide.slide_order, status: "no_image" });
-          continue;
+      return new Response(JSON.stringify({ success: true, mode: "content", slides: inserted!.length }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    if (mode === "images") {
+      const lovableApiKey = Deno.env.get("LOVABLE_API_KEY")!;
+      const slideId = body.slideId;
+      
+      if (!slideId) {
+        // Get all slides without images
+        const { data: slides } = await supabase
+          .from("project_slides")
+          .select("*")
+          .is("image_url", null)
+          .order("slide_order")
+          .limit(3); // Process 3 at a time to avoid timeout
+
+        if (!slides || slides.length === 0) {
+          return new Response(JSON.stringify({ success: true, mode: "images", message: "All slides have images", remaining: 0 }), {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
         }
 
-        const imageData = await imageResponse.json();
-        const base64Url = imageData.choices?.[0]?.message?.images?.[0]?.image_url?.url;
-
-        if (base64Url) {
-          // Extract base64 data and upload to storage
-          const base64Data = base64Url.split(",")[1];
-          const binaryData = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
-
-          const fileName = `slide-${slide.slide_order}.png`;
-          const { error: uploadError } = await supabase.storage
-            .from("project-slides")
-            .upload(fileName, binaryData, {
-              contentType: "image/png",
-              upsert: true,
+        const results = [];
+        for (const slide of slides) {
+          try {
+            const imageResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${lovableApiKey}`,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                model: "google/gemini-2.5-flash-image",
+                messages: [{ role: "user", content: slide.image_prompt }],
+                modalities: ["image", "text"],
+              }),
             });
 
-          if (uploadError) {
-            console.error(`Upload failed for slide ${slide.slide_order}:`, uploadError);
-            results.push({ slide_order: slide.slide_order, status: "upload_failed" });
-            continue;
+            if (!imageResponse.ok) {
+              console.error(`Image gen failed for slide ${slide.slide_order}: ${imageResponse.status}`);
+              results.push({ slide_order: slide.slide_order, status: "failed" });
+              continue;
+            }
+
+            const imageData = await imageResponse.json();
+            const base64Url = imageData.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+
+            if (base64Url) {
+              const base64Data = base64Url.split(",")[1];
+              const binaryData = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
+              const fileName = `slide-${slide.slide_order}.png`;
+
+              const { error: uploadError } = await supabase.storage
+                .from("project-slides")
+                .upload(fileName, binaryData, { contentType: "image/png", upsert: true });
+
+              if (uploadError) {
+                console.error(`Upload failed for slide ${slide.slide_order}:`, uploadError);
+                results.push({ slide_order: slide.slide_order, status: "upload_failed" });
+                continue;
+              }
+
+              const { data: publicUrl } = supabase.storage.from("project-slides").getPublicUrl(fileName);
+              await supabase.from("project_slides").update({ image_url: publicUrl.publicUrl }).eq("id", slide.id);
+              results.push({ slide_order: slide.slide_order, status: "ok" });
+            } else {
+              results.push({ slide_order: slide.slide_order, status: "no_image_data" });
+            }
+          } catch (imgErr) {
+            console.error(`Error for slide ${slide.slide_order}:`, imgErr);
+            results.push({ slide_order: slide.slide_order, status: "error" });
           }
-
-          const { data: publicUrl } = supabase.storage
-            .from("project-slides")
-            .getPublicUrl(fileName);
-
-          await supabase
-            .from("project_slides")
-            .update({ image_url: publicUrl.publicUrl })
-            .eq("id", slide.id);
-
-          results.push({ slide_order: slide.slide_order, status: "ok" });
-        } else {
-          results.push({ slide_order: slide.slide_order, status: "no_image_data" });
         }
-      } catch (imgErr) {
-        console.error(`Error for slide ${slide.slide_order}:`, imgErr);
-        results.push({ slide_order: slide.slide_order, status: "error" });
+
+        // Count remaining
+        const { count } = await supabase
+          .from("project_slides")
+          .select("*", { count: "exact", head: true })
+          .is("image_url", null);
+
+        return new Response(JSON.stringify({ success: true, mode: "images", results, remaining: count || 0 }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
       }
     }
 
-    return new Response(JSON.stringify({ success: true, slides: inserted!.length, images: results }), {
+    return new Response(JSON.stringify({ error: "Invalid mode. Use 'content' or 'images'" }), {
+      status: 400,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {

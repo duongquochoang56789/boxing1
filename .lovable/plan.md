@@ -1,122 +1,150 @@
 
-# Ke Hoach Hoan Thien UI & UX Toan Bo Trang Web EliteFit
 
-## Danh Gia Hien Trang
+# Ke Hoach Slide Thuyet Trinh FLYFIT — 30 Trang Chi Tiet
 
-Sau khi xem xet toan bo codebase va kiem tra tren ca desktop (1920px) va mobile (375px), day la nhung van de can xu ly:
+## Tong Quan
 
-### Van De Phat Hien
-
-**Landing Page:**
-1. **Header (Mobile)**: Nav links bi ngat dong (2 dong) tren desktop khi co nhieu link — "HUAN LUYEN VIEN" va "LIEN HE" bi xuong dong 2, tao cam giac khong chuyen nghiep
-2. **Hero (Mobile)**: Tieu de va form chong cheo nhau, form bi ep sat, khong co khoang cach voi header — text bi de len logo
-3. **Gallery Section**: Carousel tu dong nhung khong co indicator so luong anh, khong co swipe gesture tren mobile
-4. **Virtual Training Section**: Chua dung noi dung dong tu CMS (useSiteContent), dang hard-code text
-5. **Pricing Section**: Chua dung noi dung dong tu CMS, dang hard-code text
-6. **Contact form**: Chua luu du lieu xuong database — form submit khong lam gi ca
-7. **Hero form**: Tuong tu — submit chi console.log, khong luu lead
-8. **Footer**: Thieu link den Virtual Training va Pricing trong phan "Kham pha"
-9. **NotFound page**: Qua don gian, khong theo design system cua trang
-
-**User Portal (Dashboard, BookPT, Schedule):**
-10. **Dashboard**: Hardcode "7 ngay" cho chuoi ngay tap — khong chinh xac
-11. **Schedule (Mobile)**: Grid 7 cot bi be tren mobile, kho doc
-12. **BookPT**: Khong co back link ve trang chu cho nguoi chua dang nhap
-
-**Accessibility & UX:**
-13. **Form inputs**: Khong co validation feedback tren Hero form va Contact form
-14. **Loading states**: Mot so trang chua co skeleton loading dong bo voi design
-15. **Scroll-to-top**: Khong co nut quay lai dau trang khi cuon xuong cuoi
+Bai thuyet trinh 30 slide chia thanh 6 phan chinh, moi phan 5 slides. Tat ca render tai 1920x1080, scale responsive. Hinh anh AI-generated qua Lovable AI (google/gemini-2.5-flash-image).
 
 ---
 
-## Ke Hoach Thuc Hien (Theo Thu Tu Uu Tien)
+## Cau Truc 6 Phan (5 slides/phan)
 
-### Giai Doan 1 — Sua Loi UI Co Ban (Uu Tien Cao)
+### PHAN 1: GIOI THIEU THUONG HIEU (Slides 1-5)
 
-**1.1 — Fix Header Desktop: Nav links bi ngat dong**
-- Giam font size hoac rut gon ten nav links (vd: "Huan luyen vien" -> "HLV", hoac giam tracking/gap)
-- Dam bao tat ca links nam tren 1 dong
+| Slide | Tieu de | Noi dung | Layout | Hinh anh AI |
+|---|---|---|---|---|
+| 1 | Cover | Logo FLYFIT, slogan "Bay cao. Song khoe.", tagline nho | Full-screen background, text center | Silhouette nguoi tap yoga luc binh minh, tone cam-vang |
+| 2 | Van de thi truong | 3 thong ke: 70% dan VP khong tap, 85% thieu dong luc, 60% khong co thoi gian | 3 icon cards tren nen toi | Infographic style, nguoi ngoi ban lam viec met moi |
+| 3 | Insight khach hang | Quote tu khach hang muc tieu: "Toi muon tap nhung khong biet bat dau" | Quote layout lon, anh nho goc | Chan dung nguoi tre ngoi nhin dien thoai, phong khach |
+| 4 | Giai phap FLYFIT | Mo hinh Small Group Virtual Training 5-7 nguoi, 1 dong "Tap tai nha. Thay doi that." | Text trai, mockup man hinh Zoom ben phai | Man hinh laptop hien lop tap online, trainer cuoi |
+| 5 | Tam nhin & Su menh | Vision: "Moi nguoi Viet deu co the song khoe", Mission: "Xoa bo rao can tap luyen" | 2 cot, icon lon | Nhom nguoi da dang tuoi tap cung nhau, tone am |
 
-**1.2 — Fix Hero Section Mobile**
-- Them padding-top de tranh bi header che
-- Stack layout dung (text tren, form duoi) voi khoang cach hop ly
-- Giam font size heading tren mobile
+### PHAN 2: SAN PHAM & DICH VU (Slides 6-10)
 
-**1.3 — Fix NotFound Page**
-- Redesign theo design system: dung font Cormorant Garamond, mau terracotta, animation nhẹ
-- Them link quay ve trang chu va dashboard
+| Slide | Tieu de | Noi dung | Layout | Hinh anh AI |
+|---|---|---|---|---|
+| 6 | Tong quan dich vu | 4 dich vu chinh: FLY Class, FLY Zen, FLY Burn, FLY Fuel | Grid 2x2 cards | 4 icon minh hoa: nhom tap, yoga, HIIT, dinh duong |
+| 7 | FLY Class — Nhom nho | Chi tiet: 5-7 nguoi, trainer theo doi cam, sua tu the qua video, 45-60 phut | Text trai + anh phai | Trainer nhin man hinh laptop voi 6 nguoi tap |
+| 8 | FLY Zen — Yoga & Pilates | Chi tiet: giam stress, linh hoat, phu hop nguoi moi, buoi sang/toi | Text phai + anh trai | Nguoi tap yoga tai phong khach, anh sang mem |
+| 9 | FLY Burn — HIIT & Cardio | Chi tiet: dot mo hieu qua, 30 phut, khong can dung cu, nang luong cao | Text trai + anh phai | Nguoi tap burpees trong phong nho, tone nang dong |
+| 10 | FLY Fuel — Dinh duong | Chi tiet: ke hoach an ca nhan, theo doi macro, tu van 1-1 hang tuan | Text phai + anh trai | Meal prep dep mat, rau cu trai cay, dien thoai tracking |
 
-### Giai Doan 2 — Ket Noi CMS & Database
+### PHAN 3: MO HINH HOAT DONG (Slides 11-15)
 
-**2.1 — Virtual Training Section dung CMS**
-- Ket noi voi useSiteContent("virtual-training") de lay noi dung dong
-- Hien thi fallback text khi chua co content
+| Slide | Tieu de | Noi dung | Layout | Hinh anh AI |
+|---|---|---|---|---|
+| 11 | Mo hinh Hybrid | So do: 80% Online (Zoom) + 20% Offline (phong tap thue), giai thich loi ich | Diagram chinh giua | Split image: nua tren la man hinh Zoom, nua duoi la phong tap |
+| 12 | Hanh trinh khach hang | Funnel: Quang cao -> Landing page -> Lead form -> Tu van Zalo -> Dang ky -> Tap thu -> Mua goi | Timeline ngang | Flowchart dep voi icon moi buoc |
+| 13 | Lich tap mau 1 tuan | Bang 7 ngay, moi ngay 2-3 khung gio, ghi ten lop | Table/grid layout | Lich dep dang calendar, highlight buoi hom nay |
+| 14 | Cong nghe & Platform | Website + Dashboard + Zalo OA + Zoom, screenshot thuc te | 4 mockup devices | Mockup dien thoai va laptop hien dashboard FLYFIT |
+| 15 | Trai nghiem offline | 1-2 buoi/thang tai phong tap, kiem tra ky thuat, teambuilding | Text + gallery 3 anh | Nhom nguoi tap tai phong tap thuc, vui ve |
 
-**2.2 — Pricing Section dung CMS**
-- Ket noi voi useSiteContent("pricing") de lay noi dung dong
+### PHAN 4: THI TRUONG & CANH TRANH (Slides 16-20)
 
-**2.3 — Luu Lead Form vao Database**
-- Tao bang `leads` (name, email, phone, source, created_at)
-- RLS: chi admin doc, anyone insert
-- Ket noi Hero form va Contact form de luu du lieu
-- Hien thi toast thanh cong/that bai
+| Slide | Tieu de | Noi dung | Layout | Hinh anh AI |
+|---|---|---|---|---|
+| 16 | Quy mo thi truong | TAM/SAM/SOM: fitness VN 2025, so nguoi tap online, % tang truong | 3 vong tron long nhau | Infographic vong tron gradient, so lieu lon |
+| 17 | Doi thu canh tranh | Bang so sanh: PT 1-1 vs Gym truyen thong vs App tu tap vs FLYFIT | Table 4 cot, highlight FLYFIT | Bang so sanh dep, FLYFIT duoc danh dau xanh |
+| 18 | Loi the canh tranh | 5 diem khac biet: gia, nhom nho, trainer truc tiep, hybrid, cong dong | 5 icon voi mo ta ngan | 5 icon noi bat tren nen gradient |
+| 19 | Doi tuong chi tiet | 2 Persona: "Linh — NV van phong 28t" va "Minh — Freelancer 35t" | 2 card persona song song | 2 avatar AI, thong tin demographics |
+| 20 | Xu huong thi truong | 3 xu huong: Online fitness tang 300%, Hybrid la tuong lai, Gen Z thich cong dong | 3 trend cards | Bieu do tang truong, mui ten len |
 
-### Giai Doan 3 — Nang Cap UX
+### PHAN 5: TAI CHINH & KINH DOANH (Slides 21-25)
 
-**3.1 — Nut Scroll-to-Top**
-- Hien thi khi cuon xuong > 500px
-- Animation fade-in/out muot ma
-- Vi tri: goc duoi ben phai
+| Slide | Tieu de | Noi dung | Layout | Hinh anh AI |
+|---|---|---|---|---|
+| 21 | Bang gia 3 goi | FLY Starter 800k, FLY Plus 1.2tr, FLY Unlimited 2tr — chi tiet quyen loi | 3 pricing cards, highlight Plus | 3 card gradient, goi giua lon nhat |
+| 22 | Unit Economics | So lieu: CAC, LTV, Margin, Break-even, doanh thu/trainer/gio | So lieu lon + chart nho | Bieu do cot don gian, so lieu noi bat |
+| 23 | Du bao doanh thu | Thang 1-12: so KH, doanh thu, chi phi, loi nhuan — bieu do tang truong | Line chart + table | Bieu do duong di len, milestone danh dau |
+| 24 | Cau truc chi phi | Pie chart: Luong trainer 40%, Marketing 25%, Platform 15%, Offline 10%, Khac 10% | Pie chart chinh giua | Pie chart mau sac dep, chu thich ro |
+| 25 | Kenh marketing | Facebook Ads (40%), Zalo OA (25%), TikTok (20%), Referral (15%) — ROI moi kenh | 4 cards voi % va ROI | 4 icon mang xa hoi voi so lieu |
 
-**3.2 — Footer cap nhat links**
-- Them "Virtual Training" va "Bang gia" vao phan "Kham pha"
+### PHAN 6: LO TRINH & KET THUC (Slides 26-30)
 
-**3.3 — Contact form validation**
-- Them validation cho cac truong bat buoc (ten, SDT, email)
-- Hien thi loi inline va toast feedback
-
-**3.4 — Schedule mobile responsive**
-- Chuyen tu grid 7 cot sang list view tren mobile
-- Moi ngay la 1 card co the mo rong (accordion)
-
-### Giai Doan 4 — Polish & Micro-interactions
-
-**4.1 — Gallery mobile swipe**
-- Them touch swipe support cho carousel
-- Them dot indicators hien thi vi tri hien tai
-
-**4.2 — Dashboard fix hardcode stats**
-- Thay "7 ngay" bang du lieu thuc tu database hoac hien thi 0 khi chua co
-
-**4.3 — Page transition consistency**
-- Dam bao tat ca trang deu co PageTransition wrapper dong nhat
+| Slide | Tieu de | Noi dung | Layout | Hinh anh AI |
+|---|---|---|---|---|
+| 26 | Lo trinh 2025 | Q1: Launch + 50 KH, Q2: 150 KH + App MVP, Q3: 300 KH, Q4: 500 KH | Timeline ngang 4 moc | Timeline dep voi icon moi quy |
+| 27 | Lo trinh 2025-2028 | 2025 Online -> 2026 App -> 2027 Studio -> 2028 Lifestyle | Timeline doc 4 nam | Roadmap doc voi hinh minh hoa moi giai doan |
+| 28 | Doi ngu | Founder + 2-3 Trainer + Chuyen gia dinh duong + Marketing — vai tro va the manh | Grid avatar cards | Avatar AI cua tung thanh vien, professional |
+| 29 | Loi keu goi dau tu / Hop tac | Can gi: von/doi tac/trainer, Doi lai gi: co phan/hoa hong/tang truong | 2 cot: "Can gi" vs "Mang lai" | Handshake icon, tone chuyen nghiep |
+| 30 | Cam on & Lien he | Logo FLYFIT lon, slogan, QR Zalo, email, so dien thoai, website URL | Center layout, QR code | Logo FLYFIT dep tren nen gradient, minimal |
 
 ---
 
 ## Chi Tiet Ky Thuat
 
-### Database Migration Moi
-- Bang `leads`: id (uuid PK), full_name (text), email (text), phone (text), service (text nullable), message (text nullable), source (text — 'hero' | 'contact'), created_at (timestamptz default now())
-- RLS: INSERT cho anon/authenticated, SELECT chi admin
+### Database — Bang `project_slides`
 
-### Files Can Tao Moi
-- `src/components/ui/scroll-to-top.tsx` — nut quay lai dau trang
+```text
+project_slides
+- id (uuid, PK)
+- slide_order (int, 1-30)
+- title (text)
+- subtitle (text, nullable)
+- content (text) -- markdown
+- layout (text) -- cover, two-column, grid, chart, timeline, table, persona, pricing
+- image_url (text, nullable)
+- image_prompt (text, nullable) -- prompt da dung de tao hinh
+- background_color (text, default '#1a1a2e')
+- section_name (text) -- 'brand', 'product', 'operations', 'market', 'finance', 'roadmap'
+- created_at, updated_at
+```
 
-### Files Can Chinh Sua
-- `src/components/landing/Header.tsx` — fix nav overflow
-- `src/components/landing/HeroSection.tsx` — fix mobile layout + luu lead
-- `src/components/landing/VirtualTrainingSection.tsx` — ket noi CMS
-- `src/components/landing/PricingSection.tsx` — ket noi CMS
-- `src/components/landing/ContactSection.tsx` — validation + luu lead
-- `src/components/landing/Footer.tsx` — them links
-- `src/components/landing/GallerySection.tsx` — mobile touch
-- `src/pages/NotFound.tsx` — redesign
-- `src/pages/Index.tsx` — them ScrollToTop component
-- `src/pages/Dashboard.tsx` — fix hardcode stat
-- `src/pages/Schedule.tsx` — mobile responsive
+RLS: SELECT cho tat ca, INSERT/UPDATE/DELETE chi admin.
 
-### Khong Thay Doi
-- Khong thay doi design system (mau sac, font, animation style)
-- Khong thay doi cau truc routing
-- Khong thay doi cac file auto-generated (client.ts, types.ts, .env)
+### Edge Function — `generate-slides`
+
+- Nhan tham so: so luong slide (30), ten thuong hieu (FLYFIT), BMC data
+- Goi google/gemini-3-flash-preview de tao noi dung JSON 30 slides
+- Sau do goi google/gemini-2.5-flash-image de tao hinh cho tung slide
+- Upload hinh vao storage bucket `project-slides`
+- Luu tat ca vao bang `project_slides`
+- Tra ve progress events (SSE) de hien thi tien do tren UI
+
+### Storage Bucket
+
+```text
+project-slides (public)
+- slide-1.png
+- slide-2.png
+- ...
+- slide-30.png
+```
+
+### Trang `/project` — Slide Viewer
+
+- Render 1920x1080, scale fit viewport
+- Dieu huong: phim mui ten, click, swipe mobile
+- Sidebar thumbnail (co the an)
+- Fullscreen presentation mode (F5 hoac nut Present)
+- Progress bar phia duoi
+- So trang hien thi (vd: 12/30)
+
+### Files Can Tao/Chinh Sua
+
+| File | Hanh dong |
+|---|---|
+| `supabase/functions/generate-slides/index.ts` | Tao moi — edge function tao noi dung + hinh |
+| `src/pages/ProjectPresentation.tsx` | Tao moi — trang xem slides |
+| `src/components/slides/SlideViewer.tsx` | Tao moi — component render slide |
+| `src/components/slides/SlideLayouts.tsx` | Tao moi — 8 layout components |
+| `src/components/slides/SlideThumbnail.tsx` | Tao moi — thumbnail sidebar |
+| `src/App.tsx` | Them route `/project` |
+| `src/components/landing/Header.tsx` | Them link "Tai lieu" |
+| `src/components/landing/Footer.tsx` | Them link "Tai lieu du an" |
+| `src/pages/AdminContent.tsx` | Them nut "Tao 30 Slide" |
+| `supabase/config.toml` | Them config cho generate-slides |
+
+### Trinh Tu Thuc Hien
+
+1. Tao bang `project_slides` + storage bucket + RLS
+2. Tao edge function `generate-slides` (AI text + image, 30 slides)
+3. Tao 8 slide layout components (cover, two-column, grid, chart, timeline, table, persona, pricing)
+4. Tao SlideViewer voi navigation, fullscreen, thumbnails
+5. Tao trang `/project` va them route
+6. Them nut admin trigger + progress UI
+7. Cap nhat Header/Footer voi link tai lieu
+
+Website van hoat dong binh thuong trong suot qua trinh xay dung.
+

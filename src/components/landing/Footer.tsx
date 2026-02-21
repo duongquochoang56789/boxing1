@@ -14,6 +14,7 @@ const footerLinks = {
     { name: "Virtual Training", href: "#virtual-training" },
     { name: "Bảng giá", href: "#pricing" },
     { name: "Huấn luyện viên", href: "#trainers" },
+    { name: "Tài liệu dự án", href: "/project" },
     { name: "Liên hệ", href: "#contact" },
   ],
 };
@@ -90,13 +91,22 @@ const Footer = () => {
             <ul className="space-y-3">
               {footerLinks.company.map((link) => (
                 <li key={link.name}>
-                  <a
-                    href={link.href}
-                    onClick={(e) => handleClick(e, link.href)}
-                    className="text-sm text-cream/60 hover:text-cream transition-colors duration-200"
-                  >
-                    {link.name}
-                  </a>
+                  {link.href.startsWith("/") ? (
+                    <a
+                      href={link.href}
+                      className="text-sm text-cream/60 hover:text-cream transition-colors duration-200"
+                    >
+                      {link.name}
+                    </a>
+                  ) : (
+                    <a
+                      href={link.href}
+                      onClick={(e) => handleClick(e, link.href)}
+                      className="text-sm text-cream/60 hover:text-cream transition-colors duration-200"
+                    >
+                      {link.name}
+                    </a>
+                  )}
                 </li>
               ))}
             </ul>

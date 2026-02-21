@@ -8,6 +8,7 @@ import TrainersSection from "@/components/landing/TrainersSection";
 import TestimonialsSection from "@/components/landing/TestimonialsSection";
 import GallerySection from "@/components/landing/GallerySection";
 import ContactSection from "@/components/landing/ContactSection";
+import CTASection from "@/components/landing/CTASection";
 import Footer from "@/components/landing/Footer";
 import { ScrollProgress } from "@/components/ui/scroll-progress";
 import { ScrollToTop } from "@/components/ui/scroll-to-top";
@@ -29,6 +30,7 @@ const Index = () => {
         <PricingSection />
         <TrainersSection />
         <TestimonialsSection />
+        <CTASection />
         <ContactSection />
       </main>
       <Footer />

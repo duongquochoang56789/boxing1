@@ -214,6 +214,8 @@ const EditableTextRow = ({
 const SlidesTab = () => {
   const { toast } = useToast();
   const [generating, setGenerating] = useState(false);
+  const [generatingImages, setGeneratingImages] = useState(false);
+  const [imageProgress, setImageProgress] = useState("");
   const queryClient = useQueryClient();
 
   const { data: slides } = useQuery({
@@ -226,20 +228,48 @@ const SlidesTab = () => {
 
   const generateSlides = async () => {
     setGenerating(true);
-    toast({ title: "🚀 Đang tạo 30 slides...", description: "Quá trình này sẽ mất vài phút, vui lòng chờ đợi" });
+    toast({ title: "🚀 Đang tạo 30 slides...", description: "Chèn nội dung vào database" });
     try {
-      const { data, error } = await supabase.functions.invoke("generate-slides", { body: {} });
+      const { data, error } = await supabase.functions.invoke("generate-slides", { body: { mode: "content" } });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
       queryClient.invalidateQueries({ queryKey: ["project-slides-admin"] });
       queryClient.invalidateQueries({ queryKey: ["project-slides"] });
-      toast({ title: "🎉 Hoàn thành!", description: `Đã tạo ${data.slides} slides với hình ảnh AI` });
+      toast({ title: "✅ Đã tạo nội dung!", description: `${data.slides} slides. Bấm 'Tạo hình ảnh AI' để tạo ảnh.` });
     } catch (e: any) {
       toast({ title: "Lỗi tạo slides", description: e.message, variant: "destructive" });
     } finally {
       setGenerating(false);
     }
   };
+
+  const generateImages = async () => {
+    setGeneratingImages(true);
+    let totalProcessed = 0;
+    try {
+      // Keep calling until no slides remaining
+      let remaining = 30;
+      while (remaining > 0) {
+        setImageProgress(`Đang tạo ảnh... (còn ${remaining} slide)`);
+        const { data, error } = await supabase.functions.invoke("generate-slides", { body: { mode: "images" } });
+        if (error) throw error;
+        if (data?.error) throw new Error(data.error);
+        remaining = data.remaining || 0;
+        totalProcessed += (data.results?.length || 0);
+        queryClient.invalidateQueries({ queryKey: ["project-slides-admin"] });
+        if (remaining === 0) break;
+      }
+      queryClient.invalidateQueries({ queryKey: ["project-slides"] });
+      toast({ title: "🎉 Hoàn thành!", description: `Đã tạo hình ảnh cho ${totalProcessed} slides` });
+    } catch (e: any) {
+      toast({ title: "Lỗi tạo ảnh", description: e.message, variant: "destructive" });
+    } finally {
+      setGeneratingImages(false);
+      setImageProgress("");
+    }
+  };
+
+  const slidesWithoutImages = slides?.filter(s => !s.image_url).length || 0;
 
   return (
     <div className="space-y-6">
@@ -252,9 +282,20 @@ const SlidesTab = () => {
           <Button variant="outline" size="sm" onClick={() => window.open("/project", "_blank")}>
             <Eye className="w-4 h-4 mr-1.5" /> Xem Slides
           </Button>
+          {slides && slides.length > 0 && slidesWithoutImages > 0 && (
+            <Button
+              onClick={generateImages}
+              disabled={generatingImages}
+              variant="outline"
+              className="border-terracotta text-terracotta hover:bg-terracotta/10"
+            >
+              {generatingImages ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Image className="w-4 h-4 mr-2" />}
+              {generatingImages ? imageProgress || "Đang tạo ảnh..." : `Tạo ảnh AI (${slidesWithoutImages} slides)`}
+            </Button>
+          )}
           <Button
             onClick={generateSlides}
-            disabled={generating}
+            disabled={generating || generatingImages}
             className="bg-terracotta hover:bg-terracotta/90 text-cream"
           >
             {generating ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Presentation className="w-4 h-4 mr-2" />}

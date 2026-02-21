@@ -14,11 +14,14 @@ import Schedule from "./pages/Schedule";
 import BookPT from "./pages/BookPT";
 import NotFound from "./pages/NotFound";
 import AdminContent from "./pages/AdminContent";
+import ZaloButton from "@/components/ui/zalo-button";
+import { useAnalytics } from "@/hooks/useAnalytics";
 
 const queryClient = new QueryClient();
 
 const AnimatedRoutes = () => {
   const location = useLocation();
+  useAnalytics();
   
   return (
     <AnimatePresence mode="wait">
@@ -68,6 +71,7 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <AnimatedRoutes />
+          <ZaloButton />
         </BrowserRouter>
       </TooltipProvider>
     </AuthProvider>

@@ -19,6 +19,7 @@ import Profile from "./pages/Profile";
 import History from "./pages/History";
 import ProjectPresentation from "./pages/ProjectPresentation";
 import ZaloButton from "@/components/ui/zalo-button";
+import ProjectChatbot from "@/components/ui/ProjectChatbot";
 import { useAnalytics } from "@/hooks/useAnalytics";
 
 const queryClient = new QueryClient();
@@ -81,6 +82,7 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <AnimatedRoutes />
+          <ProjectChatbot />
           <ZaloButton />
         </BrowserRouter>
       </TooltipProvider>

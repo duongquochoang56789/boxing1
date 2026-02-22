@@ -97,7 +97,7 @@ const HeroSection = () => {
                 initial={{ opacity: 0, y: 40 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 1, delay: 0.4 }}
-                className="heading-display text-cream text-4xl md:text-5xl lg:text-6xl xl:text-7xl"
+                className="heading-display text-cream text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-light"
               >
                 {getContent(content, "text", "heading_1", "Tập tại nhà,")}
                 <br />
@@ -119,7 +119,7 @@ const HeroSection = () => {
               transition={{ duration: 1, delay: 0.6 }}
               className="lg:max-w-sm lg:ml-auto"
             >
-              <div className="bg-cream/8 backdrop-blur-2xl border border-cream/15 p-6 md:p-8">
+              <div className="bg-cream/5 backdrop-blur-xl border border-cream/10 p-6 md:p-8">
                 <h3 className="heading-subsection text-cream text-lg md:text-2xl mb-1.5">
                   {getContent(content, "text", "form_title", "Đăng ký trải nghiệm")}
                 </h3>

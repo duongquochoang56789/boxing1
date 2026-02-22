@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" rx="8" fill="#2C2C2C"/>
+  <text x="6" y="46" font-family="Georgia, serif" font-size="32" font-weight="700">
+    <tspan fill="#F5F0EB">FL</tspan><tspan fill="#C67D5B">Y</tspan>
+  </text>
+</svg>

@@ -1,101 +1,69 @@
 
 
-# Tong Quan Tinh Trang Du An FLYFIT va Tao Hinh OG
+# Tang Kich Thuoc Font va Cai Thien UX cho Slide Presentation
 
-## Phan 1: Nhung gi da hoan thanh
+## Danh Gia Hien Trang
 
-Website FLYFIT da co day du cac thanh phan chinh:
+Tat ca slides render tai 1920x1080 roi scale xuong. Nhieu font size hien tai qua nho:
 
-**Landing Page (Trang chu)**
-- Header voi navigation
-- Hero Section voi form dang ky lead
-- About Section
-- Gallery Section (auto-scroll + lightbox)
-- Services Section (FLY Class, Zen, Burn, Fuel)
-- Virtual Training Section
-- Pricing Section (3 goi: Khoi Dau, Thang, Premium)
-- Trainers Section
-- Testimonials Section
-- CTA Section
-- Contact Section
-- Footer
+| Thanh phan | Hien tai | Van de |
+|---|---|---|
+| Slide label ("Slide 1/30") | 18px | Qua nho, kho doc |
+| Subtitle | 24px | Nho so voi viewport 1920px |
+| Content body text | 24px | Nho, can tang len |
+| Bold heading trong content | 28px | Chua du noi bat |
+| Emoji text | 24px, 22px | Nho |
+| Emoji icon | 28px | Tuong doi ok nhung nen tang |
+| Table header | 20px | Qua nho |
+| Table cell | 18px | Rat nho, kho doc |
+| Quote text | 28px | Nho cho kieu quote |
+| Dash line | 22px | Nho |
+| Cover title | 96px | OK |
+| Section title (h2) | 52px | OK |
 
-**He thong Backend**
-- Database: profiles, trainers, class_schedules, class_registrations, pt_sessions, leads, site_content, project_slides, admin_documents, user_roles, trainer_availability, group_classes
-- Authentication (dang nhap/dang ky)
-- Admin Content Management (quan ly noi dung, tai lieu, slides)
+## Ke Hoach Thay Doi
 
-**Cac trang chuc nang**
-- `/auth` — Dang nhap/Dang ky
-- `/dashboard` — Dashboard nguoi dung
-- `/schedule` — Lich lop hoc nhom (dang ky/huy)
-- `/book-pt` — Dat lich PT ca nhan (3 buoc: chon PT > ngay > gio)
-- `/project` — 30 slides thuyet trinh AI
-- `/admin/content` — Quan ly noi dung + slides
+### 1. Tang font size toan bo ContentBlock
 
-**Tinh nang UI**
-- Smooth scroll (Lenis)
-- Scroll progress bar
-- Scroll to top
-- Page transitions (Framer Motion)
-- Zalo floating button
-- Responsive mobile/desktop
-- Shimmer image loading
+| Thanh phan | Hien tai | Moi |
+|---|---|---|
+| Bold heading | text-[28px] | text-[36px] |
+| Bold heading text phu | text-[24px] | text-[30px] |
+| Emoji icon | text-[28px] | text-[32px] |
+| Emoji bold text | text-[24px] | text-[30px] |
+| Emoji description | text-[22px] | text-[28px] |
+| Emoji plain text | text-[24px] | text-[30px] |
+| Quote text | text-[28px] | text-[36px] |
+| Dash line | text-[22px] | text-[26px] |
+| Plain text | text-[24px] | text-[30px] |
+| Spacing | space-y-3 | space-y-4 |
 
----
+### 2. Tang font size TableContent
 
-## Phan 2: Nhung gi con thieu / can hoan thien
+| Thanh phan | Hien tai | Moi |
+|---|---|---|
+| Table header | text-[20px] | text-[26px] |
+| Table cell | text-[18px] | text-[24px] |
+| Cell padding | px-6 py-3 | px-8 py-4 |
 
-### Muc do uu tien CAO
-1. **Hinh anh OG moi** — Hien dang dung placeholder `og-image.jpg`. Can tao hinh OG chinh thuc voi logo FLYFIT va slogan "Bay Cao. Song Khoe."
-2. **Trang `/profile`** — Dashboard link den `/profile` nhung chua co trang nay
-3. **Trang `/history`** — Dashboard link den `/history` (lich su tap luyen) nhung chua co
-4. **Trang `/admin`** — Dashboard co nut Admin link den `/admin` nhung chi co `/admin/content`
+### 3. Tang font cac thanh phan chung tren moi slide layout
 
-### Muc do uu tien TRUNG BINH
-5. **Hinh anh thuc** — Gallery, Trainers, Hero dang dung anh Unsplash generic, chua co hinh FLYFIT thuc te
-6. **Email xac nhan** — Khi dang ky tai khoan, chua co flow xac nhan email ro rang
-7. **Thong bao / Notification** — Chua co he thong thong bao khi lop sap bat dau
-8. **Payment / Thanh toan** — Chua co tich hop thanh toan (Stripe/MoMo/chuyen khoan)
+| Thanh phan | Hien tai | Moi |
+|---|---|---|
+| Slide label ("Slide X/30") | text-[18px] | text-[22px] |
+| Subtitle | text-[24px] | text-[30px] |
+| Cover content | text-[24px] | text-[30px] |
+| Cover subtitle | text-[42px] | text-[48px] |
 
-### Muc do uu tien THAP
-9. **SEO** — Chua co sitemap.xml, robots.txt co nhung chua toi uu
-10. **PWA** — Chua co manifest.json, service worker
-11. **Analytics chi tiet** — Co hook useAnalytics nhung chua tich hop GA4 hay cong cu nao
-12. **Blog / Bai viet** — Chua co phan content marketing
-13. **Nhieu ngon ngu** — Hien chi co tieng Viet
+### 4. File can chinh sua
 
----
+Chi can chinh sua **1 file duy nhat**: `src/components/slides/SlideLayouts.tsx`
 
-## Phan 3: Ke hoach tao hinh OG
+- Cap nhat `ContentBlock` component (dong 29-102): tang tat ca font size
+- Cap nhat `TableContent` component (dong 106-139): tang font va padding
+- Cap nhat slide label va subtitle trong 10 layout components: CoverSlide, TwoColumnSlide, StatsSlide, GridSlide, TableSlide, TimelineSlide, QuoteSlide, PricingSlide, PersonaSlide, ChartSlide
 
-Tao hinh OG 1200x630px cho FLYFIT bang AI image generation, sau do upload len storage va cap nhat file `public/og-image.jpg`.
+### Tong ket
 
-### Buoc thuc hien
-
-1. **Tao Edge Function `generate-og-image`**
-   - Su dung model `google/gemini-2.5-flash-image` de tao hinh 1200x630
-   - Prompt: Hinh nen gradient cam-den, logo text "FLYFIT" lon o giua, slogan "Bay Cao. Song Khoe." phia duoi, phong cach minimal chuyen nghiep
-   - Upload ket qua vao storage bucket `project-slides` (da co san)
-   - Tra ve URL cua hinh
-
-2. **Them nut trong Admin** de trigger tao OG image
-3. **Cap nhat `index.html`** voi URL hinh moi tu storage
-
-### Thay the don gian hon
-
-Thay vi tao edge function rieng, co the dung truc tiep edge function `generate-slides` da co (mode moi "og-image") hoac tao hinh ngay trong Admin UI roi upload.
-
----
-
-## Tong ket
-
-| Hang muc | So luong |
-|---|---|
-| Da hoan thanh | ~85% chuc nang chinh |
-| Can lam ngay | 1 viec (OG image) |
-| Can bo sung som | 3 trang (profile, history, admin hub) |
-| Nang cao | 5-6 tinh nang (payment, notification, PWA...) |
-
-Uu tien thuc hien trong lan nay: **Tao hinh OG moi bang AI** va upload len lam hinh chinh thuc cho website.
+Thay doi nay khong anh huong cau truc hay logic, chi tang kich thuoc font de noi dung de doc hon khi trinh chieu. Tat ca thay doi nam trong 1 file.
 

@@ -1,75 +1,108 @@
 
 
-# Chatbot AI Tro Ly Du An FLYFIT
+# Nang Cap Chatbot Thanh Tro Ly Kinh Doanh FLYFIT
 
-## Kiem Tra Branding
+## Hien Trang
+Chatbot hien tai chi la popup nho goc phai, khong luu lich su hoi thoai, khong co giao dien quan ly. Tat tab la mat het.
 
-Branding FLYFIT da hien thi dung:
-- Logo "FLYFIT" (FLY mau charcoal + FIT mau terracotta) o Header va Footer
-- Khong con "EliteFit" trong CMS database
-- Noi dung hero: "Kien Tao Phien Ban / Uu Viet Cua Chinh Ban"
-- Favicon SVG moi da duoc cap nhat
+## Muc Tieu
+1. Luu tru hoi thoai vao database (nhieu cuoc hoi thoai, moi cuoc co nhieu tin nhan)
+2. Trang rieng `/ai-assistant` de xem, quan ly, tiep tuc hoi thoai cu
+3. Giao dien truc quan de lap ke hoach kinh doanh tu ket qua chat
 
-## Chatbot AI - Tro Ly Du An FLYFIT
-
-### Muc tieu
-Tao chatbot AI hieu toan bo du an FLYFIT - ca ky thuat lan kinh doanh - de ban co the hoi dap nhanh ve bat ky khia canh nao.
-
-### Kien truc
+## Kien Truc Moi
 
 ```text
-[Nut chat tren UI] --> [Chat Dialog] --> [Edge Function: project-chat]
-                                              |
-                                     [Lovable AI Gateway]
-                                     (google/gemini-3-flash-preview)
-                                              |
-                                     [System Prompt chua toan bo
-                                      kien thuc du an FLYFIT]
++---------------------------+
+|   Trang /ai-assistant     |
+|                           |
+|  [Sidebar]    [Chat Area] |
+|  - Hoi thoai 1  | Tin nhan|
+|  - Hoi thoai 2  | ...     |
+|  - Hoi thoai 3  | Input   |
+|  + Tao moi      |         |
++---------------------------+
+        |
+        v
+  [Database: chat_conversations + chat_messages]
+        |
+        v
+  [Edge Function: project-chat (giu nguyen)]
 ```
 
-### System Prompt se bao gom
+## Chi Tiet Thuc Hien
 
-1. **Thuong hieu**: FLYFIT, slogan, tam nhin, su menh
-2. **San pham**: FLY Class, FLY Zen, FLY Burn, FLY Fuel - chi tiet tung dich vu
-3. **Mo hinh kinh doanh**: Hybrid 80% Online + 20% Offline, Small Group Virtual Training 5-7 nguoi
-4. **Thi truong**: Quy mo, doi thu, loi the canh tranh, doi tuong muc tieu
-5. **Tai chinh**: Bang gia 3 goi, Unit Economics, du bao doanh thu, cau truc chi phi
-6. **Lo trinh**: Roadmap 2025-2028, doi ngu, ke hoach marketing
-7. **Ky thuat**: React + Tailwind + Framer Motion, Lovable Cloud (database, auth, storage, edge functions), CMS dong tu bang site_content, 30 slide thuyet trinh tu bang project_slides, AI integration (Gemini) de tu dong tao noi dung va hinh anh
+### Buoc 1: Tao 2 bang database moi
 
-### Cac file can tao/sua
+**Bang `chat_conversations`:**
+- id, user_id, title, created_at, updated_at
+- RLS: chi user so huu moi doc/sua/xoa
 
-| File | Muc dich |
+**Bang `chat_messages`:**
+- id, conversation_id (FK), role (user/assistant), content, created_at
+- RLS: chi user so huu conversation moi doc/them
+
+### Buoc 2: Tao trang `/ai-assistant`
+
+Trang day du voi layout 2 cot:
+- **Cot trai (sidebar)**: Danh sach hoi thoai, nut tao moi, nut xoa, hien thi tieu de + thoi gian
+- **Cot phai (chat area)**: Hien thi tin nhan cua hoi thoai dang chon, input gui tin nhan moi, streaming AI response
+- Tu dong dat tieu de hoi thoai = cau hoi dau tien (cat ngan)
+- Responsive: tren mobile sidebar an/hien bang nut toggle
+
+### Buoc 3: Cap nhat ProjectChatbot popup
+
+- Giu popup chatbot hien tai nhung them nut "Mo trang day du" dan den `/ai-assistant`
+- Popup van hoat dong doc lap (khong luu DB) de trai nghiem nhanh
+- Trang `/ai-assistant` moi luu toan bo vao DB
+
+### Buoc 4: Cap nhat App.tsx
+
+- Them route `/ai-assistant` (protected - can dang nhap)
+
+### Buoc 5: Cap nhat system prompt
+
+- Bo sung huong dan AI ve vai tro tro ly kinh doanh: giup lap ke hoach, phan tich SWOT, to chuc y tuong, tao action items
+- AI se tu dong format cau tra loi voi heading, bullet points, bang de de truc quan hoa
+
+## Cac File Can Tao/Sua
+
+| File | Hanh dong |
 |---|---|
-| `supabase/functions/project-chat/index.ts` | Edge function xu ly chat, goi Lovable AI Gateway voi system prompt day du |
-| `src/components/ui/ProjectChatbot.tsx` | Component chatbot: nut mo, dialog chat, streaming tin nhan, ho tro markdown |
-| `src/pages/Index.tsx` | Them component chatbot vao trang chu |
-| `src/App.tsx` | Them chatbot vao layout chinh (hien thi tren moi trang) |
-| `supabase/config.toml` | Them config cho edge function moi |
+| Database migration | Tao 2 bang `chat_conversations` + `chat_messages` voi RLS |
+| `src/pages/AIAssistant.tsx` | Trang moi: layout 2 cot, sidebar + chat area |
+| `src/components/ui/ProjectChatbot.tsx` | Them nut "Mo trang day du" |
+| `src/App.tsx` | Them route `/ai-assistant` (protected) |
+| `supabase/functions/project-chat/index.ts` | Cap nhat system prompt them vai tro tro ly kinh doanh |
 
-### Chi tiet ky thuat
+## Chi Tiet Ky Thuat
 
-**Edge Function `project-chat`:**
-- Su dung Lovable AI Gateway (google/gemini-3-flash-preview)
-- Streaming SSE de hien thi token-by-token
-- System prompt ~2000 tu chua toan bo kien thuc du an (tu 30 slide + thong tin ky thuat)
-- Xu ly loi 429/402
+### Database Schema
 
-**Component Chatbot:**
-- Nut tron goc duoi phai (thay the hoac dat ben canh nut Zalo hien tai)
-- Dialog mo len voi giao dien chat
-- Render markdown cho cau tra loi AI (su dung react-markdown - can cai dat)
-- Luu lich su hoi thoai trong session (state React, khong can luu database)
-- Animation mo/dong bang Framer Motion
-- Responsive cho mobile
+```text
+chat_conversations
+  - id: uuid (PK)
+  - user_id: uuid (FK auth.users, NOT NULL)
+  - title: text (NOT NULL, default '')
+  - created_at: timestamptz
+  - updated_at: timestamptz
 
-**Giao dien chatbot:**
-- Header: "FLYFIT AI Assistant" voi logo
-- Khung chat voi scroll
-- Input + nut gui
-- Hien thi streaming text khi AI dang tra loi
-- Nut dong/thu nho
+chat_messages
+  - id: uuid (PK)
+  - conversation_id: uuid (FK chat_conversations.id, ON DELETE CASCADE)
+  - role: text (NOT NULL) -- 'user' | 'assistant'
+  - content: text (NOT NULL)
+  - created_at: timestamptz
+```
 
-### Dependency moi
-- `react-markdown` - de render markdown trong cau tra loi AI
+### RLS Policies
+- `chat_conversations`: SELECT/INSERT/UPDATE/DELETE chi khi `auth.uid() = user_id`
+- `chat_messages`: SELECT/INSERT chi khi user so huu conversation (subquery check user_id)
+
+### Giao Dien Trang AI Assistant
+- Sidebar: min-w-[280px], scroll danh sach hoi thoai, nhom theo ngay (Hom nay / Hom qua / Truoc do)
+- Chat area: flex-1, scroll messages, input fixed o duoi
+- Header: tieu de hoi thoai + nut xoa
+- Empty state: goi y cau hoi mau (VD: "Phan tich SWOT cho FLYFIT", "Lap ke hoach marketing Q2", "Tinh toan break-even")
+- Style: dong bo voi brand FLYFIT (charcoal, terracotta, cream)
 

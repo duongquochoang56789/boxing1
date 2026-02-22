@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { Bot, Plus, Trash2, Send, Menu, X, ArrowLeft, Sparkles } from "lucide-react";
+import { Bot, Plus, Trash2, Send, Menu, X, ArrowLeft, Sparkles, Moon, Sun, Type } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import ReactMarkdown from "react-markdown";
@@ -22,6 +22,14 @@ type Message = {
   role: "user" | "assistant";
   content: string;
   created_at?: string;
+};
+
+type FontSize = "sm" | "base" | "lg";
+
+const FONT_SIZE_MAP: Record<FontSize, { label: string; prose: string; input: string }> = {
+  sm: { label: "Nhỏ", prose: "prose-sm", input: "text-xs" },
+  base: { label: "Vừa", prose: "prose-base", input: "text-sm" },
+  lg: { label: "Lớn", prose: "prose-lg", input: "text-base" },
 };
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/project-chat`;
@@ -58,6 +66,35 @@ export default function AIAssistant() {
   const [loading, setLoading] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Dark mode state
+  const [isDark, setIsDark] = useState(() => {
+    const saved = localStorage.getItem("flyfit-ai-dark");
+    return saved ? saved === "true" : false;
+  });
+
+  // Font size state
+  const [fontSize, setFontSize] = useState<FontSize>(() => {
+    const saved = localStorage.getItem("flyfit-ai-fontsize");
+    return (saved as FontSize) || "base";
+  });
+
+  // Apply dark mode
+  useEffect(() => {
+    document.documentElement.classList.toggle("dark", isDark);
+    localStorage.setItem("flyfit-ai-dark", String(isDark));
+    return () => { document.documentElement.classList.remove("dark"); };
+  }, [isDark]);
+
+  useEffect(() => {
+    localStorage.setItem("flyfit-ai-fontsize", fontSize);
+  }, [fontSize]);
+
+  const cycleFontSize = () => {
+    const order: FontSize[] = ["sm", "base", "lg"];
+    const idx = order.indexOf(fontSize);
+    setFontSize(order[(idx + 1) % order.length]);
+  };
 
   // Load conversations
   const loadConversations = useCallback(async () => {
@@ -121,12 +158,10 @@ export default function AIAssistant() {
       if (!convId) { setLoading(false); return; }
     }
 
-    // Save user message
     const userMsg: Message = { role: "user", content: msg };
     setMessages((prev) => [...prev, userMsg]);
     await supabase.from("chat_messages").insert({ conversation_id: convId, role: "user", content: msg });
 
-    // Stream AI response
     let soFar = "";
     const allMsgs = [...messages, userMsg];
 
@@ -180,7 +215,6 @@ export default function AIAssistant() {
         }
       }
 
-      // Save assistant message to DB
       if (soFar) {
         await supabase.from("chat_messages").insert({ conversation_id: convId, role: "assistant", content: soFar });
         await supabase.from("chat_conversations").update({ updated_at: new Date().toISOString() }).eq("id", convId);
@@ -193,6 +227,7 @@ export default function AIAssistant() {
   };
 
   const groups = groupConversations(conversations);
+  const fs = FONT_SIZE_MAP[fontSize];
 
   const renderGroup = (label: string, items: Conversation[]) =>
     items.length > 0 && (
@@ -219,12 +254,12 @@ export default function AIAssistant() {
     );
 
   return (
-    <div className="h-screen flex bg-background">
+    <div className="h-screen flex bg-background transition-colors duration-300">
       {/* Sidebar */}
       <div
         className={`${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
-        } fixed inset-y-0 left-0 z-40 w-[280px] bg-sidebar-background border-r border-sidebar-border flex flex-col transition-transform lg:relative lg:translate-x-0`}
+        } fixed inset-y-0 left-0 z-40 w-[280px] bg-sidebar border-r border-sidebar-border flex flex-col transition-transform lg:relative lg:translate-x-0`}
       >
         {/* Sidebar header */}
         <div className="flex items-center justify-between p-4 border-b border-sidebar-border">
@@ -281,10 +316,31 @@ export default function AIAssistant() {
           </button>
           <Bot className="w-5 h-5 text-primary" />
           <div className="flex-1 min-w-0">
-            <h1 className="text-sm font-semibold truncate" style={{ fontFamily: "Inter, sans-serif" }}>
+            <h1 className="text-sm font-semibold truncate font-body">
               {activeId ? conversations.find((c) => c.id === activeId)?.title || "Hội thoại" : "FLYFIT Trợ Lý Kinh Doanh"}
             </h1>
             <p className="text-[10px] text-muted-foreground">Hỗ trợ lập kế hoạch, phân tích, chiến lược</p>
+          </div>
+
+          {/* Controls: font size + dark mode */}
+          <div className="flex items-center gap-1">
+            <button
+              onClick={cycleFontSize}
+              className="p-2 rounded-lg hover:bg-muted transition-colors group relative"
+              title={`Cỡ chữ: ${fs.label}`}
+            >
+              <Type className="w-4 h-4" />
+              <span className="absolute -bottom-0.5 -right-0.5 text-[8px] font-bold bg-primary text-primary-foreground rounded-full w-3.5 h-3.5 flex items-center justify-center">
+                {fontSize === "sm" ? "S" : fontSize === "base" ? "M" : "L"}
+              </span>
+            </button>
+            <button
+              onClick={() => setIsDark(!isDark)}
+              className="p-2 rounded-lg hover:bg-muted transition-colors"
+              title={isDark ? "Chế độ sáng" : "Chế độ tối"}
+            >
+              {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            </button>
           </div>
         </div>
 
@@ -296,7 +352,7 @@ export default function AIAssistant() {
                 <Sparkles className="w-8 h-8 text-primary" />
               </div>
               <h2 className="heading-subsection mb-2">Trợ Lý Kinh Doanh</h2>
-              <p className="text-sm text-muted-foreground mb-6">
+              <p className={`${fs.input} text-muted-foreground mb-6`}>
                 Tôi có thể giúp bạn phân tích SWOT, lập kế hoạch marketing, tính toán tài chính, và nhiều hơn nữa.
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full">
@@ -304,7 +360,7 @@ export default function AIAssistant() {
                   <button
                     key={s}
                     onClick={() => send(s)}
-                    className="text-left text-sm px-4 py-3 rounded-xl border border-border hover:bg-muted hover:border-primary/30 transition-colors"
+                    className={`text-left ${fs.input} px-4 py-3 rounded-xl border border-border hover:bg-muted hover:border-primary/30 transition-colors`}
                   >
                     {s}
                   </button>
@@ -321,12 +377,12 @@ export default function AIAssistant() {
                 </div>
               )}
               <div
-                className={`max-w-[75%] rounded-2xl px-4 py-3 text-sm ${
+                className={`max-w-[75%] rounded-2xl px-4 py-3 ${fs.input} ${
                   m.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted"
                 }`}
               >
                 {m.role === "assistant" ? (
-                  <div className="prose prose-sm dark:prose-invert max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
+                  <div className={`prose ${fs.prose} dark:prose-invert max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0`}>
                     <ReactMarkdown>{m.content}</ReactMarkdown>
                   </div>
                 ) : (
@@ -341,7 +397,7 @@ export default function AIAssistant() {
               <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
                 <Bot className="w-4 h-4 text-primary animate-pulse" />
               </div>
-              <div className="bg-muted rounded-2xl px-4 py-3 text-sm text-muted-foreground">Đang suy nghĩ...</div>
+              <div className={`bg-muted rounded-2xl px-4 py-3 ${fs.input} text-muted-foreground`}>Đang suy nghĩ...</div>
             </div>
           )}
         </div>
@@ -356,7 +412,7 @@ export default function AIAssistant() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Hỏi về chiến lược kinh doanh, marketing, tài chính..."
-              className="flex-1 bg-muted rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary/30 placeholder:text-muted-foreground"
+              className={`flex-1 bg-muted rounded-xl px-4 py-3 ${fs.input} outline-none focus:ring-2 focus:ring-primary/30 placeholder:text-muted-foreground transition-colors`}
               disabled={loading}
             />
             <Button type="submit" disabled={!input.trim() || loading} size="icon" className="rounded-xl h-11 w-11">

@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MessageCircle, X, Send, Bot, User } from "lucide-react";
+import { MessageCircle, X, Send, Bot, User, ExternalLink } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import ReactMarkdown from "react-markdown";
 import Logo from "@/components/ui/Logo";
@@ -87,6 +88,7 @@ async function streamChat({
 }
 
 const ProjectChatbot = () => {
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
@@ -176,9 +178,18 @@ const ProjectChatbot = () => {
                   <p className="text-[10px] text-muted-foreground">Trợ lý dự án thông minh</p>
                 </div>
               </div>
-              <button onClick={() => setOpen(false)} className="p-1 rounded-md hover:bg-muted transition-colors">
-                <X className="w-4 h-4" />
-              </button>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => { setOpen(false); navigate("/ai-assistant"); }}
+                  className="p-1 rounded-md hover:bg-muted transition-colors"
+                  title="Mở trang đầy đủ"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                </button>
+                <button onClick={() => setOpen(false)} className="p-1 rounded-md hover:bg-muted transition-colors">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
             </div>
 
             {/* Messages */}

@@ -30,7 +30,7 @@ const ContentBlock = ({ content, accent }: { content: string; accent: string }) 
   const lines = content.split("\n").filter(l => l.trim());
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       {lines.map((line, i) => {
         // Table row
         if (line.startsWith("|")) return null; // handled by table layout
@@ -40,8 +40,8 @@ const ContentBlock = ({ content, accent }: { content: string; accent: string }) 
         if (boldMatch) {
           return (
             <motion.div key={i} custom={i} variants={fadeIn} initial="hidden" animate="visible">
-              <span className={`font-bold text-[28px] ${accent}`}>{boldMatch[1]}</span>
-              {boldMatch[2] && <span className="text-white/80 text-[24px] ml-2">{boldMatch[2]}</span>}
+              <span className={`font-bold text-[36px] ${accent}`}>{boldMatch[1]}</span>
+              {boldMatch[2] && <span className="text-white/80 text-[30px] ml-2">{boldMatch[2]}</span>}
             </motion.div>
           );
         }
@@ -53,15 +53,15 @@ const ContentBlock = ({ content, accent }: { content: string; accent: string }) 
           const innerBold = textPart.match(/\*\*(.+?)\*\*\s*—?\s*(.*)/);
           return (
             <motion.div key={i} custom={i} variants={fadeIn} initial="hidden" animate="visible" className="flex items-start gap-3">
-              <span className="text-[28px] flex-shrink-0">{emojiMatch[1]}</span>
+              <span className="text-[32px] flex-shrink-0">{emojiMatch[1]}</span>
               <div>
                 {innerBold ? (
                   <>
-                    <span className={`font-bold text-[24px] ${accent}`}>{innerBold[1]}</span>
-                    {innerBold[2] && <span className="text-white/70 text-[22px]"> — {innerBold[2]}</span>}
+                    <span className={`font-bold text-[30px] ${accent}`}>{innerBold[1]}</span>
+                    {innerBold[2] && <span className="text-white/70 text-[28px]"> — {innerBold[2]}</span>}
                   </>
                 ) : (
-                  <span className="text-white/80 text-[24px]">{textPart}</span>
+                  <span className="text-white/80 text-[30px]">{textPart}</span>
                 )}
               </div>
             </motion.div>
@@ -72,7 +72,7 @@ const ContentBlock = ({ content, accent }: { content: string; accent: string }) 
         if (line.startsWith('"') || line.startsWith('"')) {
           return (
             <motion.p key={i} custom={i} variants={fadeIn} initial="hidden" animate="visible"
-              className="text-[28px] text-white/90 italic leading-relaxed"
+              className="text-[36px] text-white/90 italic leading-relaxed"
             >
               {line}
             </motion.p>
@@ -83,7 +83,7 @@ const ContentBlock = ({ content, accent }: { content: string; accent: string }) 
         if (line.startsWith("—")) {
           return (
             <motion.p key={i} custom={i} variants={fadeIn} initial="hidden" animate="visible"
-              className="text-[22px] text-white/50 mt-2"
+              className="text-[26px] text-white/50 mt-2"
             >
               {line}
             </motion.p>
@@ -92,7 +92,7 @@ const ContentBlock = ({ content, accent }: { content: string; accent: string }) 
 
         return (
           <motion.p key={i} custom={i} variants={fadeIn} initial="hidden" animate="visible"
-            className="text-[24px] text-white/80 leading-relaxed"
+            className="text-[30px] text-white/80 leading-relaxed"
           >
             {line}
           </motion.p>
@@ -117,7 +117,7 @@ const TableContent = ({ content, accent }: { content: string; accent: string }) 
         <thead>
           <tr className="bg-white/5">
             {headers.map((h, i) => (
-              <th key={i} className={`px-6 py-4 text-left text-[20px] font-bold ${accent}`}>{h}</th>
+              <th key={i} className={`px-8 py-4 text-left text-[26px] font-bold ${accent}`}>{h}</th>
             ))}
           </tr>
         </thead>
@@ -125,7 +125,7 @@ const TableContent = ({ content, accent }: { content: string; accent: string }) 
           {dataRows.map((row, ri) => (
             <tr key={ri} className="border-t border-white/5 hover:bg-white/5">
               {row.map((cell, ci) => (
-                <td key={ci} className={`px-6 py-3 text-[18px] ${
+                <td key={ci} className={`px-8 py-4 text-[24px] ${
                   cell.startsWith("**") ? `font-bold ${accent}` : "text-white/70"
                 }`}>
                   {cell.replace(/\*\*/g, "")}
@@ -155,13 +155,13 @@ export const CoverSlide = ({ slide }: { slide: SlideData }) => {
         </motion.h1>
         {slide.subtitle && (
           <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3, duration: 0.6 }}
-            className={`text-[42px] mt-6 ${colors.accent} font-medium`}
+            className={`text-[48px] mt-6 ${colors.accent} font-medium`}
           >
             {slide.subtitle}
           </motion.p>
         )}
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }}
-          className="mt-10 text-[24px] text-white/60 leading-relaxed whitespace-pre-line"
+          className="mt-10 text-[30px] text-white/60 leading-relaxed whitespace-pre-line"
         >
           {slide.content}
         </motion.div>
@@ -176,7 +176,7 @@ export const TwoColumnSlide = ({ slide }: { slide: SlideData }) => {
     <div className={`w-full h-full bg-gradient-to-br ${colors.bg} flex`}>
       <div className="flex-1 flex flex-col justify-center px-16 py-12">
         <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}
-          className={`text-[18px] font-medium ${colors.accent} uppercase tracking-widest mb-4`}
+          className={`text-[22px] font-medium ${colors.accent} uppercase tracking-widest mb-4`}
         >
           Slide {slide.slide_order}/30
         </motion.div>
@@ -187,7 +187,7 @@ export const TwoColumnSlide = ({ slide }: { slide: SlideData }) => {
         </motion.h2>
         {slide.subtitle && (
           <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}
-            className="text-[24px] text-white/50 mb-8"
+            className="text-[30px] text-white/50 mb-8"
           >
             {slide.subtitle}
           </motion.p>
@@ -210,7 +210,7 @@ export const StatsSlide = ({ slide }: { slide: SlideData }) => {
     <div className={`w-full h-full bg-gradient-to-br ${colors.bg} flex`}>
       <div className="flex-1 flex flex-col justify-center px-16 py-12">
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-          className={`text-[18px] font-medium ${colors.accent} uppercase tracking-widest mb-4`}
+          className={`text-[22px] font-medium ${colors.accent} uppercase tracking-widest mb-4`}
         >
           Slide {slide.slide_order}/30
         </motion.div>
@@ -221,7 +221,7 @@ export const StatsSlide = ({ slide }: { slide: SlideData }) => {
         </motion.h2>
         {slide.subtitle && (
           <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}
-            className="text-[24px] text-white/50 mb-8"
+            className="text-[30px] text-white/50 mb-8"
           >
             {slide.subtitle}
           </motion.p>
@@ -243,7 +243,7 @@ export const GridSlide = ({ slide }: { slide: SlideData }) => {
     <div className={`w-full h-full bg-gradient-to-br ${colors.bg} flex`}>
       <div className="flex-1 flex flex-col justify-center px-16 py-12">
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-          className={`text-[18px] font-medium ${colors.accent} uppercase tracking-widest mb-4`}
+          className={`text-[22px] font-medium ${colors.accent} uppercase tracking-widest mb-4`}
         >
           Slide {slide.slide_order}/30
         </motion.div>
@@ -254,7 +254,7 @@ export const GridSlide = ({ slide }: { slide: SlideData }) => {
         </motion.h2>
         {slide.subtitle && (
           <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}
-            className="text-[24px] text-white/50 mb-8"
+            className="text-[30px] text-white/50 mb-8"
           >
             {slide.subtitle}
           </motion.p>
@@ -275,7 +275,7 @@ export const TableSlide = ({ slide }: { slide: SlideData }) => {
   return (
     <div className={`w-full h-full bg-gradient-to-br ${colors.bg} flex flex-col justify-center px-16 py-12`}>
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-        className={`text-[18px] font-medium ${colors.accent} uppercase tracking-widest mb-4`}
+        className={`text-[22px] font-medium ${colors.accent} uppercase tracking-widest mb-4`}
       >
         Slide {slide.slide_order}/30
       </motion.div>
@@ -286,7 +286,7 @@ export const TableSlide = ({ slide }: { slide: SlideData }) => {
       </motion.h2>
       {slide.subtitle && (
         <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}
-          className="text-[24px] text-white/50 mb-8"
+          className="text-[30px] text-white/50 mb-8"
         >
           {slide.subtitle}
         </motion.p>
@@ -302,7 +302,7 @@ export const TimelineSlide = ({ slide }: { slide: SlideData }) => {
     <div className={`w-full h-full bg-gradient-to-br ${colors.bg} flex`}>
       <div className="flex-1 flex flex-col justify-center px-16 py-12">
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-          className={`text-[18px] font-medium ${colors.accent} uppercase tracking-widest mb-4`}
+          className={`text-[22px] font-medium ${colors.accent} uppercase tracking-widest mb-4`}
         >
           Slide {slide.slide_order}/30
         </motion.div>
@@ -313,7 +313,7 @@ export const TimelineSlide = ({ slide }: { slide: SlideData }) => {
         </motion.h2>
         {slide.subtitle && (
           <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}
-            className="text-[24px] text-white/50 mb-8"
+            className="text-[30px] text-white/50 mb-8"
           >
             {slide.subtitle}
           </motion.p>
@@ -339,7 +339,7 @@ export const QuoteSlide = ({ slide }: { slide: SlideData }) => {
       <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-transparent" />
       <div className="relative z-10 px-20 max-w-[70%]">
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-          className={`text-[18px] font-medium ${colors.accent} uppercase tracking-widest mb-6`}
+          className={`text-[22px] font-medium ${colors.accent} uppercase tracking-widest mb-6`}
         >
           {slide.title}
         </motion.div>
@@ -360,7 +360,7 @@ export const PricingSlide = ({ slide }: { slide: SlideData }) => {
     <div className={`w-full h-full bg-gradient-to-br ${colors.bg} flex`}>
       <div className="flex-1 flex flex-col justify-center px-16 py-12">
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-          className={`text-[18px] font-medium ${colors.accent} uppercase tracking-widest mb-4`}
+          className={`text-[22px] font-medium ${colors.accent} uppercase tracking-widest mb-4`}
         >
           Slide {slide.slide_order}/30
         </motion.div>
@@ -371,7 +371,7 @@ export const PricingSlide = ({ slide }: { slide: SlideData }) => {
         </motion.h2>
         {slide.subtitle && (
           <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}
-            className="text-[24px] text-white/50 mb-8"
+            className="text-[30px] text-white/50 mb-8"
           >
             {slide.subtitle}
           </motion.p>
@@ -393,7 +393,7 @@ export const PersonaSlide = ({ slide }: { slide: SlideData }) => {
     <div className={`w-full h-full bg-gradient-to-br ${colors.bg} flex`}>
       <div className="flex-1 flex flex-col justify-center px-16 py-12">
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-          className={`text-[18px] font-medium ${colors.accent} uppercase tracking-widest mb-4`}
+          className={`text-[22px] font-medium ${colors.accent} uppercase tracking-widest mb-4`}
         >
           Slide {slide.slide_order}/30
         </motion.div>
@@ -404,7 +404,7 @@ export const PersonaSlide = ({ slide }: { slide: SlideData }) => {
         </motion.h2>
         {slide.subtitle && (
           <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}
-            className="text-[24px] text-white/50 mb-8"
+            className="text-[30px] text-white/50 mb-8"
           >
             {slide.subtitle}
           </motion.p>
@@ -426,7 +426,7 @@ export const ChartSlide = ({ slide }: { slide: SlideData }) => {
   return (
     <div className={`w-full h-full bg-gradient-to-br ${colors.bg} flex flex-col justify-center px-16 py-12`}>
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-        className={`text-[18px] font-medium ${colors.accent} uppercase tracking-widest mb-4`}
+        className={`text-[22px] font-medium ${colors.accent} uppercase tracking-widest mb-4`}
       >
         Slide {slide.slide_order}/30
       </motion.div>
@@ -437,7 +437,7 @@ export const ChartSlide = ({ slide }: { slide: SlideData }) => {
       </motion.h2>
       {slide.subtitle && (
         <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}
-          className="text-[24px] text-white/50 mb-8"
+          className="text-[30px] text-white/50 mb-8"
         >
           {slide.subtitle}
         </motion.p>

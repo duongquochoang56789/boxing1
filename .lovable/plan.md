@@ -1,69 +1,68 @@
 
+# Sua Branding va Thiet Ke FLYFIT
 
-# Tang Kich Thuoc Font va Cai Thien UX cho Slide Presentation
+## Van De Hien Tai
 
-## Danh Gia Hien Trang
+### 1. Branding "EliteFit" trong CMS Database
+Database `site_content` chua 12+ ban ghi voi ten "EliteFit" thay vi "FLYFIT":
+- Hero: description, form_description
+- About: label, description  
+- Gallery: label
+- Trainers: description
+- Testimonials: heading_1, t1_quote, t3_quote, t4_quote
+- Pricing: plan_1_tagline
 
-Tat ca slides render tai 1920x1080 roi scale xuong. Nhieu font size hien tai qua nho:
+### 2. Khong co Logo Hinh Anh
+Hien tai chi co text logo "FLYFIT" trong code. Chua co file logo rieng (SVG/PNG) de su dung cho:
+- Header
+- Footer
+- OG image
+- Favicon
 
-| Thanh phan | Hien tai | Van de |
-|---|---|---|
-| Slide label ("Slide 1/30") | 18px | Qua nho, kho doc |
-| Subtitle | 24px | Nho so voi viewport 1920px |
-| Content body text | 24px | Nho, can tang len |
-| Bold heading trong content | 28px | Chua du noi bat |
-| Emoji text | 24px, 22px | Nho |
-| Emoji icon | 28px | Tuong doi ok nhung nen tang |
-| Table header | 20px | Qua nho |
-| Table cell | 18px | Rat nho, kho doc |
-| Quote text | 28px | Nho cho kieu quote |
-| Dash line | 22px | Nho |
-| Cover title | 96px | OK |
-| Section title (h2) | 52px | OK |
+### 3. Slogan bi thay doi
+Slogan goc "Bay Cao. Song Khoe." da bi CMS ghi de thanh noi dung khac.
 
-## Ke Hoach Thay Doi
+---
 
-### 1. Tang font size toan bo ContentBlock
+## Ke Hoach Thuc Hien
 
-| Thanh phan | Hien tai | Moi |
-|---|---|---|
-| Bold heading | text-[28px] | text-[36px] |
-| Bold heading text phu | text-[24px] | text-[30px] |
-| Emoji icon | text-[28px] | text-[32px] |
-| Emoji bold text | text-[24px] | text-[30px] |
-| Emoji description | text-[22px] | text-[28px] |
-| Emoji plain text | text-[24px] | text-[30px] |
-| Quote text | text-[28px] | text-[36px] |
-| Dash line | text-[22px] | text-[26px] |
-| Plain text | text-[24px] | text-[30px] |
-| Spacing | space-y-3 | space-y-4 |
+### Buoc 1: Sua tat ca noi dung "EliteFit" thanh "FLYFIT" trong database
+Chay SQL UPDATE de thay the "EliteFit" bang "FLYFIT" trong bang `site_content`:
+- 12+ ban ghi can cap nhat
+- Giu nguyen noi dung tieng Viet, chi doi ten thuong hieu
 
-### 2. Tang font size TableContent
+### Buoc 2: Khoi phuc slogan goc
+Cap nhat lai cac truong hero ve noi dung FLYFIT goc:
+- label: "Bay Cao. Song Khoe."
+- heading_1: "Tap tai nha,"
+- heading_2: "thay doi that."
+- description: noi dung FLYFIT goc
 
-| Thanh phan | Hien tai | Moi |
-|---|---|---|
-| Table header | text-[20px] | text-[26px] |
-| Table cell | text-[18px] | text-[24px] |
-| Cell padding | px-6 py-3 | px-8 py-4 |
+### Buoc 3: Tao logo SVG cho FLYFIT
+Tao component logo SVG voi:
+- Text "FLY" mau charcoal + "FIT" mau terracotta
+- Font Cormorant Garamond (dung font cua brand)
+- 2 phien ban: logo sang (cho header tren hero) va logo toi (cho header khi scroll)
+- Thay the text logo hien tai trong Header va Footer
 
-### 3. Tang font cac thanh phan chung tren moi slide layout
+### Buoc 4: Tao favicon moi
+Tao favicon SVG don gian tu logo FLYFIT de thay the favicon hien tai.
 
-| Thanh phan | Hien tai | Moi |
-|---|---|---|
-| Slide label ("Slide X/30") | text-[18px] | text-[22px] |
-| Subtitle | text-[24px] | text-[30px] |
-| Cover content | text-[24px] | text-[30px] |
-| Cover subtitle | text-[42px] | text-[48px] |
+---
 
-### 4. File can chinh sua
+## Chi Tiet Ky Thuat
 
-Chi can chinh sua **1 file duy nhat**: `src/components/slides/SlideLayouts.tsx`
+### File can chinh sua:
+1. **Database** — SQL UPDATE cho bang `site_content` (12+ ban ghi)
+2. **src/components/ui/Logo.tsx** — Component logo SVG moi
+3. **src/components/landing/Header.tsx** — Thay text logo bang component Logo
+4. **src/components/landing/Footer.tsx** — Thay text logo bang component Logo
+5. **public/favicon.ico** — Favicon moi tu logo
 
-- Cap nhat `ContentBlock` component (dong 29-102): tang tat ca font size
-- Cap nhat `TableContent` component (dong 106-139): tang font va padding
-- Cap nhat slide label va subtitle trong 10 layout components: CoverSlide, TwoColumnSlide, StatsSlide, GridSlide, TableSlide, TimelineSlide, QuoteSlide, PricingSlide, PersonaSlide, ChartSlide
-
-### Tong ket
-
-Thay doi nay khong anh huong cau truc hay logic, chi tang kich thuoc font de noi dung de doc hon khi trinh chieu. Tat ca thay doi nam trong 1 file.
-
+### SQL se chay:
+```text
+UPDATE site_content 
+SET value = REPLACE(value, 'EliteFit', 'FLYFIT') 
+WHERE value ILIKE '%elitefit%';
+```
+Kem theo cap nhat rieng cho cac truong hero de khoi phuc noi dung goc FLYFIT.

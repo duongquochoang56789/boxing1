@@ -14,6 +14,9 @@ import Schedule from "./pages/Schedule";
 import BookPT from "./pages/BookPT";
 import NotFound from "./pages/NotFound";
 import AdminContent from "./pages/AdminContent";
+import Admin from "./pages/Admin";
+import Profile from "./pages/Profile";
+import History from "./pages/History";
 import ProjectPresentation from "./pages/ProjectPresentation";
 import ZaloButton from "@/components/ui/zalo-button";
 import { useAnalytics } from "@/hooks/useAnalytics";
@@ -54,11 +57,16 @@ const AnimatedRoutes = () => {
           } 
         />
         <Route 
-          path="/admin/content" 
-          element={<PageTransition><AdminContent /></PageTransition>}
+          path="/profile" 
+          element={<ProtectedRoute><PageTransition><Profile /></PageTransition></ProtectedRoute>}
         />
+        <Route 
+          path="/history" 
+          element={<ProtectedRoute><PageTransition><History /></PageTransition></ProtectedRoute>}
+        />
+        <Route path="/admin" element={<PageTransition><Admin /></PageTransition>} />
+        <Route path="/admin/content" element={<PageTransition><AdminContent /></PageTransition>} />
         <Route path="/project" element={<ProjectPresentation />} />
-        {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
       </Routes>
     </AnimatePresence>

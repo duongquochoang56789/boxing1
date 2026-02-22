@@ -4,12 +4,16 @@ import { useRef, useState } from "react";
 import { Instagram, Facebook, Linkedin } from "lucide-react";
 import { ShimmerImage } from "@/components/ui/shimmer-image";
 import { useSiteContent, getContent } from "@/hooks/useSiteContent";
+import trainer1 from "@/assets/trainer-1.jpg";
+import trainer2 from "@/assets/trainer-2.jpg";
+import trainer3 from "@/assets/trainer-3.jpg";
+import trainer4 from "@/assets/trainer-4.jpg";
 
 const defaultTrainers = [
-  { key: "trainer_1", name: "Nguyễn Minh Tuấn", role: "Head Coach", specialty: "Strength & Conditioning", image: "https://images.unsplash.com/photo-1567013127542-490d757e51fc?q=80&w=800" },
-  { key: "trainer_2", name: "Trần Thu Hương", role: "Yoga Master", specialty: "Yoga & Pilates", image: "https://images.unsplash.com/photo-1594381898411-846e7d193883?q=80&w=800" },
-  { key: "trainer_3", name: "Lê Quang Huy", role: "Fitness Coach", specialty: "HIIT & Functional Training", image: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?q=80&w=800" },
-  { key: "trainer_4", name: "Phạm Thị Mai", role: "Nutrition Expert", specialty: "Sports Nutrition", image: "https://images.unsplash.com/photo-1548690312-e3b507d8c110?q=80&w=800" },
+  { key: "trainer_1", name: "Nguyễn Minh Tuấn", role: "Head Coach", specialty: "Strength & Conditioning", image: trainer1 },
+  { key: "trainer_2", name: "Trần Thu Hương", role: "Yoga Master", specialty: "Yoga & Pilates", image: trainer2 },
+  { key: "trainer_3", name: "Lê Quang Huy", role: "Fitness Coach", specialty: "HIIT & Functional Training", image: trainer3 },
+  { key: "trainer_4", name: "Phạm Thị Mai", role: "Nutrition Expert", specialty: "Sports Nutrition", image: trainer4 },
 ];
 
 const TrainersSection = () => {

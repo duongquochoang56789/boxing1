@@ -5,14 +5,20 @@ import { X, ChevronLeft, ChevronRight } from "lucide-react";
 import { AnimatePresence } from "framer-motion";
 import { ShimmerImage } from "@/components/ui/shimmer-image";
 import { useSiteContent, getContent } from "@/hooks/useSiteContent";
+import gallery1 from "@/assets/gallery-1.jpg";
+import gallery2 from "@/assets/gallery-2.jpg";
+import gallery3 from "@/assets/gallery-3.jpg";
+import gallery4 from "@/assets/gallery-4.jpg";
+import gallery5 from "@/assets/gallery-5.jpg";
+import gallery6 from "@/assets/gallery-6.jpg";
 
 const defaultImages = [
-  { key: "space_1", src: "https://images.unsplash.com/photo-1540497077202-7c8a3999166f?q=80&w=1200", alt: "Phòng tập chính", description: "Không gian rộng rãi, thoáng đãng" },
-  { key: "space_2", src: "https://images.unsplash.com/photo-1576678927484-cc907957088c?q=80&w=800", alt: "Khu vực tạ", description: "Trang thiết bị hiện đại" },
-  { key: "space_3", src: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?q=80&w=800", alt: "Cardio Zone", description: "Khu vực cardio đẳng cấp" },
-  { key: "space_4", src: "https://images.unsplash.com/photo-1571902943202-507ec2618e8f?q=80&w=800", alt: "Phòng Yoga", description: "Không gian yên tĩnh, thư giãn" },
-  { key: "space_5", src: "https://images.unsplash.com/photo-1593079831268-3381b0db4a77?q=80&w=800", alt: "PT Zone", description: "Khu vực tập luyện cá nhân" },
-  { key: "space_6", src: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=1200", alt: "Lounge", description: "Khu nghỉ ngơi sang trọng" },
+  { key: "space_1", src: gallery1, alt: "Phòng tập chính", description: "Không gian rộng rãi, thoáng đãng" },
+  { key: "space_2", src: gallery2, alt: "Khu vực tạ", description: "Trang thiết bị hiện đại" },
+  { key: "space_3", src: gallery3, alt: "Cardio Zone", description: "Khu vực cardio đẳng cấp" },
+  { key: "space_4", src: gallery4, alt: "Phòng Yoga", description: "Không gian yên tĩnh, thư giãn" },
+  { key: "space_5", src: gallery5, alt: "PT Zone", description: "Khu vực tập luyện cá nhân" },
+  { key: "space_6", src: gallery6, alt: "Lounge", description: "Khu nghỉ ngơi sang trọng" },
 ];
 
 const GallerySection = () => {

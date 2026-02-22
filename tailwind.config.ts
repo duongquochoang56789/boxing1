@@ -70,7 +70,8 @@ export default {
       },
       fontFamily: {
         display: ["Cormorant Garamond", "serif"],
-        body: ["Inter", "sans-serif"],
+        body: ["Be Vietnam Pro", "sans-serif"],
+        accent: ["Bebas Neue", "sans-serif"],
       },
       borderRadius: {
         lg: "var(--radius)",

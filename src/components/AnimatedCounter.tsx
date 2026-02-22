@@ -45,7 +45,7 @@ const AnimatedCounter = ({ end, suffix = '', prefix = '', duration = 2, label, i
       className="text-center p-6 bg-background border border-border/50 hover:border-terracotta/30 transition-colors duration-500"
     >
       {icon && <div className="mb-3 flex justify-center">{icon}</div>}
-      <div className="font-display text-4xl font-semibold text-terracotta tabular-nums">
+      <div className="font-accent text-4xl font-semibold text-terracotta tabular-nums">
         {prefix}{count}{suffix}
       </div>
       <div className="text-label text-soft-brown mt-2">{label}</div>

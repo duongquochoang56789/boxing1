@@ -134,7 +134,7 @@ const PricingSection = () => {
 
               {/* Price */}
               <div className="mb-8">
-                <div className="font-display text-3xl font-bold text-charcoal">
+                <div className="font-accent text-3xl text-charcoal">
                   {getContent(content, "text", `${plan.key}_price`, plan.price)}
                 </div>
                 <div className="text-body-sm text-soft-brown mt-1">

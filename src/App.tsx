@@ -18,6 +18,7 @@ import Admin from "./pages/Admin";
 import Profile from "./pages/Profile";
 import History from "./pages/History";
 import ProjectPresentation from "./pages/ProjectPresentation";
+import AIAssistant from "./pages/AIAssistant";
 import ZaloButton from "@/components/ui/zalo-button";
 import ProjectChatbot from "@/components/ui/ProjectChatbot";
 import { useAnalytics } from "@/hooks/useAnalytics";
@@ -68,6 +69,14 @@ const AnimatedRoutes = () => {
         <Route path="/admin" element={<PageTransition><Admin /></PageTransition>} />
         <Route path="/admin/content" element={<PageTransition><AdminContent /></PageTransition>} />
         <Route path="/project" element={<ProjectPresentation />} />
+        <Route 
+          path="/ai-assistant" 
+          element={
+            <ProtectedRoute>
+              <AIAssistant />
+            </ProtectedRoute>
+          } 
+        />
         <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
       </Routes>
     </AnimatePresence>

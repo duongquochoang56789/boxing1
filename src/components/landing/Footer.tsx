@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { Instagram, Facebook, Youtube } from "lucide-react";
+import Logo from "@/components/ui/Logo";
 import useScrollTo from "@/hooks/useScrollTo";
 
 const footerLinks = {
@@ -37,8 +38,8 @@ const Footer = () => {
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-16">
           {/* Brand */}
           <div className="lg:col-span-2">
-            <a href="#home" onClick={(e) => handleClick(e, "#home")} className="inline-block font-display text-3xl font-semibold tracking-tight mb-6">
-              FLY<span className="text-terracotta">FIT</span>
+            <a href="#home" onClick={(e) => handleClick(e, "#home")} className="inline-block mb-6">
+              <Logo variant="light" size="lg" />
             </a>
             <p className="text-cream/50 text-sm leading-relaxed max-w-xs">
             Bay cao. Sống khỏe. — Tập luyện nhóm nhỏ trực tuyến cùng huấn luyện viên chuyên nghiệp.

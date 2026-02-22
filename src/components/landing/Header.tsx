@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { MagneticButton } from "@/components/ui/magnetic-button";
+import Logo from "@/components/ui/Logo";
 import useScrollTo from "@/hooks/useScrollTo";
 
 const navLinks = [
@@ -62,11 +63,9 @@ const Header = () => {
             onClick={(e) => handleClick(e, "#home")}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6 }}
-            className={`font-display text-2xl md:text-3xl font-semibold tracking-tight transition-colors duration-500 ${
-              isScrolled ? "text-charcoal" : "text-cream"
-            }`}
+            className="transition-colors duration-500"
           >
-            FLY<span className="text-terracotta">FIT</span>
+            <Logo variant={isScrolled ? "dark" : "light"} />
           </motion.a>
 
           {/* Desktop Navigation */}

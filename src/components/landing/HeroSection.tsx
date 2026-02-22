@@ -8,7 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { z } from "zod";
 import { trackLeadSubmission } from "@/hooks/useAnalytics";
-
+import heroBgImage from "@/assets/hero-bg.jpg";
 const leadSchema = z.object({
   full_name: z.string().trim().min(1, "Vui lòng nhập họ tên").max(100),
   email: z.string().trim().email("Email không hợp lệ").max(255),
@@ -64,7 +64,7 @@ const HeroSection = () => {
     }
   };
 
-  const bgImage = getContent(content, "image", "background", "https://images.unsplash.com/photo-1571902943202-507ec2618e8f?q=80&w=2075");
+  const bgImage = getContent(content, "image", "background", heroBgImage);
 
   return (
     <section ref={containerRef} id="home" className="relative h-screen overflow-hidden">

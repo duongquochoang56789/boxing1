@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, ChevronRight, Maximize, Minimize, Grid3X3, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Maximize, Minimize, Grid3X3, X, Home } from "lucide-react";
+import { Link } from "react-router-dom";
 import { SlideRenderer } from "./SlideLayouts";
 
 interface SlideData {
@@ -96,6 +97,9 @@ export const SlideViewer = ({ slides }: SlideViewerProps) => {
       {!isFullscreen && (
         <div className="flex items-center justify-between px-4 py-2 bg-[#111] border-b border-white/10">
           <div className="flex items-center gap-3">
+            <Link to="/" className="p-2 text-white/50 hover:text-white hover:bg-white/10 rounded transition-colors" title="Về trang chủ">
+              <Home className="w-4 h-4" />
+            </Link>
             <span className="text-white font-bold text-lg">FLY<span className="text-orange-400">FIT</span></span>
             <span className="text-white/40 text-sm">Tài liệu dự án</span>
           </div>

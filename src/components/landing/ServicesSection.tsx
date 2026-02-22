@@ -4,12 +4,16 @@ import { useRef, useState } from "react";
 import { ArrowUpRight } from "lucide-react";
 import { ShimmerImage } from "@/components/ui/shimmer-image";
 import { useSiteContent, getContent } from "@/hooks/useSiteContent";
+import serviceFlyclass from "@/assets/service-flyclass.jpg";
+import serviceFlyzen from "@/assets/service-flyzen.jpg";
+import serviceFlyburn from "@/assets/service-flyburn.jpg";
+import serviceFlyfuel from "@/assets/service-flyfuel.jpg";
 
 const defaultServices = [
-  { key: "service_1", number: "01", title: "FLY Class", description: "Nhóm nhỏ 5-7 người, trainer theo dõi và sửa động tác trực tiếp qua video, 45-60 phút mỗi buổi.", image: "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?q=80&w=800" },
-  { key: "service_2", number: "02", title: "FLY Zen", description: "Yoga & Pilates giảm stress, tăng linh hoạt. Phù hợp người mới, buổi sáng và tối.", image: "https://images.unsplash.com/photo-1518611012118-696072aa579a?q=80&w=800" },
-  { key: "service_3", number: "03", title: "FLY Burn", description: "HIIT & Cardio đốt mỡ hiệu quả, 30 phút, không cần dụng cụ, năng lượng cao.", image: "https://images.unsplash.com/photo-1534368959876-26bf04f2c947?q=80&w=800" },
-  { key: "service_4", number: "04", title: "FLY Fuel", description: "Kế hoạch dinh dưỡng cá nhân, theo dõi macro, tư vấn 1-1 hàng tuần.", image: "https://images.unsplash.com/photo-1490645935967-10de6ba17061?q=80&w=800" },
+  { key: "service_1", number: "01", title: "FLY Class", description: "Nhóm nhỏ 5-7 người, trainer theo dõi và sửa động tác trực tiếp qua video, 45-60 phút mỗi buổi.", image: serviceFlyclass },
+  { key: "service_2", number: "02", title: "FLY Zen", description: "Yoga & Pilates giảm stress, tăng linh hoạt. Phù hợp người mới, buổi sáng và tối.", image: serviceFlyzen },
+  { key: "service_3", number: "03", title: "FLY Burn", description: "HIIT & Cardio đốt mỡ hiệu quả, 30 phút, không cần dụng cụ, năng lượng cao.", image: serviceFlyburn },
+  { key: "service_4", number: "04", title: "FLY Fuel", description: "Kế hoạch dinh dưỡng cá nhân, theo dõi macro, tư vấn 1-1 hàng tuần.", image: serviceFlyfuel },
 ];
 
 const ServicesSection = () => {

@@ -3,11 +3,14 @@ import { useInView } from "framer-motion";
 import { useRef } from "react";
 import { ShimmerImage } from "@/components/ui/shimmer-image";
 import { useSiteContent, getContent } from "@/hooks/useSiteContent";
+import aboutOnlineGroup from "@/assets/about-online-group.jpg";
+import aboutPrograms from "@/assets/about-programs.jpg";
+import aboutHybrid from "@/assets/about-hybrid.jpg";
 
 const defaultFeatures = [
-  { key: "feature_1", title: "Nhóm nhỏ trực tuyến", description: "Tập luyện nhóm 5-7 người qua Zoom, trainer quan sát và sửa động tác trực tiếp — như PT 1-1 nhưng chi phí hợp lý.", image: "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?q=80&w=800" },
-  { key: "feature_2", title: "Đa dạng chương trình", description: "Từ FLY Zen (Yoga), FLY Burn (HIIT) đến FLY Fuel (Dinh dưỡng) – phù hợp mọi mục tiêu và trình độ.", image: "https://images.unsplash.com/photo-1518611012118-696072aa579a?q=80&w=800" },
-  { key: "feature_3", title: "Mô hình Hybrid", description: "80% Online + 20% Offline tại phòng gym thực tế — kết hợp sự tiện lợi với trải nghiệm chuyên nghiệp.", image: "https://images.unsplash.com/photo-1540497077202-7c8a3999166f?q=80&w=800" },
+  { key: "feature_1", title: "Nhóm nhỏ trực tuyến", description: "Tập luyện nhóm 5-7 người qua Zoom, trainer quan sát và sửa động tác trực tiếp — như PT 1-1 nhưng chi phí hợp lý.", image: aboutOnlineGroup },
+  { key: "feature_2", title: "Đa dạng chương trình", description: "Từ FLY Zen (Yoga), FLY Burn (HIIT) đến FLY Fuel (Dinh dưỡng) – phù hợp mọi mục tiêu và trình độ.", image: aboutPrograms },
+  { key: "feature_3", title: "Mô hình Hybrid", description: "80% Online + 20% Offline tại phòng gym thực tế — kết hợp sự tiện lợi với trải nghiệm chuyên nghiệp.", image: aboutHybrid },
 ];
 
 const AboutSection = () => {

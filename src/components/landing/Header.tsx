@@ -13,7 +13,6 @@ const navLinks = [
   { name: "Online", href: "#virtual-training" },
   { name: "Bảng giá", href: "#pricing" },
   { name: "HLV", href: "#trainers" },
-  { name: "Tài liệu", href: "/project", isRoute: true },
   { name: "Liên hệ", href: "#contact" },
 ];
 

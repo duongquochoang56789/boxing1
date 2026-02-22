@@ -18,6 +18,7 @@ import Admin from "./pages/Admin";
 import Profile from "./pages/Profile";
 import History from "./pages/History";
 import ProjectPresentation from "./pages/ProjectPresentation";
+import HeroOptions from "./pages/HeroOptions";
 import AIAssistant from "./pages/AIAssistant";
 import ZaloButton from "@/components/ui/zalo-button";
 import ProjectChatbot from "@/components/ui/ProjectChatbot";
@@ -69,6 +70,7 @@ const AnimatedRoutes = () => {
         <Route path="/admin" element={<PageTransition><Admin /></PageTransition>} />
         <Route path="/admin/content" element={<PageTransition><AdminContent /></PageTransition>} />
         <Route path="/project" element={<ProjectPresentation />} />
+        <Route path="/hero-options" element={<PageTransition><HeroOptions /></PageTransition>} />
         <Route 
           path="/ai-assistant" 
           element={

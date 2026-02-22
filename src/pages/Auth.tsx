@@ -234,6 +234,42 @@ const Auth = () => {
                 </motion.div>
               </form>
 
+              {isLogin && (
+                <motion.div
+                  className="mt-6"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.4 }}
+                >
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      setIsSubmitting(true);
+                      const demoEmail = 'admin@flyfit.vn';
+                      const demoPassword = 'admin123';
+                      setEmail(demoEmail);
+                      setPassword(demoPassword);
+                      const { error } = await signIn(demoEmail, demoPassword);
+                      if (error) {
+                        toast({
+                          variant: 'destructive',
+                          title: 'Đăng nhập nhanh thất bại',
+                          description: 'Tài khoản demo chưa được tạo. Vui lòng tạo tài khoản admin@flyfit.vn trước.',
+                        });
+                      } else {
+                        toast({ title: 'Đăng nhập thành công', description: 'Chào mừng Admin!' });
+                        navigate('/ai-assistant');
+                      }
+                      setIsSubmitting(false);
+                    }}
+                    disabled={isSubmitting}
+                    className="w-full h-12 border border-terracotta/30 text-terracotta hover:bg-terracotta/5 transition-all duration-300 flex items-center justify-center gap-2 text-sm font-medium tracking-wide"
+                  >
+                    ⚡ Đăng nhập nhanh (Admin Demo)
+                  </button>
+                </motion.div>
+              )}
+
               <div className="mt-8 pt-8 border-t border-border/50 text-center">
                 <p className="text-body-sm text-soft-brown">
                   {isLogin ? 'Chưa có tài khoản?' : 'Đã có tài khoản?'}

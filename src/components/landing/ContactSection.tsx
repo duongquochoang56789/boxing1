@@ -1,7 +1,8 @@
 import { motion } from "framer-motion";
 import { useInView } from "framer-motion";
 import { useRef, useState } from "react";
-import { MapPin, Phone, Mail, Clock, ArrowRight } from "lucide-react";
+import { MapPin, Phone, Mail, Clock, ArrowRight, FileText, Layout } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { MagneticButton } from "@/components/ui/magnetic-button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -27,6 +28,7 @@ const contactInfo = [
 const ContactSection = () => {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({ full_name: "", phone: "", email: "", service: "", message: "" });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
@@ -130,6 +132,42 @@ const ContactSection = () => {
                 className="hover:filter-none transition-all duration-700"
               />
             </motion.div>
+
+            {/* Tài liệu dự án */}
+            <div className="mt-px space-y-px">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={isInView ? { opacity: 1, y: 0 } : {}}
+                transition={{ duration: 0.6, delay: 0.5 }}
+                className="bg-cream p-5 cursor-pointer group hover:bg-background transition-colors duration-300"
+                onClick={() => navigate("/project")}
+              >
+                <div className="flex items-center gap-4">
+                  <FileText className="w-4 h-4 text-terracotta" />
+                  <div className="flex-1">
+                    <p className="text-label text-soft-brown mb-0.5">Slide thuyết trình</p>
+                    <p className="font-display text-charcoal text-base">Tài liệu chiến lược & kế hoạch dự án</p>
+                  </div>
+                  <ArrowRight className="w-4 h-4 text-terracotta group-hover:translate-x-1 transition-transform" />
+                </div>
+              </motion.div>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={isInView ? { opacity: 1, y: 0 } : {}}
+                transition={{ duration: 0.6, delay: 0.6 }}
+                className="bg-cream p-5 cursor-pointer group hover:bg-background transition-colors duration-300"
+                onClick={() => navigate("/hero-options")}
+              >
+                <div className="flex items-center gap-4">
+                  <Layout className="w-4 h-4 text-terracotta" />
+                  <div className="flex-1">
+                    <p className="text-label text-soft-brown mb-0.5">Phương án thiết kế</p>
+                    <p className="font-display text-charcoal text-base">5 option UI/UX cho Hero Section</p>
+                  </div>
+                  <ArrowRight className="w-4 h-4 text-terracotta group-hover:translate-x-1 transition-transform" />
+                </div>
+              </motion.div>
+            </div>
           </div>
 
           {/* Right – Form */}

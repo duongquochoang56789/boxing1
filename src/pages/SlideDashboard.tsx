@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
-import { Plus, Presentation, Trash2, Share2, Globe, Lock, Loader2, MoreVertical, Clock } from "lucide-react";
+import { Plus, Presentation, Trash2, Share2, Globe, Lock, Loader2, MoreVertical, Clock, Search } from "lucide-react";
+import { SlideRenderer } from "@/components/slides/SlideLayouts";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -11,6 +12,18 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+
+interface DeckSlide {
+  id: string;
+  slide_order: number;
+  title: string;
+  subtitle: string | null;
+  content: string;
+  layout: string;
+  image_url: string | null;
+  background_color: string;
+  section_name: string;
+}
 
 interface Deck {
   id: string;
@@ -21,13 +34,20 @@ interface Deck {
   share_slug: string | null;
   created_at: string;
   updated_at: string;
+  firstSlide?: DeckSlide;
 }
+
+const SLIDE_W = 1920;
+const SLIDE_H = 1080;
 
 const SlideDashboard = () => {
   const [decks, setDecks] = useState<Deck[]>([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  const filteredDecks = decks.filter(d => d.title.toLowerCase().includes(search.toLowerCase()));
 
   useEffect(() => {
     const load = async () => {
@@ -35,7 +55,26 @@ const SlideDashboard = () => {
         .from("decks")
         .select("*")
         .order("updated_at", { ascending: false });
-      if (!error && data) setDecks(data);
+      if (!error && data) {
+        // Fetch first slide for each deck for thumbnail
+        const deckIds = data.map((d: any) => d.id);
+        const { data: allSlides } = await supabase
+          .from("deck_slides")
+          .select("*")
+          .in("deck_id", deckIds)
+          .order("slide_order");
+        
+        const firstSlideMap = new Map<string, DeckSlide>();
+        if (allSlides) {
+          for (const s of allSlides as DeckSlide[]) {
+            if (!firstSlideMap.has((s as any).deck_id)) {
+              firstSlideMap.set((s as any).deck_id, s);
+            }
+          }
+        }
+        
+        setDecks(data.map((d: any) => ({ ...d, firstSlide: firstSlideMap.get(d.id) })));
+      }
       setLoading(false);
     };
     load();
@@ -102,9 +141,22 @@ const SlideDashboard = () => {
 
       {/* Content */}
       <main className="max-w-7xl mx-auto px-6 py-10">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white">Slide Decks của bạn</h1>
-          <p className="text-white/50 mt-1">Tạo và quản lý bộ slide thuyết trình bằng AI</p>
+        <div className="mb-8 flex items-end justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-white">Slide Decks của bạn</h1>
+            <p className="text-white/50 mt-1">Tạo và quản lý bộ slide thuyết trình bằng AI</p>
+          </div>
+          {decks.length > 0 && (
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+              <input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Tìm deck..."
+                className="pl-9 pr-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm w-56 outline-none focus:border-orange-400/50 placeholder:text-white/30"
+              />
+            </div>
+          )}
         </div>
 
         {loading ? (
@@ -135,7 +187,8 @@ const SlideDashboard = () => {
           </motion.div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {/* New deck card */}
+            {/* New deck card - only show when not searching */}
+            {!search && (
             <motion.button
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -147,9 +200,10 @@ const SlideDashboard = () => {
               </div>
               <span className="font-medium">Tạo deck mới</span>
             </motion.button>
+            )}
 
             {/* Deck cards */}
-            {decks.map((deck, i) => (
+            {filteredDecks.map((deck, i) => (
               <motion.div
                 key={deck.id}
                 initial={{ opacity: 0, y: 20 }}
@@ -162,9 +216,17 @@ const SlideDashboard = () => {
                   to={`/slides/${deck.id}`}
                   className="block aspect-video bg-gradient-to-br from-[#1a1a2e] to-[#16213e] relative overflow-hidden"
                 >
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <Presentation className="w-12 h-12 text-white/10" />
-                  </div>
+                  {deck.firstSlide ? (
+                    <div className="absolute inset-0">
+                      <div style={{ width: SLIDE_W, height: SLIDE_H, transform: "scale(0.188)", transformOrigin: "top left" }}>
+                        <SlideRenderer slide={deck.firstSlide} />
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <Presentation className="w-12 h-12 text-white/10" />
+                    </div>
+                  )}
                   <div className="absolute bottom-3 left-3 flex items-center gap-1.5">
                     <span className="text-[10px] px-2 py-0.5 bg-black/50 text-white/60 rounded-full">
                       {deck.slide_count} slides

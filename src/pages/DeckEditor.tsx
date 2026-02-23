@@ -49,6 +49,8 @@ const DeckEditor = () => {
   const [scale, setScale] = useState(1);
   const previewRef = useRef<HTMLDivElement>(null);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout>>();
+  const [dragIndex, setDragIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
   // Load deck + slides
   useEffect(() => {
@@ -181,6 +183,24 @@ const DeckEditor = () => {
       setSlides(updated);
       setCurrent(current + 1);
       toast({ title: "Đã nhân đôi slide" });
+    }
+  };
+
+  const handleDragStart = (i: number) => setDragIndex(i);
+  const handleDragOver = (e: React.DragEvent, i: number) => { e.preventDefault(); setDragOverIndex(i); };
+  const handleDragEnd = async () => {
+    if (dragIndex === null || dragOverIndex === null || dragIndex === dragOverIndex) {
+      setDragIndex(null); setDragOverIndex(null); return;
+    }
+    const reordered = [...slides];
+    const [moved] = reordered.splice(dragIndex, 1);
+    reordered.splice(dragOverIndex, 0, moved);
+    const updated = reordered.map((s, idx) => ({ ...s, slide_order: idx + 1 }));
+    setSlides(updated);
+    setCurrent(dragOverIndex);
+    setDragIndex(null); setDragOverIndex(null);
+    for (const s of updated) {
+      await supabase.from("deck_slides").update({ slide_order: s.slide_order }).eq("id", s.id);
     }
   };
 
@@ -319,10 +339,16 @@ const DeckEditor = () => {
           {slides.map((s, i) => (
             <button
               key={s.id}
+              draggable
+              onDragStart={() => handleDragStart(i)}
+              onDragOver={(e) => handleDragOver(e, i)}
+              onDragEnd={handleDragEnd}
               onClick={() => setCurrent(i)}
-              className={`w-full p-2 border-b border-white/5 transition-colors ${i === current ? "bg-orange-400/10 border-l-2 border-l-orange-400" : "hover:bg-white/5"}`}
+              className={`w-full p-2 border-b border-white/5 transition-all cursor-grab active:cursor-grabbing ${
+                i === current ? "bg-orange-400/10 border-l-2 border-l-orange-400" : "hover:bg-white/5"
+              } ${dragOverIndex === i ? "border-t-2 border-t-orange-400" : ""} ${dragIndex === i ? "opacity-40" : ""}`}
             >
-              <div className="aspect-video bg-[#1a1a2e] rounded overflow-hidden relative">
+              <div className="aspect-video bg-[#1a1a2e] rounded overflow-hidden relative pointer-events-none">
                 <div style={{ width: SLIDE_W, height: SLIDE_H, transform: "scale(0.05)", transformOrigin: "top left" }}>
                   <SlideRenderer slide={s} />
                 </div>

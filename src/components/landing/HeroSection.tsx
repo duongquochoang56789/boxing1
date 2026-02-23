@@ -133,7 +133,7 @@ const HeroSection = () => {
                       placeholder="Họ và tên"
                       value={formData.full_name}
                       onChange={(e) => setFormData(prev => ({ ...prev, full_name: e.target.value }))}
-                      className="h-11 px-4 bg-cream/8 border-cream/15 text-cream placeholder:text-cream/35 rounded-none focus:border-peach focus:ring-peach/20 text-sm"
+                      className="h-11 px-5 bg-cream/10 backdrop-blur-sm border border-cream/20 text-cream placeholder:text-cream/40 rounded-full focus:border-cream/40 focus:ring-2 focus:ring-peach/30 text-sm"
                     />
                     {errors.full_name && <p className="text-red-400 text-xs mt-1">{errors.full_name}</p>}
                   </div>
@@ -143,7 +143,7 @@ const HeroSection = () => {
                       placeholder="Email của bạn"
                       value={formData.email}
                       onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                      className="h-11 px-4 bg-cream/8 border-cream/15 text-cream placeholder:text-cream/35 rounded-none focus:border-peach focus:ring-peach/20 text-sm"
+                      className="h-11 px-5 bg-cream/10 backdrop-blur-sm border border-cream/20 text-cream placeholder:text-cream/40 rounded-full focus:border-cream/40 focus:ring-2 focus:ring-peach/30 text-sm"
                     />
                     {errors.email && <p className="text-red-400 text-xs mt-1">{errors.email}</p>}
                   </div>
@@ -153,11 +153,11 @@ const HeroSection = () => {
                       placeholder="Số điện thoại"
                       value={formData.phone}
                       onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
-                      className="h-11 px-4 bg-cream/8 border-cream/15 text-cream placeholder:text-cream/35 rounded-none focus:border-peach focus:ring-peach/20 text-sm"
+                      className="h-11 px-5 bg-cream/10 backdrop-blur-sm border border-cream/20 text-cream placeholder:text-cream/40 rounded-full focus:border-cream/40 focus:ring-2 focus:ring-peach/30 text-sm"
                     />
                     {errors.phone && <p className="text-red-400 text-xs mt-1">{errors.phone}</p>}
                   </div>
-                  <MagneticButton type="submit" className="w-full btn-primary rounded-none h-11 group text-xs" disabled={submitting}>
+                  <MagneticButton type="submit" className="w-full bg-cream text-charcoal rounded-full h-11 group text-xs uppercase tracking-widest font-semibold hover:bg-cream/90 transition-all" disabled={submitting}>
                     {submitting ? "Đang gửi..." : "Đăng ký ngay"}
                     {!submitting && <ArrowRight className="ml-2 w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />}
                   </MagneticButton>

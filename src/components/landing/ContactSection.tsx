@@ -228,7 +228,7 @@ const ContactSection = () => {
                     id="service"
                     value={formData.service}
                     onChange={(e) => updateField("service", e.target.value)}
-                    className="w-full h-12 px-4 border border-border bg-background rounded-none focus:outline-none focus:border-terracotta text-charcoal text-sm"
+                    className="w-full h-12 px-4 border border-border bg-background rounded-none focus:outline-none focus:border-terracotta text-charcoal text-sm transition-all duration-300 focus:scale-[1.02] focus:shadow-[0_0_20px_hsl(var(--ring)/0.15)]"
                   >
                     <option value="">Chọn dịch vụ...</option>
                     <option value="flyclass">FLY Class — Nhóm nhỏ</option>

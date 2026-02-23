@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
-import { ArrowLeft, Layout, Layers, Monitor, Sparkles, Zap } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { ArrowLeft, Layout, Layers, Monitor, Sparkles, Zap, ExternalLink } from "lucide-react";
+import { useNavigate, Link } from "react-router-dom";
 
 const heroOptions = [
   {
@@ -187,9 +187,18 @@ const HeroOptions = () => {
               </div>
 
               {/* Best For */}
-              <div className="bg-warm-beige p-4">
-                <h3 className="text-label text-terracotta mb-1">Phù hợp nhất khi</h3>
-                <p className="text-body-sm text-charcoal font-medium">{option.bestFor}</p>
+              <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between bg-warm-beige p-4">
+                <div>
+                  <h3 className="text-label text-terracotta mb-1">Phù hợp nhất khi</h3>
+                  <p className="text-body-sm text-charcoal font-medium">{option.bestFor}</p>
+                </div>
+                <Link
+                  to={`/hero-demo/${option.id}`}
+                  className="shrink-0 flex items-center gap-2 bg-charcoal text-cream px-5 py-2.5 text-xs uppercase tracking-widest font-semibold hover:bg-charcoal/90 transition-colors rounded-full"
+                >
+                  Xem demo
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </Link>
               </div>
             </div>
           </motion.div>

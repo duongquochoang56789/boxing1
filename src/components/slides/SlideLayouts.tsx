@@ -145,11 +145,19 @@ const SlideHeader = ({ slide, colors }: { slide: SlideData; colors: { accent: st
   </>
 );
 
+/* ==================== Background helper ==================== */
+const getSlideBg = (slide: SlideData, colors: { bg: string }) => {
+  const isCustom = slide.background_color && slide.background_color !== "#1a1a2e";
+  if (isCustom) return { style: { backgroundColor: slide.background_color }, className: "" };
+  return { style: {}, className: `bg-gradient-to-br ${colors.bg}` };
+};
+
 /* ==================== COVER ==================== */
 export const CoverSlide = ({ slide }: { slide: SlideData }) => {
   const colors = sectionColors[slide.section_name] || sectionColors.brand;
+  const bg = getSlideBg(slide, colors);
   return (
-    <div className={`w-full h-full bg-gradient-to-br ${colors.bg} relative overflow-hidden flex items-center justify-center`}>
+    <div className={`w-full h-full ${bg.className} relative overflow-hidden flex items-center justify-center`} style={bg.style}>
       {slide.image_url && (
         <img src={slide.image_url} alt="" className="absolute inset-0 w-full h-full object-cover opacity-40" />
       )}
@@ -180,8 +188,9 @@ export const CoverSlide = ({ slide }: { slide: SlideData }) => {
 /* ==================== TWO-COLUMN ==================== */
 export const TwoColumnSlide = ({ slide }: { slide: SlideData }) => {
   const colors = sectionColors[slide.section_name] || sectionColors.brand;
+  const bg = getSlideBg(slide, colors);
   return (
-    <div className={`w-full h-full bg-gradient-to-br ${colors.bg} flex`}>
+    <div className={`w-full h-full ${bg.className} flex`} style={bg.style}>
       <div className="flex-1 flex flex-col justify-center px-16 py-12">
         <SlideHeader slide={slide} colors={colors} />
         <ContentBlock content={slide.content} accent={colors.accent} />
@@ -216,7 +225,7 @@ export const StatsSlide = ({ slide }: { slide: SlideData }) => {
   const hex = accentHex[slide.section_name] || accentHex.brand;
 
   return (
-    <div className={`w-full h-full bg-gradient-to-br ${colors.bg} flex flex-col justify-center px-16 py-12`}>
+    <div className={`w-full h-full ${getSlideBg(slide, colors).className} flex flex-col justify-center px-16 py-12`} style={getSlideBg(slide, colors).style}>
       <SlideHeader slide={slide} colors={colors} />
       {hasStats ? (
         <div className="flex gap-6 mt-4 flex-wrap">
@@ -259,7 +268,7 @@ export const GridSlide = ({ slide }: { slide: SlideData }) => {
   const hex = accentHex[slide.section_name] || accentHex.brand;
 
   return (
-    <div className={`w-full h-full bg-gradient-to-br ${colors.bg} flex flex-col justify-center px-16 py-12`}>
+    <div className={`w-full h-full ${getSlideBg(slide, colors).className} flex flex-col justify-center px-16 py-12`} style={getSlideBg(slide, colors).style}>
       <SlideHeader slide={slide} colors={colors} />
       {hasGrid ? (
         <div className={`grid ${items.length <= 4 ? "grid-cols-2" : "grid-cols-3"} gap-5 mt-2 flex-1`}>
@@ -289,7 +298,7 @@ export const GridSlide = ({ slide }: { slide: SlideData }) => {
 export const TableSlide = ({ slide }: { slide: SlideData }) => {
   const colors = sectionColors[slide.section_name] || sectionColors.brand;
   return (
-    <div className={`w-full h-full bg-gradient-to-br ${colors.bg} flex flex-col justify-center px-16 py-12`}>
+    <div className={`w-full h-full ${getSlideBg(slide, colors).className} flex flex-col justify-center px-16 py-12`} style={getSlideBg(slide, colors).style}>
       <SlideHeader slide={slide} colors={colors} />
       <TableContent content={slide.content} accent={colors.accent} />
     </div>
@@ -316,7 +325,7 @@ export const TimelineSlide = ({ slide }: { slide: SlideData }) => {
   const hex = accentHex[slide.section_name] || accentHex.brand;
 
   return (
-    <div className={`w-full h-full bg-gradient-to-br ${colors.bg} flex flex-col justify-center px-16 py-12`}>
+    <div className={`w-full h-full ${getSlideBg(slide, colors).className} flex flex-col justify-center px-16 py-12`} style={getSlideBg(slide, colors).style}>
       <SlideHeader slide={slide} colors={colors} />
       {hasTimeline ? (
         <div className="relative mt-6 flex-1 flex flex-col justify-center">
@@ -353,7 +362,7 @@ export const TimelineSlide = ({ slide }: { slide: SlideData }) => {
 export const QuoteSlide = ({ slide }: { slide: SlideData }) => {
   const colors = sectionColors[slide.section_name] || sectionColors.brand;
   return (
-    <div className={`w-full h-full bg-gradient-to-br ${colors.bg} relative overflow-hidden flex items-center`}>
+    <div className={`w-full h-full ${getSlideBg(slide, colors).className} relative overflow-hidden flex items-center`} style={getSlideBg(slide, colors).style}>
       {slide.image_url && (
         <img src={slide.image_url} alt="" className="absolute inset-0 w-full h-full object-cover opacity-20" />
       )}
@@ -415,7 +424,7 @@ export const PricingSlide = ({ slide }: { slide: SlideData }) => {
   const hex = accentHex[slide.section_name] || accentHex.brand;
 
   return (
-    <div className={`w-full h-full bg-gradient-to-br ${colors.bg} flex flex-col justify-center px-16 py-12`}>
+    <div className={`w-full h-full ${getSlideBg(slide, colors).className} flex flex-col justify-center px-16 py-12`} style={getSlideBg(slide, colors).style}>
       <SlideHeader slide={slide} colors={colors} />
       {hasCards ? (
         <div className="flex gap-6 mt-4 flex-1 items-stretch">
@@ -475,7 +484,7 @@ export const PersonaSlide = ({ slide }: { slide: SlideData }) => {
   }
 
   return (
-    <div className={`w-full h-full bg-gradient-to-br ${colors.bg} flex`}>
+    <div className={`w-full h-full ${getSlideBg(slide, colors).className} flex`} style={getSlideBg(slide, colors).style}>
       {/* Left: Avatar area */}
       <div className="w-[420px] flex flex-col items-center justify-center relative shrink-0">
         <div className="absolute inset-0" style={{ background: `linear-gradient(180deg, ${hex}12, transparent)` }} />
@@ -523,7 +532,7 @@ export const ChartSlide = ({ slide }: { slide: SlideData }) => {
   const colors = sectionColors[slide.section_name] || sectionColors.brand;
   const hasTable = slide.content.includes("|");
   return (
-    <div className={`w-full h-full bg-gradient-to-br ${colors.bg} flex flex-col justify-center px-16 py-12`}>
+    <div className={`w-full h-full ${getSlideBg(slide, colors).className} flex flex-col justify-center px-16 py-12`} style={getSlideBg(slide, colors).style}>
       <SlideHeader slide={slide} colors={colors} />
       <div className="flex gap-8 flex-1 items-center">
         <div className="flex-1">
@@ -543,6 +552,78 @@ export const ChartSlide = ({ slide }: { slide: SlideData }) => {
   );
 };
 
+/* ==================== IMAGE-FULL — full background image with text overlay ==================== */
+export const ImageFullSlide = ({ slide }: { slide: SlideData }) => {
+  const colors = sectionColors[slide.section_name] || sectionColors.brand;
+  const bg = getSlideBg(slide, colors);
+  return (
+    <div className={`w-full h-full ${bg.className} relative overflow-hidden flex items-end`} style={bg.style}>
+      {slide.image_url && (
+        <img src={slide.image_url} alt="" className="absolute inset-0 w-full h-full object-cover" />
+      )}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/10" />
+      <div className="relative z-10 px-20 pb-16 w-full">
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+          className={`text-[22px] font-medium ${colors.accent} uppercase tracking-widest mb-4`}
+        >Slide {slide.slide_order}</motion.div>
+        <motion.h2 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+          className="text-[72px] font-bold text-white leading-tight mb-4"
+        >{slide.title}</motion.h2>
+        {slide.subtitle && (
+          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}
+            className={`text-[36px] ${colors.accent} mb-6`}
+          >{slide.subtitle}</motion.p>
+        )}
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}
+          className="max-w-[60%]"
+        >
+          <ContentBlock content={slide.content} accent={colors.accent} />
+        </motion.div>
+      </div>
+    </div>
+  );
+};
+
+/* ==================== COMPARISON — side-by-side split ==================== */
+export const ComparisonSlide = ({ slide }: { slide: SlideData }) => {
+  const colors = sectionColors[slide.section_name] || sectionColors.brand;
+  const bg = getSlideBg(slide, colors);
+  const hex = accentHex[slide.section_name] || accentHex.brand;
+
+  // Split content by "VS" or "---"
+  const parts = slide.content.split(/\n(?:VS|vs|---)\n/);
+  const leftContent = parts[0] || "";
+  const rightContent = parts[1] || "";
+
+  return (
+    <div className={`w-full h-full ${bg.className} flex flex-col`} style={bg.style}>
+      <div className="px-16 pt-12 pb-6">
+        <SlideHeader slide={slide} colors={colors} />
+      </div>
+      <div className="flex-1 flex gap-0 px-16 pb-12">
+        {/* Left side */}
+        <div className="flex-1 rounded-l-2xl p-8 border border-white/10 relative overflow-hidden"
+          style={{ background: `linear-gradient(180deg, ${hex}12, ${hex}04)` }}
+        >
+          <div className="absolute top-0 left-0 right-0 h-1" style={{ background: hex }} />
+          <ContentBlock content={leftContent} accent={colors.accent} />
+        </div>
+        {/* Divider */}
+        <div className="w-[2px] bg-white/10 flex items-center justify-center relative">
+          <span className="absolute bg-[#1a1a2e] border border-white/20 text-white/50 text-[20px] font-bold px-3 py-1 rounded-full">VS</span>
+        </div>
+        {/* Right side */}
+        <div className="flex-1 rounded-r-2xl p-8 border border-white/10 relative overflow-hidden"
+          style={{ background: `rgba(255,255,255,0.04)` }}
+        >
+          <div className="absolute top-0 left-0 right-0 h-1 bg-white/20" />
+          <ContentBlock content={rightContent} accent="text-white/80" />
+        </div>
+      </div>
+    </div>
+  );
+};
+
 /* ==================== LAYOUT MAP ==================== */
 const layoutMap: Record<string, React.ComponentType<{ slide: SlideData }>> = {
   cover: CoverSlide,
@@ -555,6 +636,8 @@ const layoutMap: Record<string, React.ComponentType<{ slide: SlideData }>> = {
   pricing: PricingSlide,
   persona: PersonaSlide,
   chart: ChartSlide,
+  "image-full": ImageFullSlide,
+  comparison: ComparisonSlide,
 };
 
 export const SlideRenderer = ({ slide }: { slide: SlideData }) => {

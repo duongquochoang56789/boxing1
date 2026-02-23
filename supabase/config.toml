@@ -17,3 +17,6 @@ verify_jwt = false
 
 [functions.generate-deck]
 verify_jwt = false
+
+[functions.generate-slide-image]
+verify_jwt = false

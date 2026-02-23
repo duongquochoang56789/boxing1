@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  Save, ArrowLeft, Presentation, Plus, Trash2, ChevronUp, ChevronDown, Loader2, Share2, Copy, Palette
+  Save, ArrowLeft, Presentation, Plus, Trash2, ChevronUp, ChevronDown, Loader2, Share2, Copy, Palette, ImageIcon, Download
 } from "lucide-react";
 
 interface DeckSlide {
@@ -44,6 +44,8 @@ const DeckEditor = () => {
   const [deckTitle, setDeckTitle] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [generatingImage, setGeneratingImage] = useState(false);
+  const [exportingPdf, setExportingPdf] = useState(false);
   const [scale, setScale] = useState(1);
   const previewRef = useRef<HTMLDivElement>(null);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout>>();
@@ -188,6 +190,89 @@ const DeckEditor = () => {
     setSlides(prev => prev.map((s, i) => i === current ? { ...s, background_color: color } : s));
   };
 
+  const generateImage = async () => {
+    if (!slide || !slide.image_prompt) {
+      toast({ title: "Slide này chưa có image prompt", variant: "destructive" });
+      return;
+    }
+    setGeneratingImage(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-slide-image", {
+        body: { slideId: slide.id, imagePrompt: slide.image_prompt },
+      });
+      if (error) throw error;
+      if (data?.imageUrl) {
+        setSlides(prev => prev.map((s, i) => i === current ? { ...s, image_url: data.imageUrl } : s));
+        toast({ title: "Đã tạo hình minh hoạ!" });
+      } else if (data?.error) {
+        toast({ title: data.error, variant: "destructive" });
+      }
+    } catch (e: any) {
+      toast({ title: "Lỗi tạo ảnh: " + (e.message || "Unknown"), variant: "destructive" });
+    }
+    setGeneratingImage(false);
+  };
+
+  const exportPdf = async () => {
+    setExportingPdf(true);
+    toast({ title: "Đang xuất PDF..." });
+    try {
+      const html2canvas = (await import("html2canvas")).default;
+      const { jsPDF } = await import("jspdf");
+      const pdf = new jsPDF({ orientation: "landscape", unit: "px", format: [SLIDE_W, SLIDE_H] });
+
+      // Create offscreen container
+      const container = document.createElement("div");
+      container.style.position = "fixed";
+      container.style.left = "-99999px";
+      container.style.top = "0";
+      container.style.width = `${SLIDE_W}px`;
+      container.style.height = `${SLIDE_H}px`;
+      document.body.appendChild(container);
+
+      for (let i = 0; i < slides.length; i++) {
+        if (i > 0) pdf.addPage([SLIDE_W, SLIDE_H], "landscape");
+
+        // Render slide into container
+        const { createRoot } = await import("react-dom/client");
+        const React = await import("react");
+        const { SlideRenderer: SR } = await import("@/components/slides/SlideLayouts");
+
+        const wrapper = document.createElement("div");
+        wrapper.style.width = `${SLIDE_W}px`;
+        wrapper.style.height = `${SLIDE_H}px`;
+        container.innerHTML = "";
+        container.appendChild(wrapper);
+
+        const root = createRoot(wrapper);
+        root.render(React.createElement(SR, { slide: slides[i] }));
+
+        // Wait for render
+        await new Promise(r => setTimeout(r, 300));
+
+        const canvas = await html2canvas(wrapper, {
+          width: SLIDE_W,
+          height: SLIDE_H,
+          scale: 1,
+          useCORS: true,
+          backgroundColor: null,
+        });
+
+        const imgData = canvas.toDataURL("image/jpeg", 0.85);
+        pdf.addImage(imgData, "JPEG", 0, 0, SLIDE_W, SLIDE_H);
+        root.unmount();
+      }
+
+      document.body.removeChild(container);
+      pdf.save(`${deckTitle || "slides"}.pdf`);
+      toast({ title: "Đã xuất PDF thành công!" });
+    } catch (e: any) {
+      console.error("PDF export error:", e);
+      toast({ title: "Lỗi xuất PDF", variant: "destructive" });
+    }
+    setExportingPdf(false);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
@@ -209,6 +294,15 @@ const DeckEditor = () => {
         </div>
         <div className="flex items-center gap-2">
           <span className="text-white/50 text-sm">{current + 1} / {slides.length}</span>
+          <Button size="sm" variant="ghost" onClick={generateImage} disabled={generatingImage || !slide?.image_prompt} 
+            className="text-white/60 hover:text-white" title={slide?.image_prompt ? "Tạo ảnh AI" : "Không có image prompt"}>
+            {generatingImage ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <ImageIcon className="w-4 h-4 mr-1" />}
+            {generatingImage ? "Đang tạo..." : "AI Ảnh"}
+          </Button>
+          <Button size="sm" variant="ghost" onClick={exportPdf} disabled={exportingPdf} className="text-white/60 hover:text-white">
+            {exportingPdf ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Download className="w-4 h-4 mr-1" />}
+            {exportingPdf ? "Xuất..." : "PDF"}
+          </Button>
           <Button size="sm" variant="ghost" onClick={saveAll} disabled={saving} className="text-white/60 hover:text-white">
             <Save className="w-4 h-4 mr-1" /> {saving ? "..." : "Lưu"}
           </Button>

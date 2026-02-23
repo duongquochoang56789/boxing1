@@ -51,7 +51,7 @@ const SlideBuilder = () => {
       {/* Header */}
       <div className="flex items-center justify-between px-6 py-4 border-b border-white/10">
         <div className="flex items-center gap-3">
-          <Link to="/" className="p-2 text-white/50 hover:text-white hover:bg-white/10 rounded-lg transition-colors">
+          <Link to="/slides" className="p-2 text-white/50 hover:text-white hover:bg-white/10 rounded-lg transition-colors">
             <ArrowLeft className="w-5 h-5" />
           </Link>
           <span className="text-white font-bold text-xl">FLY<span className="text-orange-400">FIT</span></span>

@@ -1,10 +1,11 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, FileText, BarChart3, Users, Settings, Presentation } from 'lucide-react';
+import { ArrowLeft, FileText, Presentation, Database } from 'lucide-react';
 
 const adminLinks = [
   { title: 'Quản lý nội dung', description: 'Chỉnh sửa nội dung website, tài liệu, slides', icon: FileText, href: '/admin/content' },
   { title: 'Thuyết trình dự án', description: 'Xem 30 slides thuyết trình FLYFIT', icon: Presentation, href: '/project' },
+  { title: 'Sao lưu dữ liệu', description: 'Tải backup toàn bộ nội dung website về máy, khôi phục từ file', icon: Database, href: '/admin/backup' },
 ];
 
 const Admin = () => {

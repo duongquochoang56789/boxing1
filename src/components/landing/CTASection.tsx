@@ -56,6 +56,8 @@ const CTASection = () => {
 
   const bgImage = getContent(content, "image", "background", "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=2070");
 
+  const inputClasses = "h-14 md:h-16 px-6 bg-cream/10 backdrop-blur-sm border border-cream/20 text-cream placeholder:text-cream/40 rounded-full text-base focus:ring-2 focus:ring-peach/30 focus:border-cream/40";
+
   return (
     <section className="relative overflow-hidden">
       {/* Background */}
@@ -91,7 +93,7 @@ const CTASection = () => {
                 placeholder="Họ và tên"
                 value={formData.full_name}
                 onChange={(e) => setFormData(prev => ({ ...prev, full_name: e.target.value }))}
-                className="h-14 md:h-16 px-5 bg-white border-0 text-charcoal placeholder:text-charcoal/40 rounded-none text-base focus:ring-2 focus:ring-peach/50"
+                className={inputClasses}
               />
               {errors.full_name && <p className="text-red-300 text-xs mt-1.5">{errors.full_name}</p>}
             </div>
@@ -101,7 +103,7 @@ const CTASection = () => {
                 placeholder="Email của bạn"
                 value={formData.email}
                 onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                className="h-14 md:h-16 px-5 bg-white border-0 text-charcoal placeholder:text-charcoal/40 rounded-none text-base focus:ring-2 focus:ring-peach/50"
+                className={inputClasses}
               />
               {errors.email && <p className="text-red-300 text-xs mt-1.5">{errors.email}</p>}
             </div>
@@ -111,14 +113,14 @@ const CTASection = () => {
                 placeholder="Số điện thoại"
                 value={formData.phone}
                 onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
-                className="h-14 md:h-16 px-5 bg-white border-0 text-charcoal placeholder:text-charcoal/40 rounded-none text-base focus:ring-2 focus:ring-peach/50"
+                className={inputClasses}
               />
               {errors.phone && <p className="text-red-300 text-xs mt-1.5">{errors.phone}</p>}
             </div>
 
             <MagneticButton
               type="submit"
-              className="btn-primary rounded-none h-14 md:h-16 px-10 text-sm md:text-base uppercase tracking-widest font-semibold group"
+              className="w-full bg-cream text-charcoal rounded-full h-14 md:h-16 px-10 text-sm md:text-base uppercase tracking-widest font-semibold group hover:bg-cream/90 transition-all"
               disabled={submitting}
             >
               {submitting ? "Đang gửi..." : "Đăng ký ngay"}

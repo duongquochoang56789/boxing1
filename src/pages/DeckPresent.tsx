@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { SlideRenderer } from "@/components/slides/SlideLayouts";
 import { AnimatePresence, motion } from "framer-motion";
-import { ChevronLeft, ChevronRight, Minimize, Loader2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, Minimize, Loader2, StickyNote, Clock } from "lucide-react";
 
 interface DeckSlide {
   id: string;
@@ -15,6 +15,7 @@ interface DeckSlide {
   image_url: string | null;
   background_color: string;
   section_name: string;
+  notes: string | null;
 }
 
 const SLIDE_W = 1920;
@@ -27,7 +28,10 @@ const DeckPresent = () => {
   const [current, setCurrent] = useState(0);
   const [scale, setScale] = useState(1);
   const [loading, setLoading] = useState(true);
+  const [showNotes, setShowNotes] = useState(false);
+  const [elapsed, setElapsed] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
+  const startTimeRef = useRef(Date.now());
 
   useEffect(() => {
     if (!deckId) return;
@@ -63,6 +67,7 @@ const DeckPresent = () => {
       if (e.key === "ArrowRight" || e.key === " ") { e.preventDefault(); goTo(current + 1); }
       if (e.key === "ArrowLeft") { e.preventDefault(); goTo(current - 1); }
       if (e.key === "Escape") navigate(`/slides/${deckId}`);
+      if (e.key === "n" || e.key === "N") setShowNotes(prev => !prev);
     };
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
@@ -75,6 +80,15 @@ const DeckPresent = () => {
     }
     return () => { document.exitFullscreen?.().catch(() => {}); };
   }, [loading, slides.length]);
+
+  // Timer
+  useEffect(() => {
+    startTimeRef.current = Date.now();
+    const timer = setInterval(() => setElapsed(Math.floor((Date.now() - startTimeRef.current) / 1000)), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const formatTime = (s: number) => `${Math.floor(s / 60).toString().padStart(2, "0")}:${(s % 60).toString().padStart(2, "0")}`;
 
   const slide = slides[current];
 
@@ -140,10 +154,39 @@ const DeckPresent = () => {
         <Minimize className="w-5 h-5" />
       </button>
 
+      {/* Slide counter + timer */}
+      <div className="absolute bottom-3 right-4 flex items-center gap-3 text-white/40 text-xs opacity-0 hover:opacity-100 transition-opacity" onClick={e => e.stopPropagation()}>
+        <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{formatTime(elapsed)}</span>
+        <span>{current + 1} / {slides.length}</span>
+      </div>
+
       {/* Progress */}
       <div className="absolute bottom-0 inset-x-0 h-1 bg-white/5">
         <div className="h-full bg-orange-400 transition-all duration-300" style={{ width: `${((current + 1) / slides.length) * 100}%` }} />
       </div>
+
+      {/* Notes overlay */}
+      <AnimatePresence>
+        {showNotes && slide.notes && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            onClick={e => e.stopPropagation()}
+            className="absolute bottom-6 left-4 right-4 max-w-2xl bg-black/80 backdrop-blur-xl border border-white/10 rounded-xl p-4 text-white/80 text-sm leading-relaxed"
+          >
+            <div className="flex items-center gap-2 mb-2 text-orange-400 text-xs font-medium">
+              <StickyNote className="w-3.5 h-3.5" /> Ghi chú (N để ẩn)
+            </div>
+            <p className="whitespace-pre-wrap">{slide.notes}</p>
+            {slides[current + 1] && (
+              <div className="mt-3 pt-3 border-t border-white/10 text-white/40 text-xs">
+                Slide tiếp: {slides[current + 1].title}
+              </div>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

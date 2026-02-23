@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  Save, ArrowLeft, Presentation, Plus, Trash2, ChevronUp, ChevronDown, Loader2, Share2
+  Save, ArrowLeft, Presentation, Plus, Trash2, ChevronUp, ChevronDown, Loader2, Share2, Copy, Palette
 } from "lucide-react";
 
 interface DeckSlide {
@@ -30,6 +30,10 @@ interface DeckSlide {
 const SLIDE_W = 1920;
 const SLIDE_H = 1080;
 const VALID_LAYOUTS = ["cover", "two-column", "stats", "grid", "table", "timeline", "quote", "pricing", "persona", "chart"];
+const BG_PRESETS = [
+  "#1a1a2e", "#16213e", "#0f3460", "#1a0a2e", "#2e1a1a", "#1a2e1a", "#2e2a1a", "#0a0a0a",
+  "#e2e8f0", "#fef3c7", "#fee2e2", "#dbeafe", "#d1fae5", "#ede9fe",
+];
 
 const DeckEditor = () => {
   const { deckId } = useParams<{ deckId: string }>();
@@ -148,6 +152,42 @@ const DeckEditor = () => {
     setCurrent(prev => Math.min(prev, slides.length - 2));
   };
 
+  const duplicateSlide = async () => {
+    if (!deckId || !slide) return;
+    const newOrder = slide.slide_order + 1;
+    // Shift subsequent slides
+    const toShift = slides.filter(s => s.slide_order >= newOrder);
+    for (const s of toShift) {
+      await supabase.from("deck_slides").update({ slide_order: s.slide_order + 1 }).eq("id", s.id);
+    }
+    const { data, error } = await supabase.from("deck_slides").insert({
+      deck_id: deckId,
+      slide_order: newOrder,
+      title: slide.title,
+      subtitle: slide.subtitle,
+      content: slide.content,
+      layout: slide.layout,
+      section_name: slide.section_name,
+      background_color: slide.background_color,
+      notes: slide.notes,
+      image_url: slide.image_url,
+      image_prompt: slide.image_prompt,
+    }).select().single();
+    if (!error && data) {
+      const updated = slides.map(s => s.slide_order >= newOrder ? { ...s, slide_order: s.slide_order + 1 } : s);
+      updated.splice(current + 1, 0, data as DeckSlide);
+      setSlides(updated);
+      setCurrent(current + 1);
+      toast({ title: "Đã nhân đôi slide" });
+    }
+  };
+
+  const updateBgColor = async (color: string) => {
+    if (!slide) return;
+    await supabase.from("deck_slides").update({ background_color: color }).eq("id", slide.id);
+    setSlides(prev => prev.map((s, i) => i === current ? { ...s, background_color: color } : s));
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
@@ -238,10 +278,27 @@ const DeckEditor = () => {
                       ))}
                     </SelectContent>
                   </Select>
+                  <Button size="sm" variant="ghost" onClick={duplicateSlide}
+                    className="h-8 text-white/40 hover:text-white hover:bg-white/10 px-2" title="Nhân đôi">
+                    <Copy className="w-3.5 h-3.5" />
+                  </Button>
                   <Button size="sm" variant="ghost" onClick={deleteSlide} disabled={slides.length <= 1}
                     className="h-8 text-red-400/60 hover:text-red-400 hover:bg-red-400/10 px-2">
                     <Trash2 className="w-3.5 h-3.5" />
                   </Button>
+                </div>
+                {/* Background color presets */}
+                <div className="flex items-center gap-1.5">
+                  <Palette className="w-3 h-3 text-white/30" />
+                  {BG_PRESETS.map(c => (
+                    <button
+                      key={c}
+                      onClick={() => updateBgColor(c)}
+                      className={`w-5 h-5 rounded-full border-2 transition-all ${slide?.background_color === c ? "border-orange-400 scale-110" : "border-transparent hover:border-white/30"}`}
+                      style={{ backgroundColor: c }}
+                      title={c}
+                    />
+                  ))}
                 </div>
               </div>
               <textarea

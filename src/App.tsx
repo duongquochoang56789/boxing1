@@ -20,6 +20,11 @@ import Profile from "./pages/Profile";
 import History from "./pages/History";
 import ProjectPresentation from "./pages/ProjectPresentation";
 import HeroOptions from "./pages/HeroOptions";
+import HeroDemo1 from "./pages/HeroDemo1";
+import HeroDemo2 from "./pages/HeroDemo2";
+import HeroDemo3 from "./pages/HeroDemo3";
+import HeroDemo4 from "./pages/HeroDemo4";
+import HeroDemo5 from "./pages/HeroDemo5";
 import AIAssistant from "./pages/AIAssistant";
 import SlideBuilder from "./pages/SlideBuilder";
 import SlideDashboard from "./pages/SlideDashboard";
@@ -78,6 +83,11 @@ const AnimatedRoutes = () => {
         <Route path="/admin/backup" element={<ProtectedRoute requireAdmin><PageTransition><AdminBackup /></PageTransition></ProtectedRoute>} />
         <Route path="/project" element={<ProjectPresentation />} />
         <Route path="/hero-options" element={<PageTransition><HeroOptions /></PageTransition>} />
+        <Route path="/hero-demo/1" element={<HeroDemo1 />} />
+        <Route path="/hero-demo/2" element={<HeroDemo2 />} />
+        <Route path="/hero-demo/3" element={<HeroDemo3 />} />
+        <Route path="/hero-demo/4" element={<HeroDemo4 />} />
+        <Route path="/hero-demo/5" element={<HeroDemo5 />} />
         <Route path="/slides" element={<ProtectedRoute><SlideDashboard /></ProtectedRoute>} />
         <Route path="/slides/new" element={<ProtectedRoute><SlideBuilder /></ProtectedRoute>} />
         <Route path="/slides/shared/:slug" element={<SharedDeck />} />

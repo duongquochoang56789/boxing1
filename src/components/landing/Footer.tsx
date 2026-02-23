@@ -17,6 +17,7 @@ const footerLinks = {
     { name: "Huấn luyện viên", href: "#trainers" },
     { name: "Tài liệu dự án", href: "/project" },
     { name: "Liên hệ", href: "#contact" },
+    { name: "Quản trị", href: "/auth" },
   ],
 };
 

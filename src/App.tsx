@@ -15,6 +15,7 @@ import BookPT from "./pages/BookPT";
 import NotFound from "./pages/NotFound";
 import AdminContent from "./pages/AdminContent";
 import Admin from "./pages/Admin";
+import AdminBackup from "./pages/AdminBackup";
 import Profile from "./pages/Profile";
 import History from "./pages/History";
 import ProjectPresentation from "./pages/ProjectPresentation";
@@ -69,6 +70,7 @@ const AnimatedRoutes = () => {
         />
         <Route path="/admin" element={<PageTransition><Admin /></PageTransition>} />
         <Route path="/admin/content" element={<PageTransition><AdminContent /></PageTransition>} />
+        <Route path="/admin/backup" element={<ProtectedRoute requireAdmin><PageTransition><AdminBackup /></PageTransition></ProtectedRoute>} />
         <Route path="/project" element={<ProjectPresentation />} />
         <Route path="/hero-options" element={<PageTransition><HeroOptions /></PageTransition>} />
         <Route 

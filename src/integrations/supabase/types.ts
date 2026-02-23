@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      achievements: {
+        Row: {
+          badge_url: string | null
+          condition_type: string
+          condition_value: number
+          created_at: string
+          description: string
+          icon: string
+          id: string
+          name: string
+          points: number
+        }
+        Insert: {
+          badge_url?: string | null
+          condition_type?: string
+          condition_value?: number
+          created_at?: string
+          description?: string
+          icon?: string
+          id?: string
+          name: string
+          points?: number
+        }
+        Update: {
+          badge_url?: string | null
+          condition_type?: string
+          condition_value?: number
+          created_at?: string
+          description?: string
+          icon?: string
+          id?: string
+          name?: string
+          points?: number
+        }
+        Relationships: []
+      }
       admin_documents: {
         Row: {
           category: string
@@ -50,6 +86,162 @@ export type Database = {
           title?: string
           updated_at?: string
           uploaded_by?: string
+        }
+        Relationships: []
+      }
+      ai_meal_plans: {
+        Row: {
+          created_at: string
+          goal: string
+          id: string
+          plan_content: string
+          preferences: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          goal: string
+          id?: string
+          plan_content?: string
+          preferences?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          goal?: string
+          id?: string
+          plan_content?: string
+          preferences?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      ai_workout_plans: {
+        Row: {
+          created_at: string
+          fitness_level: string
+          goal: string
+          id: string
+          plan_content: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          fitness_level?: string
+          goal: string
+          id?: string
+          plan_content?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          fitness_level?: string
+          goal?: string
+          id?: string
+          plan_content?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      blog_posts: {
+        Row: {
+          author_id: string
+          category: string
+          content: string
+          cover_image_url: string | null
+          created_at: string
+          excerpt: string
+          id: string
+          is_published: boolean
+          published_at: string | null
+          slug: string
+          tags: string[] | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          author_id: string
+          category?: string
+          content?: string
+          cover_image_url?: string | null
+          created_at?: string
+          excerpt?: string
+          id?: string
+          is_published?: boolean
+          published_at?: string | null
+          slug: string
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string
+          category?: string
+          content?: string
+          cover_image_url?: string | null
+          created_at?: string
+          excerpt?: string
+          id?: string
+          is_published?: boolean
+          published_at?: string | null
+          slug?: string
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      brand_kits: {
+        Row: {
+          accent_color: string
+          accent_font: string
+          bg_color: string
+          body_font: string
+          created_at: string
+          heading_font: string
+          id: string
+          logo_prompt: string | null
+          logo_url: string | null
+          name: string
+          primary_color: string
+          secondary_color: string
+          slogan: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          accent_color?: string
+          accent_font?: string
+          bg_color?: string
+          body_font?: string
+          created_at?: string
+          heading_font?: string
+          id?: string
+          logo_prompt?: string | null
+          logo_url?: string | null
+          name: string
+          primary_color?: string
+          secondary_color?: string
+          slogan?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          accent_color?: string
+          accent_font?: string
+          bg_color?: string
+          body_font?: string
+          created_at?: string
+          heading_font?: string
+          id?: string
+          logo_prompt?: string | null
+          logo_url?: string | null
+          name?: string
+          primary_color?: string
+          secondary_color?: string
+          slogan?: string | null
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -191,6 +383,115 @@ export type Database = {
             columns: ["trainer_id"]
             isOneToOne: false
             referencedRelation: "trainers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      deck_slides: {
+        Row: {
+          background_color: string
+          content: string
+          created_at: string
+          deck_id: string
+          id: string
+          image_prompt: string | null
+          image_url: string | null
+          layout: string
+          notes: string | null
+          section_name: string
+          slide_order: number
+          subtitle: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          background_color?: string
+          content?: string
+          created_at?: string
+          deck_id: string
+          id?: string
+          image_prompt?: string | null
+          image_url?: string | null
+          layout?: string
+          notes?: string | null
+          section_name?: string
+          slide_order: number
+          subtitle?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          background_color?: string
+          content?: string
+          created_at?: string
+          deck_id?: string
+          id?: string
+          image_prompt?: string | null
+          image_url?: string | null
+          layout?: string
+          notes?: string | null
+          section_name?: string
+          slide_order?: number
+          subtitle?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deck_slides_deck_id_fkey"
+            columns: ["deck_id"]
+            isOneToOne: false
+            referencedRelation: "decks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      decks: {
+        Row: {
+          brand_kit_id: string | null
+          created_at: string
+          description: string
+          id: string
+          is_public: boolean
+          share_slug: string | null
+          slide_count: number
+          thumbnail_url: string | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          brand_kit_id?: string | null
+          created_at?: string
+          description?: string
+          id?: string
+          is_public?: boolean
+          share_slug?: string | null
+          slide_count?: number
+          thumbnail_url?: string | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          brand_kit_id?: string | null
+          created_at?: string
+          description?: string
+          id?: string
+          is_public?: boolean
+          share_slug?: string | null
+          slide_count?: number
+          thumbnail_url?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "decks_brand_kit_id_fkey"
+            columns: ["brand_kit_id"]
+            isOneToOne: false
+            referencedRelation: "brand_kits"
             referencedColumns: ["id"]
           },
         ]
@@ -392,6 +693,39 @@ export type Database = {
           },
         ]
       }
+      reviews: {
+        Row: {
+          comment: string | null
+          created_at: string
+          id: string
+          is_approved: boolean
+          rating: number
+          target_id: string
+          target_type: string
+          user_id: string
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          is_approved?: boolean
+          rating?: number
+          target_id: string
+          target_type: string
+          user_id: string
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          is_approved?: boolean
+          rating?: number
+          target_id?: string
+          target_type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       site_content: {
         Row: {
           content_type: string
@@ -499,6 +833,35 @@ export type Database = {
         }
         Relationships: []
       }
+      user_achievements: {
+        Row: {
+          achievement_id: string
+          earned_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          achievement_id: string
+          earned_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          achievement_id?: string
+          earned_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_achievements_achievement_id_fkey"
+            columns: ["achievement_id"]
+            isOneToOne: false
+            referencedRelation: "achievements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -516,6 +879,33 @@ export type Database = {
           created_at?: string
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_streaks: {
+        Row: {
+          current_streak: number
+          id: string
+          last_activity_date: string | null
+          longest_streak: number
+          total_points: number
+          user_id: string
+        }
+        Insert: {
+          current_streak?: number
+          id?: string
+          last_activity_date?: string | null
+          longest_streak?: number
+          total_points?: number
+          user_id: string
+        }
+        Update: {
+          current_streak?: number
+          id?: string
+          last_activity_date?: string | null
+          longest_streak?: number
+          total_points?: number
           user_id?: string
         }
         Relationships: []

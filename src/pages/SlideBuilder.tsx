@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Sparkles, ArrowLeft, Loader2, Presentation, Globe, Hash, Palette } from "lucide-react";
+import { Sparkles, ArrowLeft, Loader2, Presentation, Globe, Hash, Palette, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -171,6 +171,32 @@ const SlideBuilder = () => {
             >
               AI đang phân tích chủ đề và tạo nội dung cho {slideCount} slides...
             </motion.div>
+          )}
+
+          {/* Template Suggestions */}
+          {!loading && !prompt && (
+            <div className="space-y-3">
+              <p className="text-white/30 text-sm text-center">Hoặc chọn nhanh một chủ đề:</p>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                {[
+                  { emoji: "🚀", label: "Kế hoạch kinh doanh startup" },
+                  { emoji: "📊", label: "Báo cáo tài chính quý" },
+                  { emoji: "🎯", label: "Giới thiệu sản phẩm mới" },
+                  { emoji: "📋", label: "Đề xuất dự án đầu tư" },
+                  { emoji: "📈", label: "Phân tích thị trường" },
+                  { emoji: "🎓", label: "Bài giảng đào tạo nội bộ" },
+                ].map((t) => (
+                  <button
+                    key={t.label}
+                    onClick={() => setPrompt(t.label)}
+                    className="flex items-center gap-2 px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white/70 text-sm hover:bg-white/10 hover:border-orange-400/30 hover:text-white transition-all text-left"
+                  >
+                    <span className="text-lg">{t.emoji}</span>
+                    {t.label}
+                  </button>
+                ))}
+              </div>
+            </div>
           )}
         </motion.div>
       </div>

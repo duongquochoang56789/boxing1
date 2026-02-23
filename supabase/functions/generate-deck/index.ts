@@ -62,7 +62,7 @@ Trả về CHỈNH xác một JSON array, mỗi phần tử gồm:
 - title (ngắn gọn, <60 ký tự)
 - subtitle (nullable, <80 ký tự)
 - content (markdown: emoji, bullet points, **bold**, bảng nếu cần)
-- layout (chọn 1 trong: cover, two-column, stats, grid, table, timeline, quote, pricing, persona, chart)
+- layout (chọn 1 trong: cover, two-column, stats, grid, table, timeline, quote, pricing, persona, chart, image-full, comparison)
 - section_name (chọn 1 trong: brand, product, operations, market, finance, roadmap)
 - image_prompt (mô tả ảnh bằng tiếng Anh, <200 từ, kết thúc bằng "Ultra high resolution 1920x1080.")
 
@@ -75,6 +75,8 @@ Quy tắc layout:
 - Slide có lộ trình/timeline: dùng 'timeline'
 - Slide có chân dung khách hàng: dùng 'persona'
 - Slide có biểu đồ: dùng 'chart'
+- Slide có ảnh minh hoạ lớn, ấn tượng: dùng 'image-full'
+- Slide so sánh 2 phương án/đối thủ: dùng 'comparison' (nội dung chia bằng dòng "VS")
 - Còn lại: dùng 'two-column' hoặc 'grid'
 
 CHỈ trả về JSON array, không có text khác.`;
@@ -181,7 +183,7 @@ CHỈ trả về JSON array, không có text khác.`;
     }
 
     // Validate and insert slides
-    const validLayouts = ["cover", "two-column", "stats", "grid", "table", "timeline", "quote", "pricing", "persona", "chart"];
+    const validLayouts = ["cover", "two-column", "stats", "grid", "table", "timeline", "quote", "pricing", "persona", "chart", "image-full", "comparison"];
     const validSections = ["brand", "product", "operations", "market", "finance", "roadmap"];
 
     const slidesToInsert = slides.map((s: any, i: number) => ({

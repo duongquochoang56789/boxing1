@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  Save, ArrowLeft, Presentation, Plus, Trash2, ChevronUp, ChevronDown, Loader2, Share2, Copy, Palette, ImageIcon, Download
+  Save, ArrowLeft, Presentation, Plus, Trash2, ChevronUp, ChevronDown, Loader2, Share2, Copy, Palette, ImageIcon, Download, Check, CloudOff
 } from "lucide-react";
 
 interface DeckSlide {
@@ -29,7 +29,7 @@ interface DeckSlide {
 
 const SLIDE_W = 1920;
 const SLIDE_H = 1080;
-const VALID_LAYOUTS = ["cover", "two-column", "stats", "grid", "table", "timeline", "quote", "pricing", "persona", "chart"];
+const VALID_LAYOUTS = ["cover", "two-column", "stats", "grid", "table", "timeline", "quote", "pricing", "persona", "chart", "image-full", "comparison"];
 const BG_PRESETS = [
   "#1a1a2e", "#16213e", "#0f3460", "#1a0a2e", "#2e1a1a", "#1a2e1a", "#2e2a1a", "#0a0a0a",
   "#e2e8f0", "#fef3c7", "#fee2e2", "#dbeafe", "#d1fae5", "#ede9fe",
@@ -44,11 +44,13 @@ const DeckEditor = () => {
   const [deckTitle, setDeckTitle] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
   const [generatingImage, setGeneratingImage] = useState(false);
   const [exportingPdf, setExportingPdf] = useState(false);
   const [scale, setScale] = useState(1);
   const previewRef = useRef<HTMLDivElement>(null);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout>>();
+  const saveStatusTimerRef = useRef<ReturnType<typeof setTimeout>>();
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
@@ -83,12 +85,42 @@ const DeckEditor = () => {
     window.addEventListener("resize", update);
     return () => window.removeEventListener("resize", update);
   }, [slides, current]);
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement;
+      const isEditing = target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable;
+
+      if ((e.ctrlKey || e.metaKey) && e.key === "s") {
+        e.preventDefault();
+        saveAll();
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key === "d") {
+        e.preventDefault();
+        duplicateSlide();
+      }
+      if (e.key === "Delete" && !isEditing) {
+        deleteSlide();
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key === "ArrowUp") {
+        e.preventDefault();
+        setCurrent(prev => Math.max(0, prev - 1));
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key === "ArrowDown") {
+        e.preventDefault();
+        setCurrent(prev => Math.min(slides.length - 1, prev + 1));
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [slides, current]);
 
   const slide = slides[current];
 
-  // Auto-save with debounce
+  // Auto-save with debounce + status indicator
   const triggerSave = useCallback((updated: DeckSlide) => {
     if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    setSaveStatus("saving");
     saveTimerRef.current = setTimeout(async () => {
       const { error } = await supabase
         .from("deck_slides")
@@ -101,7 +133,10 @@ const DeckEditor = () => {
           notes: updated.notes,
         })
         .eq("id", updated.id);
-      if (error) console.error("Auto-save error:", error);
+      if (error) { console.error("Auto-save error:", error); setSaveStatus("idle"); return; }
+      setSaveStatus("saved");
+      if (saveStatusTimerRef.current) clearTimeout(saveStatusTimerRef.current);
+      saveStatusTimerRef.current = setTimeout(() => setSaveStatus("idle"), 2000);
     }, 2000);
   }, []);
 
@@ -314,6 +349,16 @@ const DeckEditor = () => {
         </div>
         <div className="flex items-center gap-2">
           <span className="text-white/50 text-sm">{current + 1} / {slides.length}</span>
+          {saveStatus === "saving" && (
+            <span className="flex items-center gap-1 text-orange-400 text-xs animate-pulse">
+              <Loader2 className="w-3 h-3 animate-spin" /> Đang lưu...
+            </span>
+          )}
+          {saveStatus === "saved" && (
+            <span className="flex items-center gap-1 text-emerald-400 text-xs">
+              <Check className="w-3 h-3" /> Đã lưu
+            </span>
+          )}
           <Button size="sm" variant="ghost" onClick={generateImage} disabled={generatingImage || !slide?.image_prompt} 
             className="text-white/60 hover:text-white" title={slide?.image_prompt ? "Tạo ảnh AI" : "Không có image prompt"}>
             {generatingImage ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <ImageIcon className="w-4 h-4 mr-1" />}

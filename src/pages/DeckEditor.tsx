@@ -161,7 +161,7 @@ const DeckEditor = () => {
       {/* Toolbar */}
       <div className="flex items-center justify-between px-4 py-2 bg-[#111] border-b border-white/10 shrink-0">
         <div className="flex items-center gap-3">
-          <Link to="/slides/new" className="p-2 text-white/50 hover:text-white hover:bg-white/10 rounded transition-colors">
+          <Link to="/slides" className="p-2 text-white/50 hover:text-white hover:bg-white/10 rounded transition-colors">
             <ArrowLeft className="w-4 h-4" />
           </Link>
           <span className="text-white font-bold">FLY<span className="text-orange-400">FIT</span></span>

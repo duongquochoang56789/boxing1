@@ -22,6 +22,7 @@ import ProjectPresentation from "./pages/ProjectPresentation";
 import HeroOptions from "./pages/HeroOptions";
 import AIAssistant from "./pages/AIAssistant";
 import SlideBuilder from "./pages/SlideBuilder";
+import SlideDashboard from "./pages/SlideDashboard";
 import DeckEditor from "./pages/DeckEditor";
 import DeckPresent from "./pages/DeckPresent";
 import SharedDeck from "./pages/SharedDeck";
@@ -77,6 +78,7 @@ const AnimatedRoutes = () => {
         <Route path="/admin/backup" element={<ProtectedRoute requireAdmin><PageTransition><AdminBackup /></PageTransition></ProtectedRoute>} />
         <Route path="/project" element={<ProjectPresentation />} />
         <Route path="/hero-options" element={<PageTransition><HeroOptions /></PageTransition>} />
+        <Route path="/slides" element={<ProtectedRoute><SlideDashboard /></ProtectedRoute>} />
         <Route path="/slides/new" element={<ProtectedRoute><SlideBuilder /></ProtectedRoute>} />
         <Route path="/slides/shared/:slug" element={<SharedDeck />} />
         <Route path="/slides/:deckId" element={<ProtectedRoute><DeckEditor /></ProtectedRoute>} />

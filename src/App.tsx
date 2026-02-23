@@ -21,6 +21,10 @@ import History from "./pages/History";
 import ProjectPresentation from "./pages/ProjectPresentation";
 import HeroOptions from "./pages/HeroOptions";
 import AIAssistant from "./pages/AIAssistant";
+import SlideBuilder from "./pages/SlideBuilder";
+import DeckEditor from "./pages/DeckEditor";
+import DeckPresent from "./pages/DeckPresent";
+import SharedDeck from "./pages/SharedDeck";
 import ZaloButton from "@/components/ui/zalo-button";
 import ProjectChatbot from "@/components/ui/ProjectChatbot";
 import { useAnalytics } from "@/hooks/useAnalytics";
@@ -73,6 +77,10 @@ const AnimatedRoutes = () => {
         <Route path="/admin/backup" element={<ProtectedRoute requireAdmin><PageTransition><AdminBackup /></PageTransition></ProtectedRoute>} />
         <Route path="/project" element={<ProjectPresentation />} />
         <Route path="/hero-options" element={<PageTransition><HeroOptions /></PageTransition>} />
+        <Route path="/slides/new" element={<ProtectedRoute><SlideBuilder /></ProtectedRoute>} />
+        <Route path="/slides/shared/:slug" element={<SharedDeck />} />
+        <Route path="/slides/:deckId" element={<ProtectedRoute><DeckEditor /></ProtectedRoute>} />
+        <Route path="/slides/:deckId/present" element={<ProtectedRoute><DeckPresent /></ProtectedRoute>} />
         <Route 
           path="/ai-assistant" 
           element={

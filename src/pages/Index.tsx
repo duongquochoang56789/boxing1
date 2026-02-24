@@ -1,3 +1,4 @@
+import { useState, useCallback } from "react";
 import Header from "@/components/landing/Header";
 import HeroSection from "@/components/landing/HeroSection";
 import AboutSection from "@/components/landing/AboutSection";
@@ -13,9 +14,23 @@ import Footer from "@/components/landing/Footer";
 import { ScrollProgress } from "@/components/ui/scroll-progress";
 import { ScrollToTop } from "@/components/ui/scroll-to-top";
 import { useLenis } from "@/hooks/useLenis";
+import SplashScreen from "@/components/ui/splash-screen";
 
 const Index = () => {
   useLenis();
+
+  const [showSplash, setShowSplash] = useState(() => {
+    return !sessionStorage.getItem("flyfit-splash-shown");
+  });
+
+  const handleSplashComplete = useCallback(() => {
+    sessionStorage.setItem("flyfit-splash-shown", "1");
+    setShowSplash(false);
+  }, []);
+
+  if (showSplash) {
+    return <SplashScreen onComplete={handleSplashComplete} />;
+  }
 
   return (
     <div className="min-h-screen bg-background">

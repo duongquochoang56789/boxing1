@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { BrandedLoader } from '@/components/ui/branded-loader';
 
 interface ProfileData {
   full_name: string;
@@ -71,11 +72,7 @@ const Profile = () => {
   ];
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-cream flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-terracotta border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
+    return <BrandedLoader message="Đang tải hồ sơ..." />;
   }
 
   return (

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Sparkles, ArrowLeft, Loader2, Presentation, Globe, Hash, Palette, Zap } from "lucide-react";
+import { BrandedLoader } from "@/components/ui/branded-loader";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -167,9 +168,9 @@ const SlideBuilder = () => {
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="text-center text-white/40 text-sm"
+              className="flex flex-col items-center gap-4 py-4"
             >
-              AI đang phân tích chủ đề và tạo nội dung cho {slideCount} slides...
+              <BrandedLoader size="md" message={`AI đang tạo nội dung cho ${slideCount} slides...`} showProgress variant="inline" />
             </motion.div>
           )}
 

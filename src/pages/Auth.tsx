@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { Link } from 'react-router-dom';
+import { BrandedLoader } from '@/components/ui/branded-loader';
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -64,15 +65,7 @@ const Auth = () => {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-cream">
-        <motion.div
-          className="w-12 h-12 border-2 border-terracotta border-t-transparent rounded-full"
-          animate={{ rotate: 360 }}
-          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-        />
-      </div>
-    );
+    return <BrandedLoader message="Đang kiểm tra đăng nhập..." />;
   }
 
   const inputClasses = "h-14 px-5 rounded-none border-border/50 bg-background/50 focus:border-terracotta focus:ring-terracotta/20 transition-all duration-300 font-body";

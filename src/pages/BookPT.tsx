@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Video, MapPin } from 'lucide-react';
+import { BrandedLoader } from '@/components/ui/branded-loader';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Dumbbell, ArrowLeft, Star, Clock, ChevronLeft, ChevronRight, Check, ArrowRight, Sparkles } from 'lucide-react';
@@ -353,7 +354,7 @@ const BookPT = () => {
                         disabled={booking}
                       >
                         {booking ? (
-                          <motion.div className="w-5 h-5 border-2 border-primary-foreground border-t-transparent rounded-full" animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: "linear" }} />
+                          <BrandedLoader size="sm" variant="inline" />
                         ) : (
                           <>
                             Xác nhận đặt lịch

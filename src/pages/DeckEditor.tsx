@@ -222,9 +222,21 @@ const DeckEditor = () => {
     }
   };
 
-  const handleDragStart = (i: number) => setDragIndex(i);
-  const handleDragOver = (e: React.DragEvent, i: number) => { e.preventDefault(); setDragOverIndex(i); };
-  const handleDragEnd = async () => {
+  const handleDragStart = (e: React.DragEvent, i: number) => {
+    setDragIndex(i);
+    e.dataTransfer.effectAllowed = "move";
+    // Make the drag image semi-transparent
+    const el = e.currentTarget as HTMLElement;
+    el.style.opacity = "0.4";
+  };
+  const handleDragOver = (e: React.DragEvent, i: number) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    setDragOverIndex(i);
+  };
+  const handleDragLeave = () => setDragOverIndex(null);
+  const handleDragEnd = async (e: React.DragEvent) => {
+    (e.currentTarget as HTMLElement).style.opacity = "1";
     if (dragIndex === null || dragOverIndex === null || dragIndex === dragOverIndex) {
       setDragIndex(null); setDragOverIndex(null); return;
     }

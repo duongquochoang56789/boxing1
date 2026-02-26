@@ -222,9 +222,21 @@ const DeckEditor = () => {
     }
   };
 
-  const handleDragStart = (i: number) => setDragIndex(i);
-  const handleDragOver = (e: React.DragEvent, i: number) => { e.preventDefault(); setDragOverIndex(i); };
-  const handleDragEnd = async () => {
+  const handleDragStart = (e: React.DragEvent, i: number) => {
+    setDragIndex(i);
+    e.dataTransfer.effectAllowed = "move";
+    // Make the drag image semi-transparent
+    const el = e.currentTarget as HTMLElement;
+    el.style.opacity = "0.4";
+  };
+  const handleDragOver = (e: React.DragEvent, i: number) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    setDragOverIndex(i);
+  };
+  const handleDragLeave = () => setDragOverIndex(null);
+  const handleDragEnd = async (e: React.DragEvent) => {
+    (e.currentTarget as HTMLElement).style.opacity = "1";
     if (dragIndex === null || dragOverIndex === null || dragIndex === dragOverIndex) {
       setDragIndex(null); setDragOverIndex(null); return;
     }
@@ -380,26 +392,50 @@ const DeckEditor = () => {
       <div className="flex-1 flex overflow-hidden">
         {/* Thumbnail strip */}
         <div className="w-[120px] bg-[#0d0d0d] border-r border-white/10 overflow-y-auto shrink-0">
-          {slides.map((s, i) => (
-            <button
-              key={s.id}
-              draggable
-              onDragStart={() => handleDragStart(i)}
-              onDragOver={(e) => handleDragOver(e, i)}
-              onDragEnd={handleDragEnd}
-              onClick={() => setCurrent(i)}
-              className={`w-full p-2 border-b border-white/5 transition-all cursor-grab active:cursor-grabbing ${
-                i === current ? "bg-orange-400/10 border-l-2 border-l-orange-400" : "hover:bg-white/5"
-              } ${dragOverIndex === i ? "border-t-2 border-t-orange-400" : ""} ${dragIndex === i ? "opacity-40" : ""}`}
-            >
-              <div className="aspect-video bg-[#1a1a2e] rounded overflow-hidden relative pointer-events-none">
-                <div style={{ width: SLIDE_W, height: SLIDE_H, transform: "scale(0.05)", transformOrigin: "top left" }}>
-                  <SlideRenderer slide={s} />
-                </div>
+          {slides.map((s, i) => {
+            const isDragging = dragIndex === i;
+            const isOver = dragOverIndex === i && dragIndex !== null && dragIndex !== i;
+            const dropAbove = isOver && dragIndex !== null && i < dragIndex;
+            const dropBelow = isOver && dragIndex !== null && i > dragIndex;
+            return (
+              <div
+                key={s.id}
+                className="relative"
+              >
+                {/* Drop indicator line - above */}
+                {dropAbove && (
+                  <div className="absolute top-0 left-2 right-2 h-[3px] bg-orange-400 rounded-full z-10 shadow-[0_0_8px_rgba(251,146,60,0.6)]" />
+                )}
+                <button
+                  draggable
+                  onDragStart={(e) => handleDragStart(e, i)}
+                  onDragOver={(e) => handleDragOver(e, i)}
+                  onDragLeave={handleDragLeave}
+                  onDragEnd={handleDragEnd}
+                  onDrop={(e) => { e.preventDefault(); handleDragEnd(e); }}
+                  onClick={() => setCurrent(i)}
+                  className={`w-full p-2 border-b border-white/5 cursor-grab active:cursor-grabbing transition-all duration-200 ${
+                    i === current ? "bg-orange-400/10 border-l-2 border-l-orange-400" : "hover:bg-white/5"
+                  } ${isDragging ? "opacity-30 scale-95" : ""} ${isOver ? "bg-orange-400/5" : ""}`}
+                  style={{
+                    transition: "transform 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease",
+                    boxShadow: isDragging ? "0 4px 20px rgba(0,0,0,0.5), 0 0 12px rgba(251,146,60,0.3)" : "none",
+                  }}
+                >
+                  <div className={`aspect-video bg-[#1a1a2e] rounded overflow-hidden relative pointer-events-none transition-transform duration-200 ${isOver ? "scale-90" : ""}`}>
+                    <div style={{ width: SLIDE_W, height: SLIDE_H, transform: "scale(0.05)", transformOrigin: "top left" }}>
+                      <SlideRenderer slide={s} />
+                    </div>
+                  </div>
+                  <span className="text-[10px] text-white/40 mt-1 block truncate">{i + 1}. {s.title}</span>
+                </button>
+                {/* Drop indicator line - below */}
+                {dropBelow && (
+                  <div className="absolute bottom-0 left-2 right-2 h-[3px] bg-orange-400 rounded-full z-10 shadow-[0_0_8px_rgba(251,146,60,0.6)]" />
+                )}
               </div>
-              <span className="text-[10px] text-white/40 mt-1 block truncate">{i + 1}. {s.title}</span>
-            </button>
-          ))}
+            );
+          })}
           <button onClick={addSlide} className="w-full p-3 text-white/30 hover:text-orange-400 hover:bg-white/5 transition-colors">
             <Plus className="w-4 h-4 mx-auto" />
           </button>

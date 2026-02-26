@@ -88,38 +88,63 @@ CHỈ trả về JSON array, không có text khác.`;
       });
     }
 
-    const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: `Tạo bộ slide thuyết trình về: ${prompt}` },
-        ],
-      }),
-    });
+    const aiMessages = [
+      { role: "system", content: systemPrompt },
+      { role: "user", content: `Tạo bộ slide thuyết trình về: ${prompt}` },
+    ];
 
-    if (!aiResponse.ok) {
+    const modelsToTry = ["google/gemini-2.5-flash", "google/gemini-2.5-flash-lite"];
+    let aiResponse: Response | null = null;
+
+    for (const model of modelsToTry) {
+      console.log(`[generate-deck] Trying model: ${model}`);
+      aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${LOVABLE_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ model, messages: aiMessages }),
+      });
+
+      if (aiResponse.ok) {
+        console.log(`[generate-deck] Success with model: ${model}`);
+        break;
+      }
+
       const status = aiResponse.status;
+      console.warn(`[generate-deck] Model ${model} failed with status ${status}`);
+
       if (status === 429) {
         return new Response(JSON.stringify({ error: "Quá nhiều yêu cầu, vui lòng thử lại sau." }), {
           status: 429,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
+
+      // If 402, try next model
+      if (status === 402 && model !== modelsToTry[modelsToTry.length - 1]) {
+        console.log(`[generate-deck] 402 on ${model}, trying fallback...`);
+        continue;
+      }
+
       if (status === 402) {
-        return new Response(JSON.stringify({ error: "Hết credits AI, vui lòng nạp thêm." }), {
+        return new Response(JSON.stringify({ error: "Hết credits AI, vui lòng liên hệ admin." }), {
           status: 402,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
+
       const errText = await aiResponse.text();
-      console.error("AI gateway error:", status, errText);
+      console.error(`[generate-deck] AI gateway error: ${status}`, errText);
       return new Response(JSON.stringify({ error: "AI generation failed" }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    if (!aiResponse || !aiResponse.ok) {
+      return new Response(JSON.stringify({ error: "All AI models failed" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });

@@ -251,14 +251,17 @@ const Auth = () => {
                       setPassword(demoPassword);
                       const { error } = await signIn(demoEmail, demoPassword);
                       if (error) {
-                        toast({
-                          variant: 'destructive',
-                          title: 'Đăng nhập nhanh thất bại',
-                          description: 'Tài khoản demo chưa được tạo. Vui lòng tạo tài khoản admin@flyfit.vn trước.',
-                        });
+                        const msg = error.message || '';
+                        let description = 'Tài khoản demo chưa được tạo hoặc mật khẩu đã thay đổi.';
+                        if (msg.includes('fetch') || msg.includes('network') || msg.includes('Failed')) {
+                          description = 'Lỗi kết nối mạng. Vui lòng kiểm tra internet.';
+                        } else if (msg.includes('Invalid login credentials')) {
+                          description = 'Sai thông tin đăng nhập demo. Mật khẩu có thể đã thay đổi.';
+                        }
+                        toast({ variant: 'destructive', title: 'Đăng nhập nhanh thất bại', description });
                       } else {
                         toast({ title: 'Đăng nhập thành công', description: 'Chào mừng Admin!' });
-                        navigate('/ai-assistant');
+                        navigate(fromRoute, { replace: true });
                       }
                       setIsSubmitting(false);
                     }}

@@ -20,12 +20,14 @@ const Auth = () => {
   const { signIn, signUp, user, loading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const location = window.location;
+  const fromRoute = (history.state?.usr?.from?.pathname as string) || '/dashboard';
 
   useEffect(() => {
     if (!loading && user) {
-      navigate('/dashboard');
+      navigate(fromRoute, { replace: true });
     }
-  }, [user, loading, navigate]);
+  }, [user, loading, navigate, fromRoute]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,16 +37,21 @@ const Auth = () => {
       if (isLogin) {
         const { error } = await signIn(email, password);
         if (error) {
-          toast({
-            variant: 'destructive',
-            title: 'Đăng nhập thất bại',
-            description: error.message === 'Invalid login credentials' 
-              ? 'Email hoặc mật khẩu không đúng' 
-              : error.message,
-          });
+          const msg = error.message || '';
+          let description = msg;
+          if (msg.includes('Invalid login credentials')) {
+            description = 'Email hoặc mật khẩu không đúng. Vui lòng thử lại.';
+          } else if (msg.includes('Email not confirmed')) {
+            description = 'Email chưa được xác nhận. Vui lòng kiểm tra hộp thư.';
+          } else if (msg.includes('rate') || msg.includes('too many')) {
+            description = 'Quá nhiều lần thử. Vui lòng đợi 30 giây rồi thử lại.';
+          } else if (msg.includes('fetch') || msg.includes('network') || msg.includes('Failed')) {
+            description = 'Lỗi kết nối mạng. Vui lòng kiểm tra internet và thử lại.';
+          }
+          toast({ variant: 'destructive', title: 'Đăng nhập thất bại', description });
         } else {
           toast({ title: 'Đăng nhập thành công', description: 'Chào mừng bạn trở lại!' });
-          navigate('/dashboard');
+          navigate(fromRoute, { replace: true });
         }
       } else {
         if (!fullName.trim()) {
@@ -244,14 +251,17 @@ const Auth = () => {
                       setPassword(demoPassword);
                       const { error } = await signIn(demoEmail, demoPassword);
                       if (error) {
-                        toast({
-                          variant: 'destructive',
-                          title: 'Đăng nhập nhanh thất bại',
-                          description: 'Tài khoản demo chưa được tạo. Vui lòng tạo tài khoản admin@flyfit.vn trước.',
-                        });
+                        const msg = error.message || '';
+                        let description = 'Tài khoản demo chưa được tạo hoặc mật khẩu đã thay đổi.';
+                        if (msg.includes('fetch') || msg.includes('network') || msg.includes('Failed')) {
+                          description = 'Lỗi kết nối mạng. Vui lòng kiểm tra internet.';
+                        } else if (msg.includes('Invalid login credentials')) {
+                          description = 'Sai thông tin đăng nhập demo. Mật khẩu có thể đã thay đổi.';
+                        }
+                        toast({ variant: 'destructive', title: 'Đăng nhập nhanh thất bại', description });
                       } else {
                         toast({ title: 'Đăng nhập thành công', description: 'Chào mừng Admin!' });
-                        navigate('/ai-assistant');
+                        navigate(fromRoute, { replace: true });
                       }
                       setIsSubmitting(false);
                     }}

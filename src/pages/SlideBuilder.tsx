@@ -37,11 +37,17 @@ const SlideBuilder = () => {
       navigate(`/slides/${data.deckId}`);
     } catch (err: any) {
       console.error("Generate deck error:", err);
-      toast({
-        title: "Không thể tạo slide",
-        description: err.message || "Vui lòng thử lại",
-        variant: "destructive",
-      });
+      const msg = (err.message || "").toLowerCase();
+      
+      if (msg.includes("unauthorized") || msg.includes("401")) {
+        toast({ title: "Phiên đăng nhập hết hạn", description: "Vui lòng đăng nhập lại để tiếp tục.", variant: "destructive" });
+      } else if (msg.includes("credit") || msg.includes("402") || msg.includes("hết credit")) {
+        toast({ title: "Hết credits AI", description: "Credits AI đã hết. Vui lòng liên hệ admin hoặc đợi reset.", variant: "destructive" });
+      } else if (msg.includes("429") || msg.includes("quá nhiều") || msg.includes("rate")) {
+        toast({ title: "Quá nhiều yêu cầu", description: "Vui lòng đợi 30 giây rồi thử lại.", variant: "destructive" });
+      } else {
+        toast({ title: "Không thể tạo slide", description: err.message || "Vui lòng thử lại", variant: "destructive" });
+      }
     } finally {
       setLoading(false);
     }

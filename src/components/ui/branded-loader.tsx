@@ -5,6 +5,7 @@ interface BrandedLoaderProps {
   message?: string;
   showProgress?: boolean;
   variant?: "page" | "inline";
+  className?: string;
 }
 
 const sizeConfig = {

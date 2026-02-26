@@ -146,9 +146,7 @@ const DeckPresent = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-orange-400" />
-      </div>
+      <BrandedLoader variant="page" className="min-h-screen bg-black flex items-center justify-center" />
     );
   }
 

@@ -19,6 +19,7 @@ const BrandedLoader = ({
   message,
   showProgress = false,
   variant = "page",
+  className,
 }: BrandedLoaderProps) => {
   const s = sizeConfig[size];
 

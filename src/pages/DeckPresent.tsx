@@ -4,9 +4,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { SlideRenderer } from "@/components/slides/SlideLayouts";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  ChevronLeft, ChevronRight, Minimize, Loader2, StickyNote,
+  ChevronLeft, ChevronRight, Minimize, StickyNote,
   Clock, RotateCcw, Monitor, Eye, EyeOff, Grid3X3, X,
 } from "lucide-react";
+import { BrandedLoader } from "@/components/ui/branded-loader";
 
 interface DeckSlide {
   id: string;

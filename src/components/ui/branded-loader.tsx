@@ -121,7 +121,7 @@ const BrandedLoader = ({
   if (variant === "inline") return loader;
 
   return (
-    <div className="min-h-screen bg-cream flex items-center justify-center">
+    <div className={className || "min-h-screen bg-cream flex items-center justify-center"}>
       {loader}
     </div>
   );

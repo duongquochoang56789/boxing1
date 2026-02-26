@@ -38,31 +38,35 @@ const SlideBuilder = () => {
     } catch (err: any) {
       console.error("Generate deck error:", err);
       
-      // Try to extract the actual error body from FunctionsHttpError
+      // Safely extract error info from FunctionsHttpError
       let errorMsg = "";
-      let httpStatus = 0;
       try {
-        if (err?.context && typeof err.context.json === "function") {
-          const body = await err.context.json();
-          errorMsg = (body?.error || "").toLowerCase();
+        if (err?.context) {
+          if (typeof err.context.json === "function") {
+            const body = await err.context.json().catch(() => null);
+            errorMsg = (body?.error || "").toLowerCase();
+          } else if (typeof err.context.text === "function") {
+            const text = await err.context.text().catch(() => "");
+            errorMsg = text.toLowerCase();
+          }
         }
-      } catch { /* ignore parse errors */ }
-      
-      if (!errorMsg) {
-        errorMsg = (err.message || "").toLowerCase();
+      } catch {
+        // ignore all context parse errors
       }
       
-      // Check error name for FunctionsHttpError pattern
-      const isHttpError = err?.name === "FunctionsHttpError";
+      // Fallback to error message string
+      if (!errorMsg) {
+        errorMsg = (err?.message || String(err) || "").toLowerCase();
+      }
       
       if (errorMsg.includes("unauthorized") || errorMsg.includes("401")) {
         toast({ title: "Phiên đăng nhập hết hạn", description: "Vui lòng đăng nhập lại để tiếp tục.", variant: "destructive" });
       } else if (errorMsg.includes("credit") || errorMsg.includes("402") || errorMsg.includes("hết credit")) {
-        toast({ title: "Hết credits AI", description: "Credits AI đã hết. Vui lòng liên hệ admin hoặc đợi reset.", variant: "destructive" });
+        toast({ title: "Hết credits AI", description: "Workspace đã hết credits AI. Vào Settings → Workspace → Usage để nạp thêm.", variant: "destructive" });
       } else if (errorMsg.includes("429") || errorMsg.includes("quá nhiều") || errorMsg.includes("rate")) {
         toast({ title: "Quá nhiều yêu cầu", description: "Vui lòng đợi 30 giây rồi thử lại.", variant: "destructive" });
       } else {
-        toast({ title: "Không thể tạo slide", description: errorMsg || err.message || "Vui lòng thử lại", variant: "destructive" });
+        toast({ title: "Không thể tạo slide", description: errorMsg || "Vui lòng thử lại sau.", variant: "destructive" });
       }
     } finally {
       setLoading(false);

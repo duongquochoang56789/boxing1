@@ -1,32 +1,34 @@
+import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { BrandedLoader } from '@/components/ui/branded-loader';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
   requireAdmin?: boolean;
 }
 
-const ProtectedRoute = ({ children, requireAdmin = false }: ProtectedRouteProps) => {
-  const { user, loading, isAdmin } = useAuth();
-  const location = useLocation();
+const ProtectedRoute = React.forwardRef<HTMLDivElement, ProtectedRouteProps>(
+  ({ children, requireAdmin = false }, ref) => {
+    const { user, loading, isAdmin } = useAuth();
+    const location = useLocation();
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-accent"></div>
-      </div>
-    );
+    if (loading) {
+      return <BrandedLoader variant="page" />;
+    }
+
+    if (!user) {
+      return <Navigate to="/auth" state={{ from: location }} replace />;
+    }
+
+    if (requireAdmin && !isAdmin) {
+      return <Navigate to="/dashboard" replace />;
+    }
+
+    return <div ref={ref}>{children}</div>;
   }
+);
 
-  if (!user) {
-    return <Navigate to="/auth" state={{ from: location }} replace />;
-  }
-
-  if (requireAdmin && !isAdmin) {
-    return <Navigate to="/dashboard" replace />;
-  }
-
-  return <>{children}</>;
-};
+ProtectedRoute.displayName = 'ProtectedRoute';
 
 export default ProtectedRoute;

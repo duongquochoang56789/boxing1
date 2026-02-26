@@ -4,9 +4,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { SlideRenderer } from "@/components/slides/SlideLayouts";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  ChevronLeft, ChevronRight, Minimize, Loader2, StickyNote,
+  ChevronLeft, ChevronRight, Minimize, StickyNote,
   Clock, RotateCcw, Monitor, Eye, EyeOff, Grid3X3, X,
 } from "lucide-react";
+import { BrandedLoader } from "@/components/ui/branded-loader";
 
 interface DeckSlide {
   id: string;
@@ -146,9 +147,7 @@ const DeckPresent = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-orange-400" />
-      </div>
+      <BrandedLoader variant="page" className="min-h-screen bg-black flex items-center justify-center" />
     );
   }
 

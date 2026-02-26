@@ -5,6 +5,7 @@ interface BrandedLoaderProps {
   message?: string;
   showProgress?: boolean;
   variant?: "page" | "inline";
+  className?: string;
 }
 
 const sizeConfig = {
@@ -18,6 +19,7 @@ const BrandedLoader = ({
   message,
   showProgress = false,
   variant = "page",
+  className,
 }: BrandedLoaderProps) => {
   const s = sizeConfig[size];
 
@@ -119,7 +121,7 @@ const BrandedLoader = ({
   if (variant === "inline") return loader;
 
   return (
-    <div className="min-h-screen bg-cream flex items-center justify-center">
+    <div className={className || "min-h-screen bg-cream flex items-center justify-center"}>
       {loader}
     </div>
   );

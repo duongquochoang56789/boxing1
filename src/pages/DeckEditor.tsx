@@ -11,6 +11,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import {
   Save, ArrowLeft, Presentation, Plus, Trash2, ChevronUp, ChevronDown, Loader2, Share2, Copy, Palette, ImageIcon, Download, Check, CloudOff
 } from "lucide-react";
+import { BrandedLoader } from "@/components/ui/branded-loader";
 
 interface DeckSlide {
   id: string;
@@ -330,9 +331,7 @@ const DeckEditor = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-orange-400" />
-      </div>
+      <BrandedLoader variant="page" className="min-h-screen bg-[#0a0a0a] flex items-center justify-center" />
     );
   }
 

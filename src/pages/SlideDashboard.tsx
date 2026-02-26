@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
-import { Plus, Presentation, Trash2, Share2, Globe, Lock, Loader2, MoreVertical, Clock, Search } from "lucide-react";
+import { Plus, Presentation, Trash2, Share2, Globe, Lock, MoreVertical, Clock, Search } from "lucide-react";
+import { BrandedLoader } from "@/components/ui/branded-loader";
 import { SlideRenderer } from "@/components/slides/SlideLayouts";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -161,7 +162,7 @@ const SlideDashboard = () => {
 
         {loading ? (
           <div className="flex items-center justify-center py-20">
-            <Loader2 className="w-8 h-8 animate-spin text-orange-400" />
+            <BrandedLoader variant="inline" size="md" />
           </div>
         ) : decks.length === 0 ? (
           <motion.div

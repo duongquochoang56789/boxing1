@@ -1,107 +1,90 @@
 
 
-# Kiem tra toan bo tinh nang AI Slide Builder - Bao cao & Ke hoach sua loi
+# Tich hop AI Slide Builder vao Trang chu FLYFIT
 
 ## Tong quan
-Sau khi kiem tra ky luong toan bo ma nguon cua he thong AI Slide Builder, day la danh sach cac van de phat hien va ke hoach khac phuc.
+Hien tai, AI Slide Builder chi co the truy cap qua menu "Du an" trong Header (di den `/slides`), nhung tren trang chu khong co section nao gioi thieu hay quang ba tinh nang nay. Ke hoach nay se:
+
+1. **Kiem tra va liet ke cac tinh nang chua hoan thien** cua Slide Builder
+2. **Tao mot section moi tren trang chu** de gioi thieu AI Slide Builder, dat giua cac section hien co
 
 ---
 
-## Van de 1 (NGHIEM TRONG): Edge Function `generate-deck` su dung `getClaims(token)` sai cach
+## Phan 1: Tinh nang Slide Builder chua hoan thien
 
-**File**: `supabase/functions/generate-deck/index.ts` (dong 40)
+Dua tren ma nguon hien tai, cac tinh nang da hoat dong:
+- Tao deck bang AI tu prompt
+- Editor voi Markdown, keyboard shortcuts, auto-save indicator
+- 12 loai layout (bao gom image-full, comparison)
+- Xuat PDF, chia se public link
+- Template suggestions khi tao moi
+- Dashboard voi thumbnail, tim kiem, xoa/public/private
 
-**Van de**: Ham `supabase.auth.getClaims(token)` truyen token lam tham so, nhung theo tai lieu Supabase SDK, `getClaims()` khong nhan tham so - no doc tu session hien tai. Dieu nay co the gay loi "Unauthorized" khi tao slide.
+Cac tinh nang **chua co hoac chua hoan thien**:
+- **Drag-and-drop sap xep slide**: Chua co code keo tha trong editor (chi co nut di chuyen len/xuong)
+- **Grid View**: Khong co che do grid/overview trong editor
+- **Presenter View** voi timer, notes, next slide preview: Chua co (chi co fullscreen presentation co ban)
+- **Dark mode toggle** trong editor toolbar: Chua co
+- **Xuat PowerPoint (PPTX)**: Chua co, chi co PDF
+- **Realtime collaboration**: Chua co
 
-**Giai phap**: Thay `getClaims(token)` bang `getUser()` giong nhu cach `generate-slide-image` dang lam:
+---
+
+## Phan 2: Tao Section "AI Slide Builder" tren Trang chu
+
+### Vi tri
+Dat section moi ngay **sau VirtualTrainingSection** va **truoc PricingSection** trong Index.tsx. Day la vi tri chien luoc vi:
+- Sau khi nguoi dung da xem dich vu va mo hinh tap luyen
+- Truoc phan bang gia, tao an tuong ve gia tri cong nghe
+
+### Thiet ke Section
+
+Section se bao gom:
+- **Tieu de**: "Tao Slide Thuyet Trinh Bang AI" voi label "Cong Cu AI"
+- **Mo ta ngan**: Nhan manh tinh nang tu dong tao slide tu prompt
+- **3 Feature Cards**: Hien thi 3 diem noi bat (Tao tu dong, 12+ Layout, Chia se de dang)
+- **Mock/Demo Preview**: Hien thi mot mockup giao dien slide builder hoac animation SVG minh hoa
+- **CTA Button**: "Thu ngay mien phi" -> dieu huong den `/slides/new` (yeu cau dang nhap)
+
+### Phong cach
+- Nen gradient nhe (charcoal -> charcoal/95) de tao contrast voi cac section sang mau cream
+- Cards dung glass effect (bg-cream/5 backdrop-blur) tuong tu style cua VirtualTrainingSection
+- Animation: fade-in khi scroll vao view (useInView)
+- Icon su dung lucide-react (Sparkles, Presentation, Layout, Share2...)
+
+### File thay doi
+
+| File | Thay doi |
+|------|---------|
+| **Tao moi**: `src/components/landing/AISlideSection.tsx` | Section gioi thieu AI Slide Builder voi 3 feature cards, mockup preview va CTA |
+| **Sua**: `src/pages/Index.tsx` | Import va them `AISlideSection` vao giua VirtualTrainingSection va PricingSection |
+
+---
+
+## Chi tiet ky thuat
+
+### AISlideSection.tsx
 ```text
-// Thay dong 39-47 bang:
-const { data: { user }, error: userError } = await supabase.auth.getUser();
-if (userError || !user) { return 401 Unauthorized }
-const userId = user.id;
+Component structure:
+- Section wrapper: nen gradient charcoal, padding section-padding
+- Header: label "Cong Cu AI" + heading 2 dong + description
+- Feature grid (3 cols):
+  1. Icon Sparkles + "AI Tu Dong Tao" + mo ta
+  2. Icon Layout + "12+ Bo Cuc Chuyen Nghiep" + mo ta  
+  3. Icon Share2 + "Chia Se & Trinh Chieu" + mo ta
+- Demo area: Mockup 16:9 voi gradient background, fake slide preview
+- CTA: MagneticButton "Tao Slide Ngay" -> navigate("/slides/new")
+- Animation: Framer Motion whileInView + stagger cho cards
 ```
 
----
-
-## Van de 2 (TRUNG BINH): SlideDashboard van dung Loader2 spinner thay vi BrandedLoader
-
-**File**: `src/pages/SlideDashboard.tsx` (dong 163-165)
-
-**Van de**: Trang Dashboard (`/slides`) van dung `<Loader2>` spinner co ban, khong nhat quan voi cac trang khac da duoc cap nhat sang BrandedLoader.
-
-**Giai phap**: Import va thay `<Loader2>` bang `<BrandedLoader variant="page" />`.
-
----
-
-## Van de 3 (TRUNG BINH): DeckEditor van dung Loader2 spinner khi loading
-
-**File**: `src/pages/DeckEditor.tsx` (dong 331-337)
-
-**Van de**: Trang Editor cung van dung Loader2 spinner khi dang tai deck.
-
-**Giai phap**: Thay bang `<BrandedLoader variant="page" />`.
-
----
-
-## Van de 4 (NHO): DeckPresent van dung Loader2 spinner
-
-**File**: `src/pages/DeckPresent.tsx` (dong 147-153)
-
-**Van de**: Man hinh trinh chieu cung dung Loader2 khi loading.
-
-**Giai phap**: Thay bang `<BrandedLoader variant="page" />` voi nen den (can custom style).
-
----
-
-## Van de 5 (NHO): BrandedLoader co nen `bg-cream` co dinh, khong phu hop nen toi
-
-**File**: `src/components/ui/branded-loader.tsx` (dong 122)
-
-**Van de**: Khi variant="page", component render `<div className="min-h-screen bg-cream ...">`. Dieu nay khong phu hop voi cac trang dark theme (Slide Dashboard, Editor, Present) vi se hien nen sang giua trang toi.
-
-**Giai phap**: Them prop `darkMode` hoac `className` de ho tro nen toi:
+### Index.tsx thay doi
 ```text
-Props moi:
-  className?: string  // override container class
+- Import AISlideSection
+- Dat giua <VirtualTrainingSection /> va <PricingSection />
 ```
 
----
-
-## Van de 6 (NHO): Console error - ProtectedRoute khong dung forwardRef
-
-**File**: `src/components/ProtectedRoute.tsx`
-
-**Van de**: Console log hien loi "Function components cannot be given refs" do AnimatePresence co gang truyen ref vao ProtectedRoute nhung component nay khong dung `forwardRef`.
-
-**Giai phap**: Wrap ProtectedRoute bang `React.forwardRef`.
-
----
-
-## Tong ket cac file can sua
-
-| File | Loai thay doi | Muc do |
-|------|--------------|--------|
-| `supabase/functions/generate-deck/index.ts` | Sua getClaims -> getUser | Nghiem trong |
-| `src/components/ui/branded-loader.tsx` | Them prop className cho dark mode | Nho |
-| `src/pages/SlideDashboard.tsx` | Thay Loader2 -> BrandedLoader | Trung binh |
-| `src/pages/DeckEditor.tsx` | Thay Loader2 -> BrandedLoader | Trung binh |
-| `src/pages/DeckPresent.tsx` | Thay Loader2 -> BrandedLoader | Nho |
-| `src/components/ProtectedRoute.tsx` | Them forwardRef | Nho |
-
-**Tong cong**: 6 file can sua, 0 file moi, 0 migration
-
----
-
-## Cac tinh nang HOAT DONG TOT (khong can sua)
-- Tao deck tu AI prompt (ngoai tru van de auth o tren)
-- Editor voi Markdown, auto-save, keyboard shortcuts
-- 12 loai layout (cover, two-column, stats, grid, table, timeline, quote, pricing, persona, chart, image-full, comparison)
-- Drag-and-drop sap xep slide trong editor
-- Nhan doi slide, xoa slide
-- Xuat PDF
-- Tao anh AI tu image prompt
-- Chia se public link
-- Presenter View voi timer, notes, next slide preview, grid overview
-- Tim kiem deck trong dashboard
-- Chuyen doi cong khai/rieng tu
-
+## Tong ket
+- **1 file moi**: `AISlideSection.tsx`
+- **1 file sua**: `Index.tsx` (them 2 dong import + render)
+- Khong can migration, edge function, hay dependency moi
+- Thiet ke nhat quan voi style hien tai cua landing page (premium, sang trong)

@@ -20,12 +20,14 @@ const Auth = () => {
   const { signIn, signUp, user, loading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const location = window.location;
+  const fromRoute = (history.state?.usr?.from?.pathname as string) || '/dashboard';
 
   useEffect(() => {
     if (!loading && user) {
-      navigate('/dashboard');
+      navigate(fromRoute, { replace: true });
     }
-  }, [user, loading, navigate]);
+  }, [user, loading, navigate, fromRoute]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

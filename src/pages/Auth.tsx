@@ -37,16 +37,21 @@ const Auth = () => {
       if (isLogin) {
         const { error } = await signIn(email, password);
         if (error) {
-          toast({
-            variant: 'destructive',
-            title: 'Đăng nhập thất bại',
-            description: error.message === 'Invalid login credentials' 
-              ? 'Email hoặc mật khẩu không đúng' 
-              : error.message,
-          });
+          const msg = error.message || '';
+          let description = msg;
+          if (msg.includes('Invalid login credentials')) {
+            description = 'Email hoặc mật khẩu không đúng. Vui lòng thử lại.';
+          } else if (msg.includes('Email not confirmed')) {
+            description = 'Email chưa được xác nhận. Vui lòng kiểm tra hộp thư.';
+          } else if (msg.includes('rate') || msg.includes('too many')) {
+            description = 'Quá nhiều lần thử. Vui lòng đợi 30 giây rồi thử lại.';
+          } else if (msg.includes('fetch') || msg.includes('network') || msg.includes('Failed')) {
+            description = 'Lỗi kết nối mạng. Vui lòng kiểm tra internet và thử lại.';
+          }
+          toast({ variant: 'destructive', title: 'Đăng nhập thất bại', description });
         } else {
           toast({ title: 'Đăng nhập thành công', description: 'Chào mừng bạn trở lại!' });
-          navigate('/dashboard');
+          navigate(fromRoute, { replace: true });
         }
       } else {
         if (!fullName.trim()) {

@@ -329,9 +329,7 @@ const SlideDashboard = () => {
                   >
                     {deck.firstSlide ? (
                       <div className="absolute inset-0">
-                        <div style={{ width: SLIDE_W, height: SLIDE_H, transform: "scale(0.188)", transformOrigin: "top left" }}>
-                          <SlideRenderer slide={deck.firstSlide} />
-                        </div>
+                        <LazySlideThumb slide={deck.firstSlide} scale={0.188} className="w-full h-full rounded-none" />
                       </div>
                     ) : (
                       <div className="absolute inset-0 flex items-center justify-center">

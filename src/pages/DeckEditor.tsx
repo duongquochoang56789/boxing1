@@ -54,6 +54,24 @@ const LAYOUT_TEMPLATES: Record<string, string> = {
   comparison: "**Phương án A**\n- Ưu điểm 1\n- Ưu điểm 2\n\n---\n\n**Phương án B**\n- Ưu điểm 1\n- Ưu điểm 2",
 };
 
+interface ThemePreset {
+  id: string;
+  name: string;
+  colors: string[]; // background colors to apply to slides cyclically
+  label: string; // short color indicator
+}
+
+const THEME_PRESETS: ThemePreset[] = [
+  { id: "default", name: "Mặc định", label: "🌙", colors: ["#1a1a2e", "#16213e", "#0f3460", "#1a0a2e"] },
+  { id: "corporate-blue", name: "Corporate Blue", label: "🔵", colors: ["#0f172a", "#1e3a5f", "#0c4a6e", "#164e63"] },
+  { id: "startup-orange", name: "Startup Orange", label: "🟠", colors: ["#1c1917", "#431407", "#7c2d12", "#1a1a2e"] },
+  { id: "nature-green", name: "Nature Green", label: "🟢", colors: ["#052e16", "#14532d", "#1a2e1a", "#0a0a0a"] },
+  { id: "elegant-dark", name: "Elegant Dark", label: "⚫", colors: ["#0a0a0a", "#171717", "#1c1917", "#0c0a09"] },
+  { id: "warm-cream", name: "Warm Cream", label: "🟡", colors: ["#fef3c7", "#fde68a", "#f5f0e1", "#e2e8f0"] },
+  { id: "royal-purple", name: "Royal Purple", label: "🟣", colors: ["#1a0a2e", "#2e1065", "#312e81", "#1e1b4b"] },
+  { id: "rose-gold", name: "Rose Gold", label: "🌸", colors: ["#2e1a1a", "#4a1d1d", "#1c1917", "#0a0a0a"] },
+];
+
 const suggestLayout = (content: string): string | null => {
   if (!content || content.trim().length < 10) return null;
   if (content.includes("|") && content.includes("---")) return "table";

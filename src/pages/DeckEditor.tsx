@@ -71,6 +71,7 @@ const suggestLayout = (content: string): string | null => {
 
 const DeckEditor = () => {
   const { deckId } = useParams<{ deckId: string }>();
+  const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [slides, setSlides] = useState<DeckSlide[]>([]);

@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  Save, ArrowLeft, Presentation, Plus, Trash2, ChevronUp, ChevronDown, Loader2, Share2, Copy, Palette, ImageIcon, Download, Check, CloudOff, Images, X, Sparkles, PenLine, Maximize2, Minimize2, FileText, Undo2, Redo2, BookmarkPlus, BookMarked, Grid3X3
+  Save, ArrowLeft, Presentation, Plus, Trash2, ChevronUp, ChevronDown, Loader2, Share2, Copy, Palette, ImageIcon, Download, Check, CloudOff, Images, X, Sparkles, PenLine, Maximize2, Minimize2, FileText, Undo2, Redo2, BookmarkPlus, BookMarked, Grid3X3, MessageCircle, History, PanelLeftClose, PanelLeft
 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { BrandedLoader } from "@/components/ui/branded-loader";
@@ -21,6 +21,8 @@ import { Input } from "@/components/ui/input";
 import LazySlideThumb from "@/components/slides/LazySlideThumb";
 import EditorGridView from "@/components/slides/EditorGridView";
 import ShareDeckDialog from "@/components/slides/ShareDeckDialog";
+import SlideComments from "@/components/slides/SlideComments";
+import SlideVersionHistory from "@/components/slides/SlideVersionHistory";
 import { exportToPptx } from "@/lib/exportPptx";
 
 interface DeckSlide {
@@ -127,6 +129,9 @@ const DeckEditor = () => {
   const [exportingPptx, setExportingPptx] = useState(false);
   const [templateName, setTemplateName] = useState("");
   const [showTemplateList, setShowTemplateList] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [showComments, setShowComments] = useState(false);
+  const [showVersionHistory, setShowVersionHistory] = useState(false);
   const history = useSlideHistory();
   const { templates, saveTemplate, deleteTemplate } = useSlideTemplates();
 
@@ -278,17 +283,47 @@ const DeckEditor = () => {
   const saveAll = async () => {
     setSaving(true);
     try {
+      const { data: { user } } = await supabase.auth.getUser();
       for (const s of slides) {
         await supabase.from("deck_slides").update({
           title: s.title, subtitle: s.subtitle, content: s.content,
           layout: s.layout, section_name: s.section_name, notes: s.notes,
         }).eq("id", s.id);
+        // Save version snapshot
+        if (user) {
+          const { data: lastVersion } = await supabase
+            .from("slide_versions")
+            .select("version_number")
+            .eq("slide_id", s.id)
+            .order("version_number", { ascending: false })
+            .limit(1)
+            .single();
+          await supabase.from("slide_versions").insert({
+            slide_id: s.id,
+            user_id: user.id,
+            title: s.title,
+            subtitle: s.subtitle,
+            content: s.content,
+            layout: s.layout,
+            notes: s.notes,
+            version_number: (lastVersion?.version_number || 0) + 1,
+          });
+        }
       }
       toast({ title: "Đã lưu tất cả slides!" });
     } catch {
       toast({ title: "Lỗi khi lưu", variant: "destructive" });
     }
     setSaving(false);
+  };
+
+  const handleRestoreVersion = (version: { title: string; subtitle: string | null; content: string; layout: string; notes: string | null }) => {
+    if (!slide) return;
+    updateSlide("title", version.title);
+    updateSlide("content", version.content);
+    updateSlide("layout", version.layout);
+    if (version.subtitle !== undefined) updateSlide("subtitle", version.subtitle);
+    if (version.notes !== undefined) updateSlide("notes", version.notes);
   };
 
   const addSlide = async () => {
@@ -695,6 +730,14 @@ const DeckEditor = () => {
             className="text-white/60 hover:text-white" title="Chia sẻ">
             <Share2 className="w-4 h-4" />
           </Button>
+          <Button size="sm" variant="ghost" onClick={() => { setShowComments(prev => !prev); setShowVersionHistory(false); }}
+            className={`text-white/60 hover:text-white ${showComments ? "text-orange-400" : ""}`} title="Bình luận">
+            <MessageCircle className="w-4 h-4" />
+          </Button>
+          <Button size="sm" variant="ghost" onClick={() => { setShowVersionHistory(prev => !prev); setShowComments(false); }}
+            className={`text-white/60 hover:text-white ${showVersionHistory ? "text-orange-400" : ""}`} title="Lịch sử phiên bản">
+            <History className="w-4 h-4" />
+          </Button>
           <Button size="sm" variant="ghost" onClick={() => setShowEditorGrid(true)}
             className="text-white/60 hover:text-white" title="Grid View (G)">
             <Grid3X3 className="w-4 h-4" />
@@ -707,8 +750,24 @@ const DeckEditor = () => {
 
       {/* Main editor area */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Thumbnail strip */}
-        <div className="w-[120px] bg-[#0d0d0d] border-r border-white/10 overflow-y-auto shrink-0">
+        {/* Sidebar toggle + Thumbnail strip */}
+        {sidebarCollapsed ? (
+          <div className="w-10 bg-[#0d0d0d] border-r border-white/10 flex flex-col items-center pt-2 shrink-0">
+            <button onClick={() => setSidebarCollapsed(false)}
+              className="p-2 text-white/30 hover:text-white/60 transition-colors" title="Mở sidebar">
+              <PanelLeft className="w-4 h-4" />
+            </button>
+            <span className="text-white/20 text-[9px] mt-2 [writing-mode:vertical-rl]">{slides.length} slides</span>
+          </div>
+        ) : (
+          <div className="w-[120px] bg-[#0d0d0d] border-r border-white/10 overflow-y-auto shrink-0 flex flex-col">
+            <div className="flex items-center justify-between px-2 py-1.5 border-b border-white/10 shrink-0">
+              <span className="text-white/30 text-[9px] uppercase tracking-wider">Slides</span>
+              <button onClick={() => setSidebarCollapsed(true)}
+                className="p-1 text-white/20 hover:text-white/50 transition-colors" title="Thu gọn sidebar">
+                <PanelLeftClose className="w-3 h-3" />
+              </button>
+            </div>
           {slides.map((s, i) => {
             const isDragging = dragIndex === i;
             const isOver = dragOverIndex === i && dragIndex !== null && dragIndex !== i;
@@ -752,7 +811,8 @@ const DeckEditor = () => {
           <button onClick={addSlide} className="w-full p-3 text-white/30 hover:text-orange-400 hover:bg-white/5 transition-colors">
             <Plus className="w-4 h-4 mx-auto" />
           </button>
-        </div>
+          </div>
+        )}
 
         {/* Editor + Preview */}
         <ResizablePanelGroup direction="horizontal" className="flex-1">
@@ -916,6 +976,21 @@ const DeckEditor = () => {
             </div>
           </ResizablePanel>
         </ResizablePanelGroup>
+
+        {/* Comments Panel */}
+        <SlideComments
+          slideId={slide?.id || ""}
+          open={showComments}
+          onClose={() => setShowComments(false)}
+        />
+
+        {/* Version History Panel */}
+        <SlideVersionHistory
+          slideId={slide?.id || ""}
+          open={showVersionHistory}
+          onClose={() => setShowVersionHistory(false)}
+          onRestore={handleRestoreVersion}
+        />
       </div>
 
       {/* Auto-generate images dialog */}

@@ -22,18 +22,19 @@ serve(async (req) => {
 
     // Use gemini-2.5-flash-image (native image generation via Gemini API)
     const aiResponse = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${GEMINI_API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp-image-generation:generateContent?key=${GEMINI_API_KEY}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           contents: [
             {
+              role: "user",
               parts: [{ text: prompt }],
             },
           ],
           generationConfig: {
-            responseModalities: ["IMAGE"],
+            responseModalities: ["IMAGE", "TEXT"],
           },
         }),
       }

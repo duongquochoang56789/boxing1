@@ -440,14 +440,28 @@ const DeckEditor = () => {
               Tạo tất cả ảnh
             </Button>
           )}
-          <Button size="sm" variant="ghost" onClick={exportPdf} disabled={exportingPdf} className="text-white/60 hover:text-white">
-            {exportingPdf ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Download className="w-4 h-4 mr-1" />}
-            {exportingPdf ? "Xuất..." : "PDF"}
-          </Button>
-          <Button size="sm" variant="ghost" onClick={saveAll} disabled={saving} className="text-white/60 hover:text-white">
-            <Save className="w-4 h-4 mr-1" /> {saving ? "..." : "Lưu"}
-          </Button>
-          <Button size="sm" variant="ghost" onClick={() => navigate(`/slides/${deckId}/present`)} className="text-white/60 hover:text-white">
+          {/* More actions dropdown */}
+          <div className="relative group">
+            <Button size="sm" variant="ghost" className="text-white/60 hover:text-white">
+              <Save className="w-4 h-4 mr-1" /> Thêm ▾
+            </Button>
+            <div className="absolute right-0 top-full mt-1 bg-[#1a1a1a] border border-white/10 rounded-lg shadow-xl py-1 min-w-[160px] hidden group-hover:block z-50">
+              <button onClick={saveAll} disabled={saving} className="w-full flex items-center gap-2 px-3 py-2 text-sm text-white/70 hover:bg-white/10 hover:text-white transition-colors disabled:opacity-50">
+                <Save className="w-4 h-4" /> {saving ? "Đang lưu..." : "Lưu tất cả"}
+              </button>
+              <button onClick={exportPdf} disabled={exportingPdf} className="w-full flex items-center gap-2 px-3 py-2 text-sm text-white/70 hover:bg-white/10 hover:text-white transition-colors disabled:opacity-50">
+                <Download className="w-4 h-4" /> {exportingPdf ? "Đang xuất..." : "Xuất PDF"}
+              </button>
+              <button onClick={() => {
+                const shareUrl = `${window.location.origin}/slides/${deckId}/present`;
+                navigator.clipboard.writeText(shareUrl);
+                toast({ title: "Đã copy link trình chiếu!" });
+              }} className="w-full flex items-center gap-2 px-3 py-2 text-sm text-white/70 hover:bg-white/10 hover:text-white transition-colors">
+                <Share2 className="w-4 h-4" /> Copy link
+              </button>
+            </div>
+          </div>
+          <Button size="sm" onClick={() => navigate(`/slides/${deckId}/present`)} className="bg-orange-500 hover:bg-orange-600 text-white">
             <Presentation className="w-4 h-4 mr-1" /> Trình chiếu
           </Button>
         </div>

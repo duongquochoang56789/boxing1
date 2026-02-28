@@ -47,6 +47,25 @@ const renderInline = (text: string, accent: string) => {
   return parts;
 };
 
+/** Render rich inline: **bold**, *italic*, `code`, [links](url) */
+const renderInlineRich = (text: string, accent: string) => {
+  const parts: React.ReactNode[] = [];
+  const regex = /\*\*(.+?)\*\*|\*(.+?)\*|`([^`]+)`|\[(.+?)\]\((.+?)\)/g;
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+  let key = 0;
+  while ((match = regex.exec(text)) !== null) {
+    if (match.index > lastIndex) parts.push(text.slice(lastIndex, match.index));
+    if (match[1]) parts.push(<span key={key++} className={`font-bold ${accent}`}>{match[1]}</span>);
+    else if (match[2]) parts.push(<em key={key++} className="italic">{match[2]}</em>);
+    else if (match[3]) parts.push(<code key={key++} className="bg-white/10 text-emerald-300 px-2 py-0.5 rounded font-mono text-[0.85em]">{match[3]}</code>);
+    else if (match[4] && match[5]) parts.push(<a key={key++} href={match[5]} target="_blank" rel="noopener noreferrer" className={`${accent} underline underline-offset-4 hover:opacity-80`}>{match[4]}</a>);
+    lastIndex = regex.lastIndex;
+  }
+  if (lastIndex < text.length) parts.push(text.slice(lastIndex));
+  return parts;
+};
+
 // Parse markdown-like content into lines
 const ContentBlock = ({ content, accent }: { content: string; accent: string }) => {
   const lines = content.split("\n");

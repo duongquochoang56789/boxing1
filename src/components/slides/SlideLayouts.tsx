@@ -238,7 +238,9 @@ export const StatsSlide = ({ slide }: { slide: SlideData }) => {
             >
               <div className="absolute top-0 left-0 w-full h-1" style={{ background: hex }} />
               {stat.emoji && <span className="text-[44px] block mb-2">{stat.emoji}</span>}
-              <div className={`text-[76px] font-black leading-none ${colors.accent}`}>{stat.value}</div>
+              <div className={`font-black leading-none ${colors.accent} ${
+                stat.value.length > 12 ? "text-[48px]" : stat.value.length > 8 ? "text-[58px]" : "text-[76px]"
+              }`}>{stat.value}</div>
               <div className="text-[24px] text-white/60 mt-4 leading-snug">{stat.label}</div>
             </motion.div>
           ))}

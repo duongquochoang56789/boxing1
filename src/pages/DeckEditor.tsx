@@ -1037,6 +1037,14 @@ const DeckEditor = () => {
         onSelect={setCurrent}
         onClose={() => setShowEditorGrid(false)}
       />
+
+      {/* Share Dialog */}
+      <ShareDeckDialog
+        open={showShareDialog}
+        onClose={() => setShowShareDialog(false)}
+        deckId={deckId || ""}
+        deckTitle={deckTitle}
+      />
     </div>
   );
 };

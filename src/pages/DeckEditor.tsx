@@ -286,6 +286,47 @@ const DeckEditor = () => {
     setGeneratingImage(false);
   };
 
+  const generateAllImages = async () => {
+    const slidesNeedingImages = slides.filter(s => s.image_prompt && !s.image_url);
+    if (slidesNeedingImages.length === 0) {
+      toast({ title: "Tất cả slide đã có ảnh!" });
+      return;
+    }
+    batchCancelledRef.current = false;
+    setBatchGenerating(true);
+    setBatchTotal(slidesNeedingImages.length);
+    setBatchProgress(0);
+
+    let successCount = 0;
+    for (let i = 0; i < slidesNeedingImages.length; i++) {
+      if (batchCancelledRef.current) break;
+      const s = slidesNeedingImages[i];
+      setBatchProgress(i + 1);
+      try {
+        const { data, error } = await supabase.functions.invoke("generate-slide-image", {
+          body: { slideId: s.id, imagePrompt: s.image_prompt },
+        });
+        if (!error && data?.imageUrl) {
+          setSlides(prev => prev.map(sl => sl.id === s.id ? { ...sl, image_url: data.imageUrl } : sl));
+          successCount++;
+        }
+      } catch (e) {
+        console.error(`Batch image error for slide ${s.slide_order}:`, e);
+      }
+      // Small delay between requests to avoid rate limiting
+      if (i < slidesNeedingImages.length - 1 && !batchCancelledRef.current) {
+        await new Promise(r => setTimeout(r, 2000));
+      }
+    }
+
+    setBatchGenerating(false);
+    if (batchCancelledRef.current) {
+      toast({ title: `Đã dừng. Tạo được ${successCount}/${slidesNeedingImages.length} ảnh.` });
+    } else {
+      toast({ title: `Đã tạo ${successCount}/${slidesNeedingImages.length} ảnh thành công!` });
+    }
+  };
+
   const exportPdf = async () => {
     setExportingPdf(true);
     toast({ title: "Đang xuất PDF..." });

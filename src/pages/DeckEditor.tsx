@@ -21,6 +21,8 @@ import { Input } from "@/components/ui/input";
 import LazySlideThumb from "@/components/slides/LazySlideThumb";
 import EditorGridView from "@/components/slides/EditorGridView";
 import ShareDeckDialog from "@/components/slides/ShareDeckDialog";
+import SlideComments from "@/components/slides/SlideComments";
+import SlideVersionHistory from "@/components/slides/SlideVersionHistory";
 import { exportToPptx } from "@/lib/exportPptx";
 
 interface DeckSlide {

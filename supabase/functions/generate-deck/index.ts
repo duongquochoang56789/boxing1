@@ -6,25 +6,63 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+// Robust JSON extraction with truncation repair
+function extractJsonArray(raw: string): any[] {
+  // Strip markdown code blocks
+  let cleaned = raw.replace(/```json\s*/gi, "").replace(/```\s*/g, "").trim();
+
+  // Find array boundaries
+  const arrStart = cleaned.indexOf("[");
+  if (arrStart === -1) throw new Error("No JSON array found");
+
+  let arrEnd = cleaned.lastIndexOf("]");
+  if (arrEnd === -1 || arrEnd <= arrStart) {
+    // Truncated - try to repair
+    console.warn("[generate-deck] JSON appears truncated, attempting repair...");
+    cleaned = cleaned.substring(arrStart);
+    // Remove trailing incomplete object
+    const lastCompleteObj = cleaned.lastIndexOf("}");
+    if (lastCompleteObj > 0) {
+      cleaned = cleaned.substring(0, lastCompleteObj + 1);
+      // Count brackets to close
+      let brackets = 0;
+      for (const ch of cleaned) {
+        if (ch === "[") brackets++;
+        if (ch === "]") brackets--;
+      }
+      while (brackets > 0) { cleaned += "]"; brackets--; }
+    }
+  } else {
+    cleaned = cleaned.substring(arrStart, arrEnd + 1);
+  }
+
+  // Fix trailing commas and control chars
+  cleaned = cleaned
+    .replace(/,\s*}/g, "}")
+    .replace(/,\s*]/g, "]")
+    .replace(/[\x00-\x1F\x7F]/g, (ch) => ch === "\n" || ch === "\r" || ch === "\t" ? ch : "");
+
+  return JSON.parse(cleaned);
+}
+
 // Call Google Gemini API directly
 async function callGeminiDirect(apiKey: string, model: string, systemPrompt: string, userPrompt: string) {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-  const resp = await fetch(url, {
+  return await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       contents: [
         { role: "user", parts: [{ text: `${systemPrompt}\n\n${userPrompt}` }] },
       ],
-      generationConfig: { temperature: 0.7, maxOutputTokens: 8000 },
+      generationConfig: { temperature: 0.7, maxOutputTokens: 30000 },
     }),
   });
-  return resp;
 }
 
 // Call Lovable AI Gateway (OpenAI-compatible)
 async function callLovableGateway(apiKey: string, model: string, systemPrompt: string, userPrompt: string) {
-  const resp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+  return await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
     method: "POST",
     headers: {
       Authorization: `Bearer ${apiKey}`,
@@ -38,7 +76,6 @@ async function callLovableGateway(apiKey: string, model: string, systemPrompt: s
       ],
     }),
   });
-  return resp;
 }
 
 // Extract text content from either API format
@@ -143,7 +180,7 @@ CHỈ trả về JSON array, không có text khác.`;
       : ["google/gemini-2.5-flash", "google/gemini-2.5-flash-lite"];
 
     let aiResponse: Response | null = null;
-    let isDirect = useDirect;
+    const isDirect = useDirect;
 
     for (const model of models) {
       console.log(`[generate-deck] Trying ${useDirect ? "Gemini direct" : "Lovable Gateway"} model: ${model}`);
@@ -194,21 +231,13 @@ CHỈ trả về JSON array, không có text khác.`;
     }
 
     const rawContent = await extractTextContent(aiResponse, isDirect);
+    console.log(`[generate-deck] Raw response length: ${rawContent.length} chars`);
 
-    // Extract JSON from response
-    let jsonStr = rawContent;
-    const jsonMatch = rawContent.match(/```(?:json)?\s*([\s\S]*?)```/);
-    if (jsonMatch) {
-      jsonStr = jsonMatch[1].trim();
-    } else {
-      const arrMatch = rawContent.match(/\[[\s\S]*\]/);
-      if (arrMatch) jsonStr = arrMatch[0];
-    }
-
+    // Parse with robust extraction
     let slides: any[];
     try {
-      slides = JSON.parse(jsonStr);
-    } catch {
+      slides = extractJsonArray(rawContent);
+    } catch (e) {
       console.error("Failed to parse AI response:", rawContent.substring(0, 500));
       return new Response(JSON.stringify({ error: "AI trả về định dạng không hợp lệ, vui lòng thử lại." }), {
         status: 500,
@@ -222,6 +251,8 @@ CHỈ trả về JSON array, không có text khác.`;
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    console.log(`[generate-deck] Parsed ${slides.length} slides successfully`);
 
     // Generate share slug & create deck
     const shareSlug = crypto.randomUUID().split("-")[0];

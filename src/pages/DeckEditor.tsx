@@ -215,12 +215,13 @@ const DeckEditor = () => {
   const addSlide = async () => {
     if (!deckId) return;
     const newOrder = slides.length + 1;
+    const defaultLayout = "two-column";
     const { data, error } = await supabase.from("deck_slides").insert({
       deck_id: deckId,
       slide_order: newOrder,
       title: `Slide ${newOrder}`,
-      content: "",
-      layout: "two-column",
+      content: LAYOUT_TEMPLATES[defaultLayout] || "",
+      layout: defaultLayout,
       section_name: "brand",
       background_color: "#1a1a2e",
     }).select().single();

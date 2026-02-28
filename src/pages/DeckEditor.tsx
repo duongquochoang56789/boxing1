@@ -18,6 +18,8 @@ import { Badge } from "@/components/ui/badge";
 import { useSlideHistory } from "@/hooks/useSlideHistory";
 import { useSlideTemplates } from "@/hooks/useSlideTemplates";
 import { Input } from "@/components/ui/input";
+import LazySlideThumb from "@/components/slides/LazySlideThumb";
+import EditorGridView from "@/components/slides/EditorGridView";
 
 interface DeckSlide {
   id: string;

@@ -92,6 +92,7 @@ const DeckEditor = () => {
   const saveStatusTimerRef = useRef<ReturnType<typeof setTimeout>>();
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+  const [showAutoImageDialog, setShowAutoImageDialog] = useState(false);
 
   // Load deck + slides
   useEffect(() => {

@@ -92,7 +92,8 @@ serve(async (req) => {
     }
 
     if (mode === "images") {
-      const lovableApiKey = Deno.env.get("LOVABLE_API_KEY")!;
+      const GEMINI_API_KEY = Deno.env.get("GOOGLE_GEMINI_API_KEY");
+      const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
       const slideId = body.slideId;
       
       if (!slideId) {
@@ -102,7 +103,7 @@ serve(async (req) => {
           .select("*")
           .is("image_url", null)
           .order("slide_order")
-          .limit(3); // Process 3 at a time to avoid timeout
+          .limit(3);
 
         if (!slides || slides.length === 0) {
           return new Response(JSON.stringify({ success: true, mode: "images", message: "All slides have images", remaining: 0 }), {
@@ -113,30 +114,63 @@ serve(async (req) => {
         const results = [];
         for (const slide of slides) {
           try {
-            const imageResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-              method: "POST",
-              headers: {
-                Authorization: `Bearer ${lovableApiKey}`,
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                model: "google/gemini-2.5-flash-image",
-                messages: [{ role: "user", content: slide.image_prompt }],
-                modalities: ["image", "text"],
-              }),
-            });
+            let base64Data: string | null = null;
 
-            if (!imageResponse.ok) {
-              console.error(`Image gen failed for slide ${slide.slide_order}: ${imageResponse.status}`);
-              results.push({ slide_order: slide.slide_order, status: "failed" });
-              continue;
+            // Try Gemini direct first
+            if (GEMINI_API_KEY) {
+              const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${GEMINI_API_KEY}`;
+              const geminiRes = await fetch(geminiUrl, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  contents: [{ role: "user", parts: [{ text: slide.image_prompt }] }],
+                  generationConfig: { responseModalities: ["IMAGE", "TEXT"] },
+                }),
+              });
+
+              if (geminiRes.ok) {
+                const geminiData = await geminiRes.json();
+                const parts = geminiData.candidates?.[0]?.content?.parts ?? [];
+                for (const part of parts) {
+                  if (part.inlineData?.data) {
+                    base64Data = part.inlineData.data;
+                    break;
+                  }
+                }
+              } else {
+                console.warn(`[generate-slides] Gemini direct failed for slide ${slide.slide_order}: ${geminiRes.status}`);
+                await geminiRes.text(); // consume body
+              }
             }
 
-            const imageData = await imageResponse.json();
-            const base64Url = imageData.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+            // Fallback to Lovable Gateway
+            if (!base64Data && LOVABLE_API_KEY) {
+              const imageResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+                method: "POST",
+                headers: {
+                  Authorization: `Bearer ${LOVABLE_API_KEY}`,
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  model: "google/gemini-2.5-flash-image",
+                  messages: [{ role: "user", content: slide.image_prompt }],
+                  modalities: ["image", "text"],
+                }),
+              });
 
-            if (base64Url) {
-              const base64Data = base64Url.split(",")[1];
+              if (imageResponse.ok) {
+                const imageData = await imageResponse.json();
+                const base64Url = imageData.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+                if (base64Url) {
+                  base64Data = base64Url.split(",")[1];
+                }
+              } else {
+                console.error(`[generate-slides] Gateway failed for slide ${slide.slide_order}: ${imageResponse.status}`);
+                await imageResponse.text();
+              }
+            }
+
+            if (base64Data) {
               const binaryData = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
               const fileName = `slide-${slide.slide_order}.png`;
 

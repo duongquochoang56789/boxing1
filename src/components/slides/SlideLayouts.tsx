@@ -788,6 +788,180 @@ export const ComparisonSlide = ({ slide }: { slide: SlideData }) => {
   );
 };
 
+/* ==================== FUNNEL — marketing funnel ==================== */
+export const FunnelSlide = ({ slide }: { slide: SlideData }) => {
+  const colors = sectionColors[slide.section_name] || sectionColors.brand;
+  const hex = accentHex[slide.section_name] || accentHex.brand;
+  const bg = getSlideBg(slide, colors);
+  const lines = slide.content.split("\n").filter(l => l.trim());
+  const steps: { label: string; value: string }[] = [];
+  for (const line of lines) {
+    const bm = line.match(/^\*\*(.+?)\*\*\s*[—–:-]?\s*(.*)/);
+    if (bm) { steps.push({ label: bm[1], value: bm[2] }); continue; }
+    const plain = line.trim();
+    if (plain) steps.push({ label: plain, value: "" });
+  }
+
+  return (
+    <div className={`w-full h-full ${bg.className} flex flex-col justify-center px-16 py-12`} style={bg.style}>
+      <SlideHeader slide={slide} colors={colors} />
+      <div className="flex-1 flex flex-col items-center justify-center gap-0 mt-4">
+        {steps.slice(0, 6).map((step, i) => {
+          const widthPct = 100 - (i * (60 / Math.max(steps.length - 1, 1)));
+          const opacity = 1 - (i * 0.12);
+          return (
+            <motion.div key={i} custom={i} variants={fadeIn} initial="hidden" animate="visible"
+              className="relative flex items-center justify-center py-4 rounded-xl text-center"
+              style={{
+                width: `${widthPct}%`,
+                background: `linear-gradient(135deg, ${hex}${Math.round(opacity * 40).toString(16).padStart(2, '0')}, ${hex}${Math.round(opacity * 15).toString(16).padStart(2, '0')})`,
+                borderBottom: i < steps.length - 1 ? `2px solid ${hex}20` : 'none',
+              }}
+            >
+              <span className={`font-bold text-[28px] ${colors.accent}`}>{step.label}</span>
+              {step.value && <span className="text-white/60 text-[24px] ml-3">{step.value}</span>}
+            </motion.div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+/* ==================== SWOT — 2x2 matrix ==================== */
+export const SwotSlide = ({ slide }: { slide: SlideData }) => {
+  const colors = sectionColors[slide.section_name] || sectionColors.brand;
+  const bg = getSlideBg(slide, colors);
+  const sections = slide.content.split(/\n(?:---)\n|\n\n/).filter(s => s.trim());
+  const quadrants = [
+    { title: "Strengths", color: "#34d399", icon: "💪" },
+    { title: "Weaknesses", color: "#fb923c", icon: "⚠️" },
+    { title: "Opportunities", color: "#38bdf8", icon: "🚀" },
+    { title: "Threats", color: "#f87171", icon: "🔥" },
+  ];
+
+  return (
+    <div className={`w-full h-full ${bg.className} flex flex-col px-16 py-12`} style={bg.style}>
+      <SlideHeader slide={slide} colors={colors} />
+      <div className="flex-1 grid grid-cols-2 grid-rows-2 gap-4 mt-4">
+        {quadrants.map((q, i) => {
+          const sectionContent = sections[i] || "";
+          const items = sectionContent.split("\n").filter(l => l.trim() && !l.startsWith("**"));
+          return (
+            <motion.div key={i} custom={i} variants={fadeIn} initial="hidden" animate="visible"
+              className="rounded-2xl p-6 border border-white/10 relative overflow-hidden"
+              style={{ background: `linear-gradient(135deg, ${q.color}12, ${q.color}04)` }}
+            >
+              <div className="absolute top-0 left-0 right-0 h-1" style={{ background: q.color }} />
+              <div className="flex items-center gap-2 mb-4">
+                <span className="text-[28px]">{q.icon}</span>
+                <h3 className="font-bold text-[28px]" style={{ color: q.color }}>{q.title}</h3>
+              </div>
+              <div className="space-y-2">
+                {items.map((item, j) => (
+                  <div key={j} className="flex items-start gap-2">
+                    <span className="text-[20px] mt-0.5" style={{ color: q.color }}>•</span>
+                    <span className="text-white/70 text-[22px] leading-relaxed">{item.replace(/^[\*\-]\s*/, "")}</span>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+/* ==================== PROCESS — step-by-step flow ==================== */
+export const ProcessSlide = ({ slide }: { slide: SlideData }) => {
+  const colors = sectionColors[slide.section_name] || sectionColors.brand;
+  const hex = accentHex[slide.section_name] || accentHex.brand;
+  const bg = getSlideBg(slide, colors);
+  const lines = slide.content.split("\n").filter(l => l.trim());
+  const steps: { title: string; desc: string; emoji?: string }[] = [];
+  for (const line of lines) {
+    const nm = line.match(/^(\d+)[.)]\s*\*\*(.+?)\*\*\s*[—–:-]?\s*(.*)/);
+    if (nm) { steps.push({ title: nm[2], desc: nm[3] }); continue; }
+    const em = line.match(/^([^\w\s]+)\s*\*\*(.+?)\*\*\s*[—–:-]?\s*(.*)/u);
+    if (em) { steps.push({ emoji: em[1], title: em[2], desc: em[3] }); continue; }
+    const bm = line.match(/^\*\*(.+?)\*\*\s*[—–:-]?\s*(.*)/);
+    if (bm) { steps.push({ title: bm[1], desc: bm[2] }); continue; }
+  }
+
+  return (
+    <div className={`w-full h-full ${bg.className} flex flex-col justify-center px-16 py-12`} style={bg.style}>
+      <SlideHeader slide={slide} colors={colors} />
+      <div className="flex-1 flex items-center gap-2 mt-4">
+        {steps.slice(0, 5).map((step, i) => (
+          <React.Fragment key={i}>
+            <motion.div custom={i} variants={fadeIn} initial="hidden" animate="visible"
+              className="flex-1 rounded-2xl p-6 border border-white/10 text-center relative overflow-hidden"
+              style={{ background: `linear-gradient(180deg, ${hex}12, ${hex}04)` }}
+            >
+              <div className="w-[48px] h-[48px] rounded-full flex items-center justify-center mx-auto mb-3 text-[22px] font-bold"
+                style={{ background: hex, color: "#fff" }}
+              >
+                {step.emoji || (i + 1)}
+              </div>
+              <h4 className={`font-bold text-[26px] ${colors.accent} mb-2`}>{step.title}</h4>
+              <p className="text-white/60 text-[20px] leading-snug">{step.desc}</p>
+            </motion.div>
+            {i < steps.length - 1 && i < 4 && (
+              <motion.div custom={i} variants={fadeIn} initial="hidden" animate="visible"
+                className="text-[32px] flex-shrink-0" style={{ color: hex }}
+              >→</motion.div>
+            )}
+          </React.Fragment>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+/* ==================== TEAM — member grid ==================== */
+export const TeamSlide = ({ slide }: { slide: SlideData }) => {
+  const colors = sectionColors[slide.section_name] || sectionColors.brand;
+  const hex = accentHex[slide.section_name] || accentHex.brand;
+  const bg = getSlideBg(slide, colors);
+  const lines = slide.content.split("\n").filter(l => l.trim());
+  const members: { name: string; role: string; emoji?: string }[] = [];
+  for (const line of lines) {
+    const em = line.match(/^([^\w\s]+)\s*\*\*(.+?)\*\*\s*[—–:-]?\s*(.*)/u);
+    if (em) { members.push({ emoji: em[1], name: em[2], role: em[3] }); continue; }
+    const bm = line.match(/^\*\*(.+?)\*\*\s*[—–:-]?\s*(.*)/);
+    if (bm) { members.push({ name: bm[1], role: bm[2] }); continue; }
+  }
+
+  const cols = members.length <= 3 ? "grid-cols-3" : members.length <= 4 ? "grid-cols-4" : "grid-cols-3";
+
+  return (
+    <div className={`w-full h-full ${bg.className} flex flex-col justify-center px-16 py-12`} style={bg.style}>
+      <SlideHeader slide={slide} colors={colors} />
+      {members.length > 0 ? (
+        <div className={`grid ${cols} gap-6 mt-4 flex-1 items-center`}>
+          {members.slice(0, 6).map((m, i) => (
+            <motion.div key={i} custom={i} variants={fadeIn} initial="hidden" animate="visible"
+              className="flex flex-col items-center text-center p-6 rounded-2xl border border-white/10"
+              style={{ background: `linear-gradient(180deg, ${hex}08, transparent)` }}
+            >
+              <div className="w-[100px] h-[100px] rounded-full flex items-center justify-center text-[44px] mb-4"
+                style={{ background: `${hex}20`, border: `3px solid ${hex}` }}
+              >
+                {m.emoji || "👤"}
+              </div>
+              <h4 className={`font-bold text-[28px] ${colors.accent}`}>{m.name}</h4>
+              <p className="text-white/60 text-[22px] mt-1">{m.role}</p>
+            </motion.div>
+          ))}
+        </div>
+      ) : (
+        <ContentBlock content={slide.content} accent={colors.accent} />
+      )}
+    </div>
+  );
+};
+
 /* ==================== LAYOUT MAP ==================== */
 const layoutMap: Record<string, React.ComponentType<{ slide: SlideData }>> = {
   cover: CoverSlide,
@@ -802,6 +976,10 @@ const layoutMap: Record<string, React.ComponentType<{ slide: SlideData }>> = {
   chart: ChartSlide,
   "image-full": ImageFullSlide,
   comparison: ComparisonSlide,
+  funnel: FunnelSlide,
+  swot: SwotSlide,
+  process: ProcessSlide,
+  team: TeamSlide,
 };
 
 export const SlideRenderer = ({ slide }: { slide: SlideData }) => {

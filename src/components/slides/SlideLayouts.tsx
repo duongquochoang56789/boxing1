@@ -286,7 +286,9 @@ export const GridSlide = ({ slide }: { slide: SlideData }) => {
                   style={{ background: `${hex}20` }}
                 >{item.emoji}</span>
               )}
-              <h3 className={`text-[30px] font-bold ${colors.accent}`}>{item.title}</h3>
+              <h3 className={`font-bold ${colors.accent} ${
+                item.title.length > 25 ? "text-[22px]" : "text-[30px]"
+              }`}>{item.title}</h3>
               <p className="text-[22px] text-white/55 leading-relaxed">{item.desc}</p>
             </motion.div>
           ))}

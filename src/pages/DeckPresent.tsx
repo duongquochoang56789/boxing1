@@ -97,18 +97,23 @@ const DeckPresent = () => {
   const startTimeRef = useRef(Date.now());
   const hintsTimerRef = useRef<ReturnType<typeof setTimeout>>();
 
-  // Fetch slides
+  // Fetch deck + slides
   useEffect(() => {
     if (!deckId) return;
-    supabase
-      .from("deck_slides")
-      .select("*")
-      .eq("deck_id", deckId)
-      .order("slide_order")
-      .then(({ data }) => {
-        if (data) setSlides(data as DeckSlide[]);
-        setLoading(false);
-      });
+    Promise.all([
+      supabase.from("decks").select("*").eq("id", deckId).single(),
+      supabase.from("deck_slides").select("*").eq("deck_id", deckId).order("slide_order"),
+    ]).then(([deckRes, slidesRes]) => {
+      if (slidesRes.data) setSlides(slidesRes.data as DeckSlide[]);
+      // Read saved transition preference
+      if (deckRes.data) {
+        const savedTransition = (deckRes.data as any).transition;
+        if (savedTransition && ["fade", "slide", "zoom"].includes(savedTransition)) {
+          setTransition(savedTransition as TransitionType);
+        }
+      }
+      setLoading(false);
+    });
   }, [deckId]);
 
   // Auto-hide hints after 4 seconds

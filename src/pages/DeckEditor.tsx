@@ -49,6 +49,10 @@ const DeckEditor = () => {
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
   const [generatingImage, setGeneratingImage] = useState(false);
   const [exportingPdf, setExportingPdf] = useState(false);
+  const [batchGenerating, setBatchGenerating] = useState(false);
+  const [batchProgress, setBatchProgress] = useState(0);
+  const [batchTotal, setBatchTotal] = useState(0);
+  const batchCancelledRef = useRef(false);
   const [scale, setScale] = useState(1);
   const previewRef = useRef<HTMLDivElement>(null);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout>>();

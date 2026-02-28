@@ -92,7 +92,7 @@ const ContentBlock = ({ content, accent }: { content: string; accent: string }) 
         }
 
         // Emoji-prefixed lines
-        const emojiMatch = line.match(/^([^\w\s\#\*\-\|\"].+?)\s+(.+)$/u);
+        const emojiMatch = line.match(/^([^\w\s#*\-|"].+?)\s+(.+)$/u);
         if (emojiMatch && /\p{Emoji}/u.test(emojiMatch[1])) {
           const textPart = emojiMatch[2];
           const innerBold = textPart.match(/\*\*(.+?)\*\*\s*—?\s*(.*)/);

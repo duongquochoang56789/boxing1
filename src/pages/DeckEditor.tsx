@@ -61,6 +61,10 @@ const LAYOUT_TEMPLATES: Record<string, string> = {
   chart: "**Dữ liệu biểu đồ**\n\nMô tả xu hướng hoặc chỉ số quan trọng cần trực quan hóa.",
   "image-full": "# Tiêu đề nổi bật\n\nMô tả ngắn phủ lên hình nền toàn slide",
   comparison: "**Phương án A**\n- Ưu điểm 1\n- Ưu điểm 2\n\n---\n\n**Phương án B**\n- Ưu điểm 1\n- Ưu điểm 2",
+  funnel: "**1000 Visitors** Truy cập website\n\n**500 Leads** Đăng ký dùng thử\n\n**200 Trials** Sử dụng sản phẩm\n\n**100 Customers** Trở thành khách hàng\n\n**50 Advocates** Giới thiệu người khác",
+  swot: "**Strengths**\n- Đội ngũ giỏi\n- Công nghệ mạnh\n\n---\n\n**Weaknesses**\n- Nguồn vốn hạn chế\n- Thị trường mới\n\n---\n\n**Opportunities**\n- Thị trường tăng trưởng\n- Ít đối thủ\n\n---\n\n**Threats**\n- Đối thủ lớn\n- Thay đổi chính sách",
+  process: "**Nghiên cứu** Tìm hiểu nhu cầu thị trường\n\n**Thiết kế** Lên ý tưởng và wireframe\n\n**Phát triển** Code và kiểm thử\n\n**Ra mắt** Triển khai sản phẩm",
+  team: "👨‍💻 **Nguyễn Văn A** CEO & Founder\n\n👩‍🎨 **Trần Thị B** Lead Designer\n\n🧑‍💻 **Lê Văn C** CTO\n\n👩‍💼 **Phạm Thị D** CMO",
 };
 
 interface ThemePreset {

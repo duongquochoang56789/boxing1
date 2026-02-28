@@ -49,96 +49,184 @@ const renderInline = (text: string, accent: string) => {
 
 // Parse markdown-like content into lines
 const ContentBlock = ({ content, accent }: { content: string; accent: string }) => {
-  const lines = content.split("\n").filter(l => l.trim());
-  return (
-    <div className="space-y-4">
-      {lines.map((line, i) => {
-        if (line.startsWith("|")) return null;
+  const lines = content.split("\n");
+  const elements: React.ReactNode[] = [];
+  let i = 0;
 
-        // Headings: ### text
-        const headingMatch = line.match(/^(#{1,4})\s+(.+)$/);
-        if (headingMatch) {
-          const level = headingMatch[1].length;
-          const sizes = ["text-[48px]", "text-[42px]", "text-[36px]", "text-[30px]"];
-          return (
-            <motion.div key={i} custom={i} variants={fadeIn} initial="hidden" animate="visible"
-              className={`font-bold text-white ${sizes[level - 1] || sizes[2]} leading-tight mt-2`}
-            >{renderInline(headingMatch[2], accent)}</motion.div>
-          );
-        }
+  while (i < lines.length) {
+    const line = lines[i];
+    const trimmed = line.trim();
 
-        // Bullet list: * text or - text
-        const bulletMatch = line.match(/^[\*\-]\s+(.+)$/);
-        if (bulletMatch) {
-          return (
-            <motion.div key={i} custom={i} variants={fadeIn} initial="hidden" animate="visible"
-              className="flex items-start gap-3 pl-2"
+    // Skip empty lines and table rows
+    if (!trimmed || trimmed.startsWith("|")) { i++; continue; }
+
+    // Horizontal rule: --- or ***
+    if (/^[-*_]{3,}$/.test(trimmed)) {
+      elements.push(
+        <motion.div key={i} custom={i} variants={fadeIn} initial="hidden" animate="visible"
+          className="w-full flex items-center gap-4 my-4"
+        >
+          <div className={`flex-1 h-[2px] bg-gradient-to-r from-transparent via-white/20 to-transparent`} />
+        </motion.div>
+      );
+      i++; continue;
+    }
+
+    // Code block: ```
+    if (trimmed.startsWith("```")) {
+      const codeLines: string[] = [];
+      i++;
+      while (i < lines.length && !lines[i].trim().startsWith("```")) {
+        codeLines.push(lines[i]);
+        i++;
+      }
+      i++; // skip closing ```
+      elements.push(
+        <motion.pre key={`code-${i}`} custom={elements.length} variants={fadeIn} initial="hidden" animate="visible"
+          className="bg-white/5 border border-white/10 rounded-xl p-6 overflow-x-auto"
+        >
+          <code className="text-[22px] font-mono text-emerald-300 leading-relaxed whitespace-pre">
+            {codeLines.join("\n")}
+          </code>
+        </motion.pre>
+      );
+      continue;
+    }
+
+    // Inline code: `code`
+    // Headings: ### text
+    const headingMatch = trimmed.match(/^(#{1,4})\s+(.+)$/);
+    if (headingMatch) {
+      const level = headingMatch[1].length;
+      const sizes = ["text-[48px]", "text-[42px]", "text-[36px]", "text-[30px]"];
+      elements.push(
+        <motion.div key={i} custom={elements.length} variants={fadeIn} initial="hidden" animate="visible"
+          className={`font-bold text-white ${sizes[level - 1] || sizes[2]} leading-tight mt-2`}
+        >{renderInline(headingMatch[2], accent)}</motion.div>
+      );
+      i++; continue;
+    }
+
+    // Numbered list: 1. text, 2. text
+    const numberedMatch = trimmed.match(/^(\d+)[.)]\s+(.+)$/);
+    if (numberedMatch) {
+      const listItems: { num: string; text: string }[] = [];
+      while (i < lines.length) {
+        const nm = lines[i].trim().match(/^(\d+)[.)]\s+(.+)$/);
+        if (!nm) break;
+        listItems.push({ num: nm[1], text: nm[2] });
+        i++;
+      }
+      elements.push(
+        <div key={`ol-${i}`} className="space-y-3 pl-2">
+          {listItems.map((item, li) => (
+            <motion.div key={li} custom={elements.length + li} variants={fadeIn} initial="hidden" animate="visible"
+              className="flex items-start gap-4"
             >
-              <span className={`${accent} text-[28px] mt-1 flex-shrink-0`}>•</span>
-              <span className="text-white/80 text-[28px] leading-relaxed">{renderInline(bulletMatch[1], accent)}</span>
+              <span className={`${accent} text-[26px] font-bold min-w-[36px] h-[36px] rounded-full bg-white/5 flex items-center justify-center flex-shrink-0 mt-1`}>
+                {item.num}
+              </span>
+              <span className="text-white/80 text-[28px] leading-relaxed">{renderInline(item.text, accent)}</span>
             </motion.div>
-          );
-        }
+          ))}
+        </div>
+      );
+      continue;
+    }
 
-        // Standalone bold line: **text** rest
-        const boldMatch = line.match(/^\*\*(.+?)\*\*\s*(.*)$/);
-        if (boldMatch) {
-          return (
-            <motion.div key={i} custom={i} variants={fadeIn} initial="hidden" animate="visible">
-              <span className={`font-bold text-[36px] ${accent}`}>{boldMatch[1]}</span>
-              {boldMatch[2] && <span className="text-white/80 text-[30px] ml-2">{boldMatch[2]}</span>}
-            </motion.div>
-          );
-        }
+    // Nested bullet: starts with spaces/tab + * or -
+    const nestedBulletMatch = line.match(/^(\s{2,}|\t+)[\*\-]\s+(.+)$/);
+    if (nestedBulletMatch) {
+      const indent = nestedBulletMatch[1].length >= 4 ? 2 : 1;
+      elements.push(
+        <motion.div key={i} custom={elements.length} variants={fadeIn} initial="hidden" animate="visible"
+          className="flex items-start gap-3" style={{ paddingLeft: `${indent * 32 + 8}px` }}
+        >
+          <span className={`${accent} text-[22px] mt-1.5 flex-shrink-0 opacity-60`}>◦</span>
+          <span className="text-white/70 text-[26px] leading-relaxed">{renderInline(nestedBulletMatch[2], accent)}</span>
+        </motion.div>
+      );
+      i++; continue;
+    }
 
-        // Emoji-prefixed lines
-        const emojiMatch = line.match(/^([^\w\s#*\-|"].+?)\s+(.+)$/u);
-        if (emojiMatch && /\p{Emoji}/u.test(emojiMatch[1])) {
-          const textPart = emojiMatch[2];
-          const innerBold = textPart.match(/\*\*(.+?)\*\*\s*—?\s*(.*)/);
-          return (
-            <motion.div key={i} custom={i} variants={fadeIn} initial="hidden" animate="visible" className="flex items-start gap-3">
-              <span className="text-[32px] flex-shrink-0">{emojiMatch[1]}</span>
-              <div>
-                {innerBold ? (
-                  <>
-                    <span className={`font-bold text-[30px] ${accent}`}>{innerBold[1]}</span>
-                    {innerBold[2] && <span className="text-white/70 text-[28px]"> — {innerBold[2]}</span>}
-                  </>
-                ) : (
-                  <span className="text-white/80 text-[30px]">{renderInline(textPart, accent)}</span>
-                )}
-              </div>
-            </motion.div>
-          );
-        }
+    // Bullet list: * text or - text
+    const bulletMatch = trimmed.match(/^[\*\-]\s+(.+)$/);
+    if (bulletMatch) {
+      elements.push(
+        <motion.div key={i} custom={elements.length} variants={fadeIn} initial="hidden" animate="visible"
+          className="flex items-start gap-3 pl-2"
+        >
+          <span className={`${accent} text-[28px] mt-1 flex-shrink-0`}>•</span>
+          <span className="text-white/80 text-[28px] leading-relaxed">{renderInlineRich(bulletMatch[1], accent)}</span>
+        </motion.div>
+      );
+      i++; continue;
+    }
 
-        // Quoted text
-        if (line.startsWith('"') || line.startsWith('\u201C')) {
-          return (
-            <motion.p key={i} custom={i} variants={fadeIn} initial="hidden" animate="visible"
-              className="text-[36px] text-white/90 italic leading-relaxed"
-            >{line}</motion.p>
-          );
-        }
-        // Attribution
-        if (line.startsWith("—")) {
-          return (
-            <motion.p key={i} custom={i} variants={fadeIn} initial="hidden" animate="visible"
-              className="text-[26px] text-white/50 mt-2"
-            >{line}</motion.p>
-          );
-        }
+    // Standalone bold line: **text** rest
+    const boldMatch = trimmed.match(/^\*\*(.+?)\*\*\s*(.*)$/);
+    if (boldMatch) {
+      elements.push(
+        <motion.div key={i} custom={elements.length} variants={fadeIn} initial="hidden" animate="visible">
+          <span className={`font-bold text-[36px] ${accent}`}>{boldMatch[1]}</span>
+          {boldMatch[2] && <span className="text-white/80 text-[30px] ml-2">{boldMatch[2]}</span>}
+        </motion.div>
+      );
+      i++; continue;
+    }
 
-        // Default paragraph with inline formatting
-        return (
-          <motion.p key={i} custom={i} variants={fadeIn} initial="hidden" animate="visible"
-            className="text-[30px] text-white/80 leading-relaxed"
-          >{renderInline(line, accent)}</motion.p>
-        );
-      })}
-    </div>
-  );
+    // Emoji-prefixed lines
+    const emojiMatch = trimmed.match(/^([^\w\s#*\-|"].+?)\s+(.+)$/u);
+    if (emojiMatch && /\p{Emoji}/u.test(emojiMatch[1])) {
+      const textPart = emojiMatch[2];
+      const innerBold = textPart.match(/\*\*(.+?)\*\*\s*—?\s*(.*)/);
+      elements.push(
+        <motion.div key={i} custom={elements.length} variants={fadeIn} initial="hidden" animate="visible" className="flex items-start gap-3">
+          <span className="text-[32px] flex-shrink-0">{emojiMatch[1]}</span>
+          <div>
+            {innerBold ? (
+              <>
+                <span className={`font-bold text-[30px] ${accent}`}>{innerBold[1]}</span>
+                {innerBold[2] && <span className="text-white/70 text-[28px]"> — {innerBold[2]}</span>}
+              </>
+            ) : (
+              <span className="text-white/80 text-[30px]">{renderInline(textPart, accent)}</span>
+            )}
+          </div>
+        </motion.div>
+      );
+      i++; continue;
+    }
+
+    // Quoted text
+    if (trimmed.startsWith('"') || trimmed.startsWith('\u201C')) {
+      elements.push(
+        <motion.p key={i} custom={elements.length} variants={fadeIn} initial="hidden" animate="visible"
+          className="text-[36px] text-white/90 italic leading-relaxed"
+        >{trimmed}</motion.p>
+      );
+      i++; continue;
+    }
+    // Attribution
+    if (trimmed.startsWith("—")) {
+      elements.push(
+        <motion.p key={i} custom={elements.length} variants={fadeIn} initial="hidden" animate="visible"
+          className="text-[26px] text-white/50 mt-2"
+        >{trimmed}</motion.p>
+      );
+      i++; continue;
+    }
+
+    // Default paragraph with inline formatting (supports `code`, links)
+    elements.push(
+      <motion.p key={i} custom={elements.length} variants={fadeIn} initial="hidden" animate="visible"
+        className="text-[30px] text-white/80 leading-relaxed"
+      >{renderInlineRich(trimmed, accent)}</motion.p>
+    );
+    i++;
+  }
+
+  return <div className="space-y-4">{elements}</div>;
 };
 
 const TableContent = ({ content, accent }: { content: string; accent: string }) => {

@@ -259,7 +259,6 @@ const DeckEditor = () => {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [slides, current, handleUndo, handleRedo]);
-  }, [history]);
 
   const saveAll = async () => {
     setSaving(true);

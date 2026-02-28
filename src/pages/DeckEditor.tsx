@@ -928,7 +928,97 @@ const DeckEditor = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+
+      {/* Save as Template dialog */}
+      <Dialog open={showTemplateDialog} onOpenChange={setShowTemplateDialog}>
+        <DialogContent className="bg-[#1a1a1a] border-white/10 text-white max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <BookmarkPlus className="w-5 h-5 text-orange-400" />
+              Lưu slide làm template
+            </DialogTitle>
+            <DialogDescription className="text-white/50">
+              Template sẽ lưu layout, nội dung, ghi chú và màu nền để tái sử dụng.
+            </DialogDescription>
+          </DialogHeader>
+          <Input
+            value={templateName}
+            onChange={(e) => setTemplateName(e.target.value)}
+            placeholder="Tên template..."
+            className="bg-white/5 border-white/10 text-white"
+          />
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button variant="ghost" onClick={() => setShowTemplateDialog(false)} className="text-white/50 hover:text-white">
+              Huỷ
+            </Button>
+            <Button onClick={() => {
+              if (slide && templateName.trim()) {
+                saveTemplate(templateName.trim(), {
+                  layout: slide.layout,
+                  content: slide.content,
+                  subtitle: slide.subtitle,
+                  section_name: slide.section_name,
+                  background_color: slide.background_color,
+                  notes: slide.notes,
+                  image_prompt: slide.image_prompt,
+                });
+                setShowTemplateDialog(false);
+                toast({ title: `Đã lưu template "${templateName.trim()}"!` });
+              }
+            }} className="bg-orange-500 hover:bg-orange-600 text-white" disabled={!templateName.trim()}>
+              <BookmarkPlus className="w-4 h-4 mr-2" />
+              Lưu
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Template list dialog */}
+      <Dialog open={showTemplateList} onOpenChange={setShowTemplateList}>
+        <DialogContent className="bg-[#1a1a1a] border-white/10 text-white max-w-lg max-h-[70vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <BookMarked className="w-5 h-5 text-orange-400" />
+              Slide Templates ({templates.length})
+            </DialogTitle>
+            <DialogDescription className="text-white/50">
+              Chọn template để áp dụng cho slide hiện tại.
+            </DialogDescription>
+          </DialogHeader>
+          {templates.length === 0 ? (
+            <p className="text-white/30 text-sm text-center py-8">Chưa có template nào. Lưu slide làm template từ menu "Thêm".</p>
+          ) : (
+            <div className="space-y-2">
+              {templates.map(t => (
+                <div key={t.id} className="flex items-center gap-3 p-3 bg-white/5 rounded-lg hover:bg-white/10 transition-colors group">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-white text-sm font-medium truncate">{t.name}</p>
+                    <p className="text-white/40 text-xs">{t.layout} • {new Date(t.savedAt).toLocaleDateString("vi")}</p>
+                  </div>
+                  <Button size="sm" variant="ghost" onClick={() => {
+                    if (slide) {
+                      updateSlide("content", t.content);
+                      updateSlide("layout", t.layout);
+                      if (t.subtitle) updateSlide("subtitle", t.subtitle);
+                      if (t.notes) updateSlide("notes", t.notes);
+                      if (t.image_prompt) updateSlide("image_prompt", t.image_prompt);
+                      updateBgColor(t.background_color);
+                      setShowTemplateList(false);
+                      toast({ title: `Đã áp dụng template "${t.name}"!` });
+                    }
+                  }} className="text-orange-400 hover:bg-orange-400/10 text-xs shrink-0">
+                    Áp dụng
+                  </Button>
+                  <Button size="sm" variant="ghost" onClick={() => deleteTemplate(t.id)}
+                    className="text-red-400/50 hover:text-red-400 hover:bg-red-400/10 p-1.5 h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                    <Trash2 className="w-3 h-3" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
   );
 };
 

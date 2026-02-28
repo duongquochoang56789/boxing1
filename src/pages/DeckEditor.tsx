@@ -111,6 +111,8 @@ const DeckEditor = () => {
         return;
       }
       setDeckTitle(deckRes.data.title);
+      setDeckTheme((deckRes.data as any).theme || "default");
+      setDeckTransition((deckRes.data as any).transition || "fade");
       setSlides(slidesRes.data as DeckSlide[]);
       setLoading(false);
 

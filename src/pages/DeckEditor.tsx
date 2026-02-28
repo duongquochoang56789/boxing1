@@ -9,12 +9,15 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  Save, ArrowLeft, Presentation, Plus, Trash2, ChevronUp, ChevronDown, Loader2, Share2, Copy, Palette, ImageIcon, Download, Check, CloudOff, Images, X, Sparkles, PenLine, Maximize2, Minimize2, FileText
+  Save, ArrowLeft, Presentation, Plus, Trash2, ChevronUp, ChevronDown, Loader2, Share2, Copy, Palette, ImageIcon, Download, Check, CloudOff, Images, X, Sparkles, PenLine, Maximize2, Minimize2, FileText, Undo2, Redo2, BookmarkPlus, BookMarked
 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { BrandedLoader } from "@/components/ui/branded-loader";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import { useSlideHistory } from "@/hooks/useSlideHistory";
+import { useSlideTemplates } from "@/hooks/useSlideTemplates";
+import { Input } from "@/components/ui/input";
 
 interface DeckSlide {
   id: string;

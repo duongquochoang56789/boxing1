@@ -519,8 +519,6 @@ const DeckEditor = () => {
       const html2canvas = (await import("html2canvas")).default;
       const { jsPDF } = await import("jspdf");
       const pdf = new jsPDF({ orientation: "landscape", unit: "px", format: [SLIDE_W, SLIDE_H] });
-
-      // Create offscreen container
       const container = document.createElement("div");
       container.style.position = "fixed";
       container.style.left = "-99999px";
@@ -528,40 +526,24 @@ const DeckEditor = () => {
       container.style.width = `${SLIDE_W}px`;
       container.style.height = `${SLIDE_H}px`;
       document.body.appendChild(container);
-
       for (let i = 0; i < slides.length; i++) {
         if (i > 0) pdf.addPage([SLIDE_W, SLIDE_H], "landscape");
-
-        // Render slide into container
         const { createRoot } = await import("react-dom/client");
         const React = await import("react");
         const { SlideRenderer: SR } = await import("@/components/slides/SlideLayouts");
-
         const wrapper = document.createElement("div");
         wrapper.style.width = `${SLIDE_W}px`;
         wrapper.style.height = `${SLIDE_H}px`;
         container.innerHTML = "";
         container.appendChild(wrapper);
-
         const root = createRoot(wrapper);
         root.render(React.createElement(SR, { slide: slides[i] }));
-
-        // Wait for render
         await new Promise(r => setTimeout(r, 300));
-
-        const canvas = await html2canvas(wrapper, {
-          width: SLIDE_W,
-          height: SLIDE_H,
-          scale: 1,
-          useCORS: true,
-          backgroundColor: null,
-        });
-
+        const canvas = await html2canvas(wrapper, { width: SLIDE_W, height: SLIDE_H, scale: 1, useCORS: true, backgroundColor: null });
         const imgData = canvas.toDataURL("image/jpeg", 0.85);
         pdf.addImage(imgData, "JPEG", 0, 0, SLIDE_W, SLIDE_H);
         root.unmount();
       }
-
       document.body.removeChild(container);
       pdf.save(`${deckTitle || "slides"}.pdf`);
       toast({ title: "Đã xuất PDF thành công!" });
@@ -570,6 +552,19 @@ const DeckEditor = () => {
       toast({ title: "Lỗi xuất PDF", variant: "destructive" });
     }
     setExportingPdf(false);
+  };
+
+  const handleExportPptx = async () => {
+    setExportingPptx(true);
+    toast({ title: "Đang xuất PPTX..." });
+    try {
+      await exportToPptx(slides, deckTitle);
+      toast({ title: "Đã xuất PowerPoint thành công!" });
+    } catch (e: any) {
+      console.error("PPTX export error:", e);
+      toast({ title: "Lỗi xuất PPTX", variant: "destructive" });
+    }
+    setExportingPptx(false);
   };
 
   if (loading) {

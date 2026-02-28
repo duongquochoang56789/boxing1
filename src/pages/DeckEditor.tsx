@@ -421,10 +421,25 @@ const DeckEditor = () => {
             {generatingImage ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <ImageIcon className="w-4 h-4 mr-1" />}
             {generatingImage ? "Đang tạo..." : "AI Ảnh"}
           </Button>
-          <Button size="sm" variant="ghost" onClick={exportPdf} disabled={exportingPdf} className="text-white/60 hover:text-white">
-            {exportingPdf ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Download className="w-4 h-4 mr-1" />}
-            {exportingPdf ? "Xuất..." : "PDF"}
-          </Button>
+          {batchGenerating ? (
+            <div className="flex items-center gap-2 px-2">
+              <div className="w-24">
+                <Progress value={(batchProgress / batchTotal) * 100} className="h-2" />
+              </div>
+              <span className="text-white/60 text-xs whitespace-nowrap">{batchProgress}/{batchTotal}</span>
+              <Button size="sm" variant="ghost" onClick={() => { batchCancelledRef.current = true; }}
+                className="text-red-400/60 hover:text-red-400 p-1 h-6 w-6">
+                <X className="w-3 h-3" />
+              </Button>
+            </div>
+          ) : (
+            <Button size="sm" variant="ghost" onClick={generateAllImages} 
+              disabled={generatingImage || !slides.some(s => s.image_prompt && !s.image_url)}
+              className="text-white/60 hover:text-white" title="Tạo ảnh AI cho tất cả slide">
+              <Images className="w-4 h-4 mr-1" />
+              Tạo tất cả ảnh
+            </Button>
+          )}
           <Button size="sm" variant="ghost" onClick={saveAll} disabled={saving} className="text-white/60 hover:text-white">
             <Save className="w-4 h-4 mr-1" /> {saving ? "..." : "Lưu"}
           </Button>

@@ -440,6 +440,10 @@ const DeckEditor = () => {
               Tạo tất cả ảnh
             </Button>
           )}
+          <Button size="sm" variant="ghost" onClick={exportPdf} disabled={exportingPdf} className="text-white/60 hover:text-white">
+            {exportingPdf ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Download className="w-4 h-4 mr-1" />}
+            {exportingPdf ? "Xuất..." : "PDF"}
+          </Button>
           <Button size="sm" variant="ghost" onClick={saveAll} disabled={saving} className="text-white/60 hover:text-white">
             <Save className="w-4 h-4 mr-1" /> {saving ? "..." : "Lưu"}
           </Button>

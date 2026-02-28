@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  Save, ArrowLeft, Presentation, Plus, Trash2, ChevronUp, ChevronDown, Loader2, Share2, Copy, Palette, ImageIcon, Download, Check, CloudOff, Images, X, Sparkles, PenLine, Maximize2, Minimize2, FileText, Undo2, Redo2, BookmarkPlus, BookMarked
+  Save, ArrowLeft, Presentation, Plus, Trash2, ChevronUp, ChevronDown, Loader2, Share2, Copy, Palette, ImageIcon, Download, Check, CloudOff, Images, X, Sparkles, PenLine, Maximize2, Minimize2, FileText, Undo2, Redo2, BookmarkPlus, BookMarked, Grid3X3
 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { BrandedLoader } from "@/components/ui/branded-loader";
@@ -18,6 +18,8 @@ import { Badge } from "@/components/ui/badge";
 import { useSlideHistory } from "@/hooks/useSlideHistory";
 import { useSlideTemplates } from "@/hooks/useSlideTemplates";
 import { Input } from "@/components/ui/input";
+import LazySlideThumb from "@/components/slides/LazySlideThumb";
+import EditorGridView from "@/components/slides/EditorGridView";
 
 interface DeckSlide {
   id: string;
@@ -118,6 +120,7 @@ const DeckEditor = () => {
   const [deckTheme, setDeckTheme] = useState("default");
   const [deckTransition, setDeckTransition] = useState("fade");
   const [showTemplateDialog, setShowTemplateDialog] = useState(false);
+  const [showEditorGrid, setShowEditorGrid] = useState(false);
   const [templateName, setTemplateName] = useState("");
   const [showTemplateList, setShowTemplateList] = useState(false);
   const history = useSlideHistory();
@@ -246,6 +249,14 @@ const DeckEditor = () => {
       }
       if (e.key === "Delete" && !isEditing) {
         deleteSlide();
+      }
+      if ((e.key === "g" || e.key === "G") && !isEditing) {
+        e.preventDefault();
+        setShowEditorGrid(prev => !prev);
+      }
+      if (e.key === "Escape" && showEditorGrid) {
+        e.preventDefault();
+        setShowEditorGrid(false);
       }
       if ((e.ctrlKey || e.metaKey) && e.key === "ArrowUp") {
         e.preventDefault();
@@ -682,6 +693,10 @@ const DeckEditor = () => {
               </button>
             </div>
           </div>
+          <Button size="sm" variant="ghost" onClick={() => setShowEditorGrid(true)}
+            className="text-white/60 hover:text-white" title="Grid View (G)">
+            <Grid3X3 className="w-4 h-4" />
+          </Button>
           <Button size="sm" onClick={() => navigate(`/slides/${deckId}/present`)} className="bg-orange-500 hover:bg-orange-600 text-white">
             <Presentation className="w-4 h-4 mr-1" /> Trình chiếu
           </Button>
@@ -722,11 +737,7 @@ const DeckEditor = () => {
                     boxShadow: isDragging ? "0 4px 20px rgba(0,0,0,0.5), 0 0 12px rgba(251,146,60,0.3)" : "none",
                   }}
                 >
-                  <div className={`aspect-video bg-[#1a1a2e] rounded overflow-hidden relative pointer-events-none transition-transform duration-200 ${isOver ? "scale-90" : ""}`}>
-                    <div style={{ width: SLIDE_W, height: SLIDE_H, transform: "scale(0.05)", transformOrigin: "top left" }}>
-                      <SlideRenderer slide={s} />
-                    </div>
-                  </div>
+                  <LazySlideThumb slide={s} scale={0.05} className={`transition-transform duration-200 ${isOver ? "scale-90" : ""}`} />
                   <span className="text-[10px] text-white/40 mt-1 block truncate">{i + 1}. {s.title}</span>
                 </button>
                 {/* Drop indicator line - below */}
@@ -1019,6 +1030,15 @@ const DeckEditor = () => {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Editor Grid View */}
+      <EditorGridView
+        open={showEditorGrid}
+        slides={slides}
+        currentIndex={current}
+        onSelect={setCurrent}
+        onClose={() => setShowEditorGrid(false)}
+      />
     </div>
   );
 };

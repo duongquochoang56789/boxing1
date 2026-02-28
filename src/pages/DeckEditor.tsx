@@ -671,12 +671,11 @@ const DeckEditor = () => {
               <button onClick={exportPdf} disabled={exportingPdf} className="w-full flex items-center gap-2 px-3 py-2 text-sm text-white/70 hover:bg-white/10 hover:text-white transition-colors disabled:opacity-50">
                 <Download className="w-4 h-4" /> {exportingPdf ? "Đang xuất..." : "Xuất PDF"}
               </button>
-              <button onClick={() => {
-                const shareUrl = `${window.location.origin}/slides/${deckId}/present`;
-                navigator.clipboard.writeText(shareUrl);
-                toast({ title: "Đã copy link trình chiếu!" });
-              }} className="w-full flex items-center gap-2 px-3 py-2 text-sm text-white/70 hover:bg-white/10 hover:text-white transition-colors">
-                <Share2 className="w-4 h-4" /> Copy link
+              <button onClick={handleExportPptx} disabled={exportingPptx} className="w-full flex items-center gap-2 px-3 py-2 text-sm text-white/70 hover:bg-white/10 hover:text-white transition-colors disabled:opacity-50">
+                <Download className="w-4 h-4" /> {exportingPptx ? "Đang xuất..." : "Xuất PPTX"}
+              </button>
+              <button onClick={() => setShowShareDialog(true)} className="w-full flex items-center gap-2 px-3 py-2 text-sm text-white/70 hover:bg-white/10 hover:text-white transition-colors">
+                <Share2 className="w-4 h-4" /> Chia sẻ & Nhúng
               </button>
               <div className="border-t border-white/10 my-1" />
               <button onClick={() => {

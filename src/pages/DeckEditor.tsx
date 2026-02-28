@@ -694,6 +694,30 @@ const DeckEditor = () => {
           </ResizablePanel>
         </ResizablePanelGroup>
       </div>
+
+      {/* Auto-generate images dialog */}
+      <Dialog open={showAutoImageDialog} onOpenChange={setShowAutoImageDialog}>
+        <DialogContent className="bg-[#1a1a1a] border-white/10 text-white max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Images className="w-5 h-5 text-orange-400" />
+              Tạo ảnh minh hoạ tự động?
+            </DialogTitle>
+            <DialogDescription className="text-white/50">
+              AI đã tạo xong nội dung slide. Bạn có muốn AI tự động tạo ảnh minh hoạ cho tất cả slide không? (Mất khoảng 30-60 giây)
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button variant="ghost" onClick={() => setShowAutoImageDialog(false)} className="text-white/50 hover:text-white">
+              Để sau
+            </Button>
+            <Button onClick={() => { setShowAutoImageDialog(false); generateAllImages(); }} className="bg-orange-500 hover:bg-orange-600 text-white">
+              <Sparkles className="w-4 h-4 mr-2" />
+              Tạo ảnh ngay
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

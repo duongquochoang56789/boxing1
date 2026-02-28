@@ -677,6 +677,37 @@ const DeckEditor = () => {
                   ))}
                 </div>
               </div>
+              {/* AI Assist Buttons */}
+              <div className="border-t border-white/10 px-4 py-2 flex items-center gap-1.5 flex-wrap">
+                <span className="text-white/20 text-[10px] uppercase tracking-wider mr-1">AI</span>
+                <Button size="sm" variant="ghost" onClick={() => aiAssist("rewrite")}
+                  disabled={!!aiAssisting || !slide?.content}
+                  className="h-7 text-[11px] text-white/40 hover:text-orange-400 hover:bg-orange-400/10 px-2 gap-1">
+                  {aiAssisting === "rewrite" ? <Loader2 className="w-3 h-3 animate-spin" /> : <PenLine className="w-3 h-3" />}
+                  Viết lại
+                </Button>
+                <Button size="sm" variant="ghost" onClick={() => aiAssist("expand")}
+                  disabled={!!aiAssisting || !slide?.content}
+                  className="h-7 text-[11px] text-white/40 hover:text-emerald-400 hover:bg-emerald-400/10 px-2 gap-1">
+                  {aiAssisting === "expand" ? <Loader2 className="w-3 h-3 animate-spin" /> : <Maximize2 className="w-3 h-3" />}
+                  Mở rộng
+                </Button>
+                <Button size="sm" variant="ghost" onClick={() => aiAssist("summarize")}
+                  disabled={!!aiAssisting || !slide?.content}
+                  className="h-7 text-[11px] text-white/40 hover:text-blue-400 hover:bg-blue-400/10 px-2 gap-1">
+                  {aiAssisting === "summarize" ? <Loader2 className="w-3 h-3 animate-spin" /> : <Minimize2 className="w-3 h-3" />}
+                  Tóm tắt
+                </Button>
+                <Button size="sm" variant="ghost" onClick={() => aiAssist("notes")}
+                  disabled={!!aiAssisting}
+                  className="h-7 text-[11px] text-white/40 hover:text-purple-400 hover:bg-purple-400/10 px-2 gap-1">
+                  {aiAssisting === "notes" ? <Loader2 className="w-3 h-3 animate-spin" /> : <FileText className="w-3 h-3" />}
+                  Tạo ghi chú
+                </Button>
+                {aiAssisting && (
+                  <span className="text-orange-400/60 text-[10px] animate-pulse ml-1">Đang xử lý...</span>
+                )}
+              </div>
               <textarea
                 value={slide?.content || ""}
                 onChange={(e) => updateSlide("content", e.target.value)}

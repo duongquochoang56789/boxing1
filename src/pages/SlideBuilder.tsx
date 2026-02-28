@@ -65,6 +65,8 @@ const SlideBuilder = () => {
         toast({ title: "Hết credits AI", description: "Workspace đã hết credits AI. Vào Settings → Workspace → Usage để nạp thêm.", variant: "destructive" });
       } else if (errorMsg.includes("429") || errorMsg.includes("quá nhiều") || errorMsg.includes("rate")) {
         toast({ title: "Quá nhiều yêu cầu", description: "Vui lòng đợi 30 giây rồi thử lại.", variant: "destructive" });
+      } else if (errorMsg.includes("2 lần") || errorMsg.includes("không hợp lệ") || errorMsg.includes("không tạo được")) {
+        toast({ title: "AI không tạo được nội dung", description: "Hệ thống đã thử 2 lần nhưng không thành công. Vui lòng thử lại với chủ đề ngắn gọn hơn.", variant: "destructive" });
       } else {
         toast({ title: "Không thể tạo slide", description: errorMsg || "Vui lòng thử lại sau.", variant: "destructive" });
       }

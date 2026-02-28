@@ -9,8 +9,9 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  Save, ArrowLeft, Presentation, Plus, Trash2, ChevronUp, ChevronDown, Loader2, Share2, Copy, Palette, ImageIcon, Download, Check, CloudOff
+  Save, ArrowLeft, Presentation, Plus, Trash2, ChevronUp, ChevronDown, Loader2, Share2, Copy, Palette, ImageIcon, Download, Check, CloudOff, Images, X
 } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
 import { BrandedLoader } from "@/components/ui/branded-loader";
 
 interface DeckSlide {

@@ -1019,6 +1019,7 @@ const DeckEditor = () => {
           )}
         </DialogContent>
       </Dialog>
+    </div>
   );
 };
 

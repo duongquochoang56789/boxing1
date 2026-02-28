@@ -42,7 +42,7 @@ interface DeckSlide {
 
 const SLIDE_W = 1920;
 const SLIDE_H = 1080;
-const VALID_LAYOUTS = ["cover", "two-column", "stats", "grid", "table", "timeline", "quote", "pricing", "persona", "chart", "image-full", "comparison"];
+const VALID_LAYOUTS = ["cover", "two-column", "stats", "grid", "table", "timeline", "quote", "pricing", "persona", "chart", "image-full", "comparison", "funnel", "swot", "process", "team"];
 const BG_PRESETS = [
   "#1a1a2e", "#16213e", "#0f3460", "#1a0a2e", "#2e1a1a", "#1a2e1a", "#2e2a1a", "#0a0a0a",
   "#e2e8f0", "#fef3c7", "#fee2e2", "#dbeafe", "#d1fae5", "#ede9fe",

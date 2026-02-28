@@ -233,23 +233,51 @@ CHỈ trả về JSON array, không có text khác.`;
       });
     }
 
-    const rawContent = await extractTextContent(aiResponse, isDirect);
+    let rawContent = await extractTextContent(aiResponse, isDirect);
     console.log(`[generate-deck] Raw response length: ${rawContent.length} chars`);
 
-    // Parse with robust extraction
-    let slides: any[];
-    try {
-      slides = extractJsonArray(rawContent);
-    } catch (e) {
-      console.error("Failed to parse AI response:", rawContent.substring(0, 500));
-      return new Response(JSON.stringify({ error: "AI trả về định dạng không hợp lệ, vui lòng thử lại." }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    // Parse with robust extraction + 1 automatic retry
+    let slides: any[] | null = null;
+    let parseError: string = "";
+
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      try {
+        slides = extractJsonArray(rawContent);
+        if (Array.isArray(slides) && slides.length > 0) {
+          console.log(`[generate-deck] Parse succeeded on attempt ${attempt}`);
+          break;
+        }
+        parseError = "Empty slides array";
+        slides = null;
+      } catch (e) {
+        parseError = e instanceof Error ? e.message : String(e);
+        console.warn(`[generate-deck] Parse attempt ${attempt} failed: ${parseError}`);
+        console.warn(`[generate-deck] Raw preview: ${rawContent.substring(0, 300)}`);
+        slides = null;
+      }
+
+      if (attempt === 1) {
+        // Retry: re-call AI once more
+        console.log(`[generate-deck] Retrying AI call...`);
+        const retryModel = models[0];
+        const retryResponse = useDirect
+          ? await callGeminiDirect(GEMINI_API_KEY!, retryModel, systemPrompt, userPrompt)
+          : await callLovableGateway(LOVABLE_API_KEY!, retryModel, systemPrompt, userPrompt);
+
+        if (retryResponse.ok) {
+          rawContent = await extractTextContent(retryResponse, isDirect);
+          console.log(`[generate-deck] Retry response length: ${rawContent.length} chars`);
+        } else {
+          console.error(`[generate-deck] Retry AI call failed: ${retryResponse.status}`);
+          break;
+        }
+      }
     }
 
-    if (!Array.isArray(slides) || slides.length === 0) {
-      return new Response(JSON.stringify({ error: "AI không tạo được slide, vui lòng thử lại." }), {
+    if (!slides || slides.length === 0) {
+      return new Response(JSON.stringify({
+        error: "AI không thể tạo nội dung hợp lệ sau 2 lần thử. Vui lòng thử lại với chủ đề ngắn gọn hơn.",
+      }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });

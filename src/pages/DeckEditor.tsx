@@ -137,6 +137,7 @@ const DeckEditor = () => {
           layout: updated.layout,
           section_name: updated.section_name,
           notes: updated.notes,
+          image_prompt: updated.image_prompt,
         })
         .eq("id", updated.id);
       if (error) { console.error("Auto-save error:", error); setSaveStatus("idle"); return; }

@@ -250,6 +250,14 @@ const DeckEditor = () => {
       if (e.key === "Delete" && !isEditing) {
         deleteSlide();
       }
+      if ((e.key === "g" || e.key === "G") && !isEditing) {
+        e.preventDefault();
+        setShowEditorGrid(prev => !prev);
+      }
+      if (e.key === "Escape" && showEditorGrid) {
+        e.preventDefault();
+        setShowEditorGrid(false);
+      }
       if ((e.ctrlKey || e.metaKey) && e.key === "ArrowUp") {
         e.preventDefault();
         setCurrent(prev => Math.max(0, prev - 1));

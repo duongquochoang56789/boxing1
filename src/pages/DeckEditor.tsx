@@ -976,6 +976,21 @@ const DeckEditor = () => {
             </div>
           </ResizablePanel>
         </ResizablePanelGroup>
+
+        {/* Comments Panel */}
+        <SlideComments
+          slideId={slide?.id || ""}
+          open={showComments}
+          onClose={() => setShowComments(false)}
+        />
+
+        {/* Version History Panel */}
+        <SlideVersionHistory
+          slideId={slide?.id || ""}
+          open={showVersionHistory}
+          onClose={() => setShowVersionHistory(false)}
+          onRestore={handleRestoreVersion}
+        />
       </div>
 
       {/* Auto-generate images dialog */}

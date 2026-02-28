@@ -455,8 +455,10 @@ export type Database = {
           is_public: boolean
           share_slug: string | null
           slide_count: number
+          theme: string
           thumbnail_url: string | null
           title: string
+          transition: string
           updated_at: string
           user_id: string
         }
@@ -468,8 +470,10 @@ export type Database = {
           is_public?: boolean
           share_slug?: string | null
           slide_count?: number
+          theme?: string
           thumbnail_url?: string | null
           title: string
+          transition?: string
           updated_at?: string
           user_id: string
         }
@@ -481,8 +485,10 @@ export type Database = {
           is_public?: boolean
           share_slug?: string | null
           slide_count?: number
+          theme?: string
           thumbnail_url?: string | null
           title?: string
+          transition?: string
           updated_at?: string
           user_id?: string
         }

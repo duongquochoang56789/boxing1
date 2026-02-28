@@ -54,6 +54,24 @@ const LAYOUT_TEMPLATES: Record<string, string> = {
   comparison: "**Phương án A**\n- Ưu điểm 1\n- Ưu điểm 2\n\n---\n\n**Phương án B**\n- Ưu điểm 1\n- Ưu điểm 2",
 };
 
+interface ThemePreset {
+  id: string;
+  name: string;
+  colors: string[]; // background colors to apply to slides cyclically
+  label: string; // short color indicator
+}
+
+const THEME_PRESETS: ThemePreset[] = [
+  { id: "default", name: "Mặc định", label: "🌙", colors: ["#1a1a2e", "#16213e", "#0f3460", "#1a0a2e"] },
+  { id: "corporate-blue", name: "Corporate Blue", label: "🔵", colors: ["#0f172a", "#1e3a5f", "#0c4a6e", "#164e63"] },
+  { id: "startup-orange", name: "Startup Orange", label: "🟠", colors: ["#1c1917", "#431407", "#7c2d12", "#1a1a2e"] },
+  { id: "nature-green", name: "Nature Green", label: "🟢", colors: ["#052e16", "#14532d", "#1a2e1a", "#0a0a0a"] },
+  { id: "elegant-dark", name: "Elegant Dark", label: "⚫", colors: ["#0a0a0a", "#171717", "#1c1917", "#0c0a09"] },
+  { id: "warm-cream", name: "Warm Cream", label: "🟡", colors: ["#fef3c7", "#fde68a", "#f5f0e1", "#e2e8f0"] },
+  { id: "royal-purple", name: "Royal Purple", label: "🟣", colors: ["#1a0a2e", "#2e1065", "#312e81", "#1e1b4b"] },
+  { id: "rose-gold", name: "Rose Gold", label: "🌸", colors: ["#2e1a1a", "#4a1d1d", "#1c1917", "#0a0a0a"] },
+];
+
 const suggestLayout = (content: string): string | null => {
   if (!content || content.trim().length < 10) return null;
   if (content.includes("|") && content.includes("---")) return "table";
@@ -93,7 +111,9 @@ const DeckEditor = () => {
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const [showAutoImageDialog, setShowAutoImageDialog] = useState(false);
-  const [aiAssisting, setAiAssisting] = useState<string | null>(null); // action name or null
+  const [aiAssisting, setAiAssisting] = useState<string | null>(null);
+  const [deckTheme, setDeckTheme] = useState("default");
+  const [deckTransition, setDeckTransition] = useState("fade");
 
   // Load deck + slides
   useEffect(() => {
@@ -109,6 +129,8 @@ const DeckEditor = () => {
         return;
       }
       setDeckTitle(deckRes.data.title);
+      setDeckTheme((deckRes.data as any).theme || "default");
+      setDeckTransition((deckRes.data as any).transition || "fade");
       setSlides(slidesRes.data as DeckSlide[]);
       setLoading(false);
 
@@ -304,6 +326,32 @@ const DeckEditor = () => {
     if (!slide) return;
     await supabase.from("deck_slides").update({ background_color: color }).eq("id", slide.id);
     setSlides(prev => prev.map((s, i) => i === current ? { ...s, background_color: color } : s));
+  };
+
+  const applyTheme = async (themeId: string) => {
+    if (!deckId) return;
+    const theme = THEME_PRESETS.find(t => t.id === themeId);
+    if (!theme) return;
+    setDeckTheme(themeId);
+    // Update deck record
+    await supabase.from("decks").update({ theme: themeId } as any).eq("id", deckId);
+    // Apply colors to all slides cyclically
+    const updated = slides.map((s, i) => ({
+      ...s,
+      background_color: theme.colors[i % theme.colors.length],
+    }));
+    setSlides(updated);
+    for (const s of updated) {
+      await supabase.from("deck_slides").update({ background_color: s.background_color }).eq("id", s.id);
+    }
+    toast({ title: `Đã áp dụng theme "${theme.name}"!` });
+  };
+
+  const updateDeckTransition = async (t: string) => {
+    if (!deckId) return;
+    setDeckTransition(t);
+    await supabase.from("decks").update({ transition: t } as any).eq("id", deckId);
+    toast({ title: `Transition: ${t}` });
   };
 
   const generateImage = async () => {
@@ -521,6 +569,35 @@ const DeckEditor = () => {
               Tạo tất cả ảnh
             </Button>
           )}
+          {/* Theme selector */}
+          <div className="relative group">
+            <Button size="sm" variant="ghost" className="text-white/60 hover:text-white" title="Theme">
+              <Palette className="w-4 h-4 mr-1" /> Theme ▾
+            </Button>
+            <div className="absolute right-0 top-full mt-1 bg-[#1a1a1a] border border-white/10 rounded-lg shadow-xl py-1 min-w-[180px] hidden group-hover:block z-50">
+              {THEME_PRESETS.map(t => (
+                <button key={t.id} onClick={() => applyTheme(t.id)}
+                  className={`w-full flex items-center gap-2 px-3 py-2 text-sm transition-colors ${
+                    deckTheme === t.id ? "text-orange-400 bg-orange-400/10" : "text-white/70 hover:bg-white/10 hover:text-white"
+                  }`}>
+                  <span>{t.label}</span>
+                  <span>{t.name}</span>
+                  {deckTheme === t.id && <Check className="w-3 h-3 ml-auto" />}
+                </button>
+              ))}
+              <div className="border-t border-white/10 mt-1 pt-1 px-3 py-1.5">
+                <span className="text-white/30 text-[10px] uppercase tracking-wider">Transition</span>
+                <div className="flex gap-1 mt-1">
+                  {["fade", "slide", "zoom"].map(t => (
+                    <button key={t} onClick={() => updateDeckTransition(t)}
+                      className={`px-2 py-1 text-[11px] rounded capitalize transition-colors ${
+                        deckTransition === t ? "bg-orange-500/20 text-orange-400" : "text-white/40 hover:text-white/70 bg-white/5"
+                      }`}>{t}</button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
           {/* More actions dropdown */}
           <div className="relative group">
             <Button size="sm" variant="ghost" className="text-white/60 hover:text-white">

@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  Save, ArrowLeft, Presentation, Plus, Trash2, ChevronUp, ChevronDown, Loader2, Share2, Copy, Palette, ImageIcon, Download, Check, CloudOff, Images, X, Sparkles
+  Save, ArrowLeft, Presentation, Plus, Trash2, ChevronUp, ChevronDown, Loader2, Share2, Copy, Palette, ImageIcon, Download, Check, CloudOff, Images, X, Sparkles, PenLine, Maximize2, Minimize2, FileText
 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { BrandedLoader } from "@/components/ui/branded-loader";
@@ -93,6 +93,7 @@ const DeckEditor = () => {
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const [showAutoImageDialog, setShowAutoImageDialog] = useState(false);
+  const [aiAssisting, setAiAssisting] = useState<string | null>(null); // action name or null
 
   // Load deck + slides
   useEffect(() => {
@@ -369,6 +370,44 @@ const DeckEditor = () => {
     }
   };
 
+
+  const aiAssist = async (action: "rewrite" | "expand" | "summarize" | "notes") => {
+    if (!slide) return;
+    setAiAssisting(action);
+    try {
+      const { data, error } = await supabase.functions.invoke("ai-slide-assist", {
+        body: {
+          action,
+          slideTitle: slide.title,
+          slideContent: slide.content,
+          slideNotes: slide.notes,
+          deckTitle,
+          layout: slide.layout,
+          language: "vi",
+        },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      if (action === "notes") {
+        updateSlide("notes", data.result);
+        toast({ title: "Đã tạo ghi chú thuyết trình!" });
+      } else {
+        updateSlide("content", data.result);
+        toast({ title: action === "rewrite" ? "Đã viết lại nội dung!" : action === "expand" ? "Đã mở rộng nội dung!" : "Đã tóm tắt nội dung!" });
+      }
+    } catch (e: any) {
+      const msg = e?.message || "";
+      if (msg.includes("429")) {
+        toast({ title: "Quá nhiều yêu cầu", description: "Vui lòng đợi 30 giây rồi thử lại.", variant: "destructive" });
+      } else if (msg.includes("402")) {
+        toast({ title: "Hết credits AI", variant: "destructive" });
+      } else {
+        toast({ title: "Lỗi AI: " + (msg || "Unknown"), variant: "destructive" });
+      }
+    }
+    setAiAssisting(null);
+  };
+
   const exportPdf = async () => {
     setExportingPdf(true);
     toast({ title: "Đang xuất PDF..." });
@@ -637,6 +676,37 @@ const DeckEditor = () => {
                     />
                   ))}
                 </div>
+              </div>
+              {/* AI Assist Buttons */}
+              <div className="border-t border-white/10 px-4 py-2 flex items-center gap-1.5 flex-wrap">
+                <span className="text-white/20 text-[10px] uppercase tracking-wider mr-1">AI</span>
+                <Button size="sm" variant="ghost" onClick={() => aiAssist("rewrite")}
+                  disabled={!!aiAssisting || !slide?.content}
+                  className="h-7 text-[11px] text-white/40 hover:text-orange-400 hover:bg-orange-400/10 px-2 gap-1">
+                  {aiAssisting === "rewrite" ? <Loader2 className="w-3 h-3 animate-spin" /> : <PenLine className="w-3 h-3" />}
+                  Viết lại
+                </Button>
+                <Button size="sm" variant="ghost" onClick={() => aiAssist("expand")}
+                  disabled={!!aiAssisting || !slide?.content}
+                  className="h-7 text-[11px] text-white/40 hover:text-emerald-400 hover:bg-emerald-400/10 px-2 gap-1">
+                  {aiAssisting === "expand" ? <Loader2 className="w-3 h-3 animate-spin" /> : <Maximize2 className="w-3 h-3" />}
+                  Mở rộng
+                </Button>
+                <Button size="sm" variant="ghost" onClick={() => aiAssist("summarize")}
+                  disabled={!!aiAssisting || !slide?.content}
+                  className="h-7 text-[11px] text-white/40 hover:text-blue-400 hover:bg-blue-400/10 px-2 gap-1">
+                  {aiAssisting === "summarize" ? <Loader2 className="w-3 h-3 animate-spin" /> : <Minimize2 className="w-3 h-3" />}
+                  Tóm tắt
+                </Button>
+                <Button size="sm" variant="ghost" onClick={() => aiAssist("notes")}
+                  disabled={!!aiAssisting}
+                  className="h-7 text-[11px] text-white/40 hover:text-purple-400 hover:bg-purple-400/10 px-2 gap-1">
+                  {aiAssisting === "notes" ? <Loader2 className="w-3 h-3 animate-spin" /> : <FileText className="w-3 h-3" />}
+                  Tạo ghi chú
+                </Button>
+                {aiAssisting && (
+                  <span className="text-orange-400/60 text-[10px] animate-pulse ml-1">Đang xử lý...</span>
+                )}
               </div>
               <textarea
                 value={slide?.content || ""}

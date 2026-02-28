@@ -572,6 +572,18 @@ const DeckEditor = () => {
                 className="flex-1 w-full bg-transparent text-white/80 font-mono text-sm p-4 resize-none outline-none placeholder:text-white/20"
                 placeholder="Nội dung slide (Markdown)..."
               />
+              {/* Image Prompt Editor */}
+              <div className="border-t border-white/10 px-4 py-2">
+                <label className="text-white/30 text-[10px] uppercase tracking-wider flex items-center gap-1 mb-1">
+                  <ImageIcon className="w-3 h-3" /> Image Prompt
+                </label>
+                <textarea
+                  value={slide?.image_prompt || ""}
+                  onChange={(e) => updateSlide("image_prompt", e.target.value || null)}
+                  className="w-full bg-white/5 border border-white/10 rounded text-white/60 text-xs resize-none outline-none h-16 p-2 placeholder:text-white/15 focus:border-orange-400/30 transition-colors"
+                  placeholder="Mô tả hình ảnh AI sẽ tạo cho slide này..."
+                />
+              </div>
               {/* Notes */}
               <div className="border-t border-white/10 px-4 py-2">
                 <textarea

@@ -91,6 +91,17 @@ const suggestLayout = (content: string): string | null => {
   const statMatches = content.match(/\*\*\d[\d,.%+]*\*\*/g);
   if (statMatches && statMatches.length >= 2) return "stats";
   if ((content.includes('"') || content.includes('\u201C')) && content.includes('—')) return "quote";
+  // Funnel detection: numbers decreasing pattern
+  const numberLines = content.split('\n').filter(l => /\*\*\d[\d,.]*/.test(l));
+  if (numberLines.length >= 3) {
+    const nums = numberLines.map(l => parseInt(l.match(/\*\*(\d[\d,.]*)/)![1].replace(/[,.]/g, '')));
+    if (nums.every((n, i) => i === 0 || n <= nums[i-1])) return "funnel";
+  }
+  // SWOT detection
+  if (/strength/i.test(content) && /weakness/i.test(content) && /opportunit/i.test(content)) return "swot";
+  // Process: numbered steps with bold
+  const numberedSteps = content.split('\n').filter(l => /^\d+[.)]\s*\*\*/.test(l.trim()));
+  if (numberedSteps.length >= 3) return "process";
   const emojiPattern = /[\u{1F300}-\u{1F9FF}]/gu;
   const emojiMatches = content.match(emojiPattern);
   if (emojiMatches && emojiMatches.length >= 3) return "grid";

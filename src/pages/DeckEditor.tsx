@@ -811,7 +811,8 @@ const DeckEditor = () => {
           <button onClick={addSlide} className="w-full p-3 text-white/30 hover:text-orange-400 hover:bg-white/5 transition-colors">
             <Plus className="w-4 h-4 mx-auto" />
           </button>
-        </div>
+          </div>
+        )}
 
         {/* Editor + Preview */}
         <ResizablePanelGroup direction="horizontal" className="flex-1">

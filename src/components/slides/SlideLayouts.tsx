@@ -1,3 +1,4 @@
+import React from "react";
 import { motion } from "framer-motion";
 
 interface SlideData {
@@ -47,98 +48,205 @@ const renderInline = (text: string, accent: string) => {
   return parts;
 };
 
+/** Render rich inline: **bold**, *italic*, `code`, [links](url) */
+const renderInlineRich = (text: string, accent: string) => {
+  const parts: React.ReactNode[] = [];
+  const regex = /\*\*(.+?)\*\*|\*(.+?)\*|`([^`]+)`|\[(.+?)\]\((.+?)\)/g;
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+  let key = 0;
+  while ((match = regex.exec(text)) !== null) {
+    if (match.index > lastIndex) parts.push(text.slice(lastIndex, match.index));
+    if (match[1]) parts.push(<span key={key++} className={`font-bold ${accent}`}>{match[1]}</span>);
+    else if (match[2]) parts.push(<em key={key++} className="italic">{match[2]}</em>);
+    else if (match[3]) parts.push(<code key={key++} className="bg-white/10 text-emerald-300 px-2 py-0.5 rounded font-mono text-[0.85em]">{match[3]}</code>);
+    else if (match[4] && match[5]) parts.push(<a key={key++} href={match[5]} target="_blank" rel="noopener noreferrer" className={`${accent} underline underline-offset-4 hover:opacity-80`}>{match[4]}</a>);
+    lastIndex = regex.lastIndex;
+  }
+  if (lastIndex < text.length) parts.push(text.slice(lastIndex));
+  return parts;
+};
+
 // Parse markdown-like content into lines
 const ContentBlock = ({ content, accent }: { content: string; accent: string }) => {
-  const lines = content.split("\n").filter(l => l.trim());
-  return (
-    <div className="space-y-4">
-      {lines.map((line, i) => {
-        if (line.startsWith("|")) return null;
+  const lines = content.split("\n");
+  const elements: React.ReactNode[] = [];
+  let i = 0;
 
-        // Headings: ### text
-        const headingMatch = line.match(/^(#{1,4})\s+(.+)$/);
-        if (headingMatch) {
-          const level = headingMatch[1].length;
-          const sizes = ["text-[48px]", "text-[42px]", "text-[36px]", "text-[30px]"];
-          return (
-            <motion.div key={i} custom={i} variants={fadeIn} initial="hidden" animate="visible"
-              className={`font-bold text-white ${sizes[level - 1] || sizes[2]} leading-tight mt-2`}
-            >{renderInline(headingMatch[2], accent)}</motion.div>
-          );
-        }
+  while (i < lines.length) {
+    const line = lines[i];
+    const trimmed = line.trim();
 
-        // Bullet list: * text or - text
-        const bulletMatch = line.match(/^[\*\-]\s+(.+)$/);
-        if (bulletMatch) {
-          return (
-            <motion.div key={i} custom={i} variants={fadeIn} initial="hidden" animate="visible"
-              className="flex items-start gap-3 pl-2"
+    // Skip empty lines and table rows
+    if (!trimmed || trimmed.startsWith("|")) { i++; continue; }
+
+    // Horizontal rule: --- or ***
+    if (/^[-*_]{3,}$/.test(trimmed)) {
+      elements.push(
+        <motion.div key={i} custom={i} variants={fadeIn} initial="hidden" animate="visible"
+          className="w-full flex items-center gap-4 my-4"
+        >
+          <div className={`flex-1 h-[2px] bg-gradient-to-r from-transparent via-white/20 to-transparent`} />
+        </motion.div>
+      );
+      i++; continue;
+    }
+
+    // Code block: ```
+    if (trimmed.startsWith("```")) {
+      const codeLines: string[] = [];
+      i++;
+      while (i < lines.length && !lines[i].trim().startsWith("```")) {
+        codeLines.push(lines[i]);
+        i++;
+      }
+      i++; // skip closing ```
+      elements.push(
+        <motion.pre key={`code-${i}`} custom={elements.length} variants={fadeIn} initial="hidden" animate="visible"
+          className="bg-white/5 border border-white/10 rounded-xl p-6 overflow-x-auto"
+        >
+          <code className="text-[22px] font-mono text-emerald-300 leading-relaxed whitespace-pre">
+            {codeLines.join("\n")}
+          </code>
+        </motion.pre>
+      );
+      continue;
+    }
+
+    // Inline code: `code`
+    // Headings: ### text
+    const headingMatch = trimmed.match(/^(#{1,4})\s+(.+)$/);
+    if (headingMatch) {
+      const level = headingMatch[1].length;
+      const sizes = ["text-[48px]", "text-[42px]", "text-[36px]", "text-[30px]"];
+      elements.push(
+        <motion.div key={i} custom={elements.length} variants={fadeIn} initial="hidden" animate="visible"
+          className={`font-bold text-white ${sizes[level - 1] || sizes[2]} leading-tight mt-2`}
+        >{renderInline(headingMatch[2], accent)}</motion.div>
+      );
+      i++; continue;
+    }
+
+    // Numbered list: 1. text, 2. text
+    const numberedMatch = trimmed.match(/^(\d+)[.)]\s+(.+)$/);
+    if (numberedMatch) {
+      const listItems: { num: string; text: string }[] = [];
+      while (i < lines.length) {
+        const nm = lines[i].trim().match(/^(\d+)[.)]\s+(.+)$/);
+        if (!nm) break;
+        listItems.push({ num: nm[1], text: nm[2] });
+        i++;
+      }
+      elements.push(
+        <div key={`ol-${i}`} className="space-y-3 pl-2">
+          {listItems.map((item, li) => (
+            <motion.div key={li} custom={elements.length + li} variants={fadeIn} initial="hidden" animate="visible"
+              className="flex items-start gap-4"
             >
-              <span className={`${accent} text-[28px] mt-1 flex-shrink-0`}>•</span>
-              <span className="text-white/80 text-[28px] leading-relaxed">{renderInline(bulletMatch[1], accent)}</span>
+              <span className={`${accent} text-[26px] font-bold min-w-[36px] h-[36px] rounded-full bg-white/5 flex items-center justify-center flex-shrink-0 mt-1`}>
+                {item.num}
+              </span>
+              <span className="text-white/80 text-[28px] leading-relaxed">{renderInline(item.text, accent)}</span>
             </motion.div>
-          );
-        }
+          ))}
+        </div>
+      );
+      continue;
+    }
 
-        // Standalone bold line: **text** rest
-        const boldMatch = line.match(/^\*\*(.+?)\*\*\s*(.*)$/);
-        if (boldMatch) {
-          return (
-            <motion.div key={i} custom={i} variants={fadeIn} initial="hidden" animate="visible">
-              <span className={`font-bold text-[36px] ${accent}`}>{boldMatch[1]}</span>
-              {boldMatch[2] && <span className="text-white/80 text-[30px] ml-2">{boldMatch[2]}</span>}
-            </motion.div>
-          );
-        }
+    // Nested bullet: starts with spaces/tab + * or -
+    const nestedBulletMatch = line.match(/^(\s{2,}|\t+)[\*\-]\s+(.+)$/);
+    if (nestedBulletMatch) {
+      const indent = nestedBulletMatch[1].length >= 4 ? 2 : 1;
+      elements.push(
+        <motion.div key={i} custom={elements.length} variants={fadeIn} initial="hidden" animate="visible"
+          className="flex items-start gap-3" style={{ paddingLeft: `${indent * 32 + 8}px` }}
+        >
+          <span className={`${accent} text-[22px] mt-1.5 flex-shrink-0 opacity-60`}>◦</span>
+          <span className="text-white/70 text-[26px] leading-relaxed">{renderInline(nestedBulletMatch[2], accent)}</span>
+        </motion.div>
+      );
+      i++; continue;
+    }
 
-        // Emoji-prefixed lines
-        const emojiMatch = line.match(/^([^\w\s#*\-|"].+?)\s+(.+)$/u);
-        if (emojiMatch && /\p{Emoji}/u.test(emojiMatch[1])) {
-          const textPart = emojiMatch[2];
-          const innerBold = textPart.match(/\*\*(.+?)\*\*\s*—?\s*(.*)/);
-          return (
-            <motion.div key={i} custom={i} variants={fadeIn} initial="hidden" animate="visible" className="flex items-start gap-3">
-              <span className="text-[32px] flex-shrink-0">{emojiMatch[1]}</span>
-              <div>
-                {innerBold ? (
-                  <>
-                    <span className={`font-bold text-[30px] ${accent}`}>{innerBold[1]}</span>
-                    {innerBold[2] && <span className="text-white/70 text-[28px]"> — {innerBold[2]}</span>}
-                  </>
-                ) : (
-                  <span className="text-white/80 text-[30px]">{renderInline(textPart, accent)}</span>
-                )}
-              </div>
-            </motion.div>
-          );
-        }
+    // Bullet list: * text or - text
+    const bulletMatch = trimmed.match(/^[\*\-]\s+(.+)$/);
+    if (bulletMatch) {
+      elements.push(
+        <motion.div key={i} custom={elements.length} variants={fadeIn} initial="hidden" animate="visible"
+          className="flex items-start gap-3 pl-2"
+        >
+          <span className={`${accent} text-[28px] mt-1 flex-shrink-0`}>•</span>
+          <span className="text-white/80 text-[28px] leading-relaxed">{renderInlineRich(bulletMatch[1], accent)}</span>
+        </motion.div>
+      );
+      i++; continue;
+    }
 
-        // Quoted text
-        if (line.startsWith('"') || line.startsWith('\u201C')) {
-          return (
-            <motion.p key={i} custom={i} variants={fadeIn} initial="hidden" animate="visible"
-              className="text-[36px] text-white/90 italic leading-relaxed"
-            >{line}</motion.p>
-          );
-        }
-        // Attribution
-        if (line.startsWith("—")) {
-          return (
-            <motion.p key={i} custom={i} variants={fadeIn} initial="hidden" animate="visible"
-              className="text-[26px] text-white/50 mt-2"
-            >{line}</motion.p>
-          );
-        }
+    // Standalone bold line: **text** rest
+    const boldMatch = trimmed.match(/^\*\*(.+?)\*\*\s*(.*)$/);
+    if (boldMatch) {
+      elements.push(
+        <motion.div key={i} custom={elements.length} variants={fadeIn} initial="hidden" animate="visible">
+          <span className={`font-bold text-[36px] ${accent}`}>{boldMatch[1]}</span>
+          {boldMatch[2] && <span className="text-white/80 text-[30px] ml-2">{boldMatch[2]}</span>}
+        </motion.div>
+      );
+      i++; continue;
+    }
 
-        // Default paragraph with inline formatting
-        return (
-          <motion.p key={i} custom={i} variants={fadeIn} initial="hidden" animate="visible"
-            className="text-[30px] text-white/80 leading-relaxed"
-          >{renderInline(line, accent)}</motion.p>
-        );
-      })}
-    </div>
-  );
+    // Emoji-prefixed lines
+    const emojiMatch = trimmed.match(/^([^\w\s#*\-|"].+?)\s+(.+)$/u);
+    if (emojiMatch && /\p{Emoji}/u.test(emojiMatch[1])) {
+      const textPart = emojiMatch[2];
+      const innerBold = textPart.match(/\*\*(.+?)\*\*\s*—?\s*(.*)/);
+      elements.push(
+        <motion.div key={i} custom={elements.length} variants={fadeIn} initial="hidden" animate="visible" className="flex items-start gap-3">
+          <span className="text-[32px] flex-shrink-0">{emojiMatch[1]}</span>
+          <div>
+            {innerBold ? (
+              <>
+                <span className={`font-bold text-[30px] ${accent}`}>{innerBold[1]}</span>
+                {innerBold[2] && <span className="text-white/70 text-[28px]"> — {innerBold[2]}</span>}
+              </>
+            ) : (
+              <span className="text-white/80 text-[30px]">{renderInline(textPart, accent)}</span>
+            )}
+          </div>
+        </motion.div>
+      );
+      i++; continue;
+    }
+
+    // Quoted text
+    if (trimmed.startsWith('"') || trimmed.startsWith('\u201C')) {
+      elements.push(
+        <motion.p key={i} custom={elements.length} variants={fadeIn} initial="hidden" animate="visible"
+          className="text-[36px] text-white/90 italic leading-relaxed"
+        >{trimmed}</motion.p>
+      );
+      i++; continue;
+    }
+    // Attribution
+    if (trimmed.startsWith("—")) {
+      elements.push(
+        <motion.p key={i} custom={elements.length} variants={fadeIn} initial="hidden" animate="visible"
+          className="text-[26px] text-white/50 mt-2"
+        >{trimmed}</motion.p>
+      );
+      i++; continue;
+    }
+
+    // Default paragraph with inline formatting (supports `code`, links)
+    elements.push(
+      <motion.p key={i} custom={elements.length} variants={fadeIn} initial="hidden" animate="visible"
+        className="text-[30px] text-white/80 leading-relaxed"
+      >{renderInlineRich(trimmed, accent)}</motion.p>
+    );
+    i++;
+  }
+
+  return <div className="space-y-4">{elements}</div>;
 };
 
 const TableContent = ({ content, accent }: { content: string; accent: string }) => {
@@ -681,6 +789,180 @@ export const ComparisonSlide = ({ slide }: { slide: SlideData }) => {
   );
 };
 
+/* ==================== FUNNEL — marketing funnel ==================== */
+export const FunnelSlide = ({ slide }: { slide: SlideData }) => {
+  const colors = sectionColors[slide.section_name] || sectionColors.brand;
+  const hex = accentHex[slide.section_name] || accentHex.brand;
+  const bg = getSlideBg(slide, colors);
+  const lines = slide.content.split("\n").filter(l => l.trim());
+  const steps: { label: string; value: string }[] = [];
+  for (const line of lines) {
+    const bm = line.match(/^\*\*(.+?)\*\*\s*[—–:-]?\s*(.*)/);
+    if (bm) { steps.push({ label: bm[1], value: bm[2] }); continue; }
+    const plain = line.trim();
+    if (plain) steps.push({ label: plain, value: "" });
+  }
+
+  return (
+    <div className={`w-full h-full ${bg.className} flex flex-col justify-center px-16 py-12`} style={bg.style}>
+      <SlideHeader slide={slide} colors={colors} />
+      <div className="flex-1 flex flex-col items-center justify-center gap-0 mt-4">
+        {steps.slice(0, 6).map((step, i) => {
+          const widthPct = 100 - (i * (60 / Math.max(steps.length - 1, 1)));
+          const opacity = 1 - (i * 0.12);
+          return (
+            <motion.div key={i} custom={i} variants={fadeIn} initial="hidden" animate="visible"
+              className="relative flex items-center justify-center py-4 rounded-xl text-center"
+              style={{
+                width: `${widthPct}%`,
+                background: `linear-gradient(135deg, ${hex}${Math.round(opacity * 40).toString(16).padStart(2, '0')}, ${hex}${Math.round(opacity * 15).toString(16).padStart(2, '0')})`,
+                borderBottom: i < steps.length - 1 ? `2px solid ${hex}20` : 'none',
+              }}
+            >
+              <span className={`font-bold text-[28px] ${colors.accent}`}>{step.label}</span>
+              {step.value && <span className="text-white/60 text-[24px] ml-3">{step.value}</span>}
+            </motion.div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+/* ==================== SWOT — 2x2 matrix ==================== */
+export const SwotSlide = ({ slide }: { slide: SlideData }) => {
+  const colors = sectionColors[slide.section_name] || sectionColors.brand;
+  const bg = getSlideBg(slide, colors);
+  const sections = slide.content.split(/\n(?:---)\n|\n\n/).filter(s => s.trim());
+  const quadrants = [
+    { title: "Strengths", color: "#34d399", icon: "💪" },
+    { title: "Weaknesses", color: "#fb923c", icon: "⚠️" },
+    { title: "Opportunities", color: "#38bdf8", icon: "🚀" },
+    { title: "Threats", color: "#f87171", icon: "🔥" },
+  ];
+
+  return (
+    <div className={`w-full h-full ${bg.className} flex flex-col px-16 py-12`} style={bg.style}>
+      <SlideHeader slide={slide} colors={colors} />
+      <div className="flex-1 grid grid-cols-2 grid-rows-2 gap-4 mt-4">
+        {quadrants.map((q, i) => {
+          const sectionContent = sections[i] || "";
+          const items = sectionContent.split("\n").filter(l => l.trim() && !l.startsWith("**"));
+          return (
+            <motion.div key={i} custom={i} variants={fadeIn} initial="hidden" animate="visible"
+              className="rounded-2xl p-6 border border-white/10 relative overflow-hidden"
+              style={{ background: `linear-gradient(135deg, ${q.color}12, ${q.color}04)` }}
+            >
+              <div className="absolute top-0 left-0 right-0 h-1" style={{ background: q.color }} />
+              <div className="flex items-center gap-2 mb-4">
+                <span className="text-[28px]">{q.icon}</span>
+                <h3 className="font-bold text-[28px]" style={{ color: q.color }}>{q.title}</h3>
+              </div>
+              <div className="space-y-2">
+                {items.map((item, j) => (
+                  <div key={j} className="flex items-start gap-2">
+                    <span className="text-[20px] mt-0.5" style={{ color: q.color }}>•</span>
+                    <span className="text-white/70 text-[22px] leading-relaxed">{item.replace(/^[\*\-]\s*/, "")}</span>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+/* ==================== PROCESS — step-by-step flow ==================== */
+export const ProcessSlide = ({ slide }: { slide: SlideData }) => {
+  const colors = sectionColors[slide.section_name] || sectionColors.brand;
+  const hex = accentHex[slide.section_name] || accentHex.brand;
+  const bg = getSlideBg(slide, colors);
+  const lines = slide.content.split("\n").filter(l => l.trim());
+  const steps: { title: string; desc: string; emoji?: string }[] = [];
+  for (const line of lines) {
+    const nm = line.match(/^(\d+)[.)]\s*\*\*(.+?)\*\*\s*[—–:-]?\s*(.*)/);
+    if (nm) { steps.push({ title: nm[2], desc: nm[3] }); continue; }
+    const em = line.match(/^([^\w\s]+)\s*\*\*(.+?)\*\*\s*[—–:-]?\s*(.*)/u);
+    if (em) { steps.push({ emoji: em[1], title: em[2], desc: em[3] }); continue; }
+    const bm = line.match(/^\*\*(.+?)\*\*\s*[—–:-]?\s*(.*)/);
+    if (bm) { steps.push({ title: bm[1], desc: bm[2] }); continue; }
+  }
+
+  return (
+    <div className={`w-full h-full ${bg.className} flex flex-col justify-center px-16 py-12`} style={bg.style}>
+      <SlideHeader slide={slide} colors={colors} />
+      <div className="flex-1 flex items-center gap-2 mt-4">
+        {steps.slice(0, 5).map((step, i) => (
+          <React.Fragment key={i}>
+            <motion.div custom={i} variants={fadeIn} initial="hidden" animate="visible"
+              className="flex-1 rounded-2xl p-6 border border-white/10 text-center relative overflow-hidden"
+              style={{ background: `linear-gradient(180deg, ${hex}12, ${hex}04)` }}
+            >
+              <div className="w-[48px] h-[48px] rounded-full flex items-center justify-center mx-auto mb-3 text-[22px] font-bold"
+                style={{ background: hex, color: "#fff" }}
+              >
+                {step.emoji || (i + 1)}
+              </div>
+              <h4 className={`font-bold text-[26px] ${colors.accent} mb-2`}>{step.title}</h4>
+              <p className="text-white/60 text-[20px] leading-snug">{step.desc}</p>
+            </motion.div>
+            {i < steps.length - 1 && i < 4 && (
+              <motion.div custom={i} variants={fadeIn} initial="hidden" animate="visible"
+                className="text-[32px] flex-shrink-0" style={{ color: hex }}
+              >→</motion.div>
+            )}
+          </React.Fragment>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+/* ==================== TEAM — member grid ==================== */
+export const TeamSlide = ({ slide }: { slide: SlideData }) => {
+  const colors = sectionColors[slide.section_name] || sectionColors.brand;
+  const hex = accentHex[slide.section_name] || accentHex.brand;
+  const bg = getSlideBg(slide, colors);
+  const lines = slide.content.split("\n").filter(l => l.trim());
+  const members: { name: string; role: string; emoji?: string }[] = [];
+  for (const line of lines) {
+    const em = line.match(/^([^\w\s]+)\s*\*\*(.+?)\*\*\s*[—–:-]?\s*(.*)/u);
+    if (em) { members.push({ emoji: em[1], name: em[2], role: em[3] }); continue; }
+    const bm = line.match(/^\*\*(.+?)\*\*\s*[—–:-]?\s*(.*)/);
+    if (bm) { members.push({ name: bm[1], role: bm[2] }); continue; }
+  }
+
+  const cols = members.length <= 3 ? "grid-cols-3" : members.length <= 4 ? "grid-cols-4" : "grid-cols-3";
+
+  return (
+    <div className={`w-full h-full ${bg.className} flex flex-col justify-center px-16 py-12`} style={bg.style}>
+      <SlideHeader slide={slide} colors={colors} />
+      {members.length > 0 ? (
+        <div className={`grid ${cols} gap-6 mt-4 flex-1 items-center`}>
+          {members.slice(0, 6).map((m, i) => (
+            <motion.div key={i} custom={i} variants={fadeIn} initial="hidden" animate="visible"
+              className="flex flex-col items-center text-center p-6 rounded-2xl border border-white/10"
+              style={{ background: `linear-gradient(180deg, ${hex}08, transparent)` }}
+            >
+              <div className="w-[100px] h-[100px] rounded-full flex items-center justify-center text-[44px] mb-4"
+                style={{ background: `${hex}20`, border: `3px solid ${hex}` }}
+              >
+                {m.emoji || "👤"}
+              </div>
+              <h4 className={`font-bold text-[28px] ${colors.accent}`}>{m.name}</h4>
+              <p className="text-white/60 text-[22px] mt-1">{m.role}</p>
+            </motion.div>
+          ))}
+        </div>
+      ) : (
+        <ContentBlock content={slide.content} accent={colors.accent} />
+      )}
+    </div>
+  );
+};
+
 /* ==================== LAYOUT MAP ==================== */
 const layoutMap: Record<string, React.ComponentType<{ slide: SlideData }>> = {
   cover: CoverSlide,
@@ -695,6 +977,10 @@ const layoutMap: Record<string, React.ComponentType<{ slide: SlideData }>> = {
   chart: ChartSlide,
   "image-full": ImageFullSlide,
   comparison: ComparisonSlide,
+  funnel: FunnelSlide,
+  swot: SwotSlide,
+  process: ProcessSlide,
+  team: TeamSlide,
 };
 
 export const SlideRenderer = ({ slide }: { slide: SlideData }) => {

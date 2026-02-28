@@ -42,7 +42,7 @@ interface DeckSlide {
 
 const SLIDE_W = 1920;
 const SLIDE_H = 1080;
-const VALID_LAYOUTS = ["cover", "two-column", "stats", "grid", "table", "timeline", "quote", "pricing", "persona", "chart", "image-full", "comparison"];
+const VALID_LAYOUTS = ["cover", "two-column", "stats", "grid", "table", "timeline", "quote", "pricing", "persona", "chart", "image-full", "comparison", "funnel", "swot", "process", "team"];
 const BG_PRESETS = [
   "#1a1a2e", "#16213e", "#0f3460", "#1a0a2e", "#2e1a1a", "#1a2e1a", "#2e2a1a", "#0a0a0a",
   "#e2e8f0", "#fef3c7", "#fee2e2", "#dbeafe", "#d1fae5", "#ede9fe",
@@ -61,6 +61,10 @@ const LAYOUT_TEMPLATES: Record<string, string> = {
   chart: "**Dữ liệu biểu đồ**\n\nMô tả xu hướng hoặc chỉ số quan trọng cần trực quan hóa.",
   "image-full": "# Tiêu đề nổi bật\n\nMô tả ngắn phủ lên hình nền toàn slide",
   comparison: "**Phương án A**\n- Ưu điểm 1\n- Ưu điểm 2\n\n---\n\n**Phương án B**\n- Ưu điểm 1\n- Ưu điểm 2",
+  funnel: "**1000 Visitors** Truy cập website\n\n**500 Leads** Đăng ký dùng thử\n\n**200 Trials** Sử dụng sản phẩm\n\n**100 Customers** Trở thành khách hàng\n\n**50 Advocates** Giới thiệu người khác",
+  swot: "**Strengths**\n- Đội ngũ giỏi\n- Công nghệ mạnh\n\n---\n\n**Weaknesses**\n- Nguồn vốn hạn chế\n- Thị trường mới\n\n---\n\n**Opportunities**\n- Thị trường tăng trưởng\n- Ít đối thủ\n\n---\n\n**Threats**\n- Đối thủ lớn\n- Thay đổi chính sách",
+  process: "**Nghiên cứu** Tìm hiểu nhu cầu thị trường\n\n**Thiết kế** Lên ý tưởng và wireframe\n\n**Phát triển** Code và kiểm thử\n\n**Ra mắt** Triển khai sản phẩm",
+  team: "👨‍💻 **Nguyễn Văn A** CEO & Founder\n\n👩‍🎨 **Trần Thị B** Lead Designer\n\n🧑‍💻 **Lê Văn C** CTO\n\n👩‍💼 **Phạm Thị D** CMO",
 };
 
 interface ThemePreset {
@@ -87,6 +91,17 @@ const suggestLayout = (content: string): string | null => {
   const statMatches = content.match(/\*\*\d[\d,.%+]*\*\*/g);
   if (statMatches && statMatches.length >= 2) return "stats";
   if ((content.includes('"') || content.includes('\u201C')) && content.includes('—')) return "quote";
+  // Funnel detection: numbers decreasing pattern
+  const numberLines = content.split('\n').filter(l => /\*\*\d[\d,.]*/.test(l));
+  if (numberLines.length >= 3) {
+    const nums = numberLines.map(l => parseInt(l.match(/\*\*(\d[\d,.]*)/)![1].replace(/[,.]/g, '')));
+    if (nums.every((n, i) => i === 0 || n <= nums[i-1])) return "funnel";
+  }
+  // SWOT detection
+  if (/strength/i.test(content) && /weakness/i.test(content) && /opportunit/i.test(content)) return "swot";
+  // Process: numbered steps with bold
+  const numberedSteps = content.split('\n').filter(l => /^\d+[.)]\s*\*\*/.test(l.trim()));
+  if (numberedSteps.length >= 3) return "process";
   const emojiPattern = /[\u{1F300}-\u{1F9FF}]/gu;
   const emojiMatches = content.match(emojiPattern);
   if (emojiMatches && emojiMatches.length >= 3) return "grid";

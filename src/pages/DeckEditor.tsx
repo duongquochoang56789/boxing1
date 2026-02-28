@@ -283,17 +283,47 @@ const DeckEditor = () => {
   const saveAll = async () => {
     setSaving(true);
     try {
+      const { data: { user } } = await supabase.auth.getUser();
       for (const s of slides) {
         await supabase.from("deck_slides").update({
           title: s.title, subtitle: s.subtitle, content: s.content,
           layout: s.layout, section_name: s.section_name, notes: s.notes,
         }).eq("id", s.id);
+        // Save version snapshot
+        if (user) {
+          const { data: lastVersion } = await supabase
+            .from("slide_versions")
+            .select("version_number")
+            .eq("slide_id", s.id)
+            .order("version_number", { ascending: false })
+            .limit(1)
+            .single();
+          await supabase.from("slide_versions").insert({
+            slide_id: s.id,
+            user_id: user.id,
+            title: s.title,
+            subtitle: s.subtitle,
+            content: s.content,
+            layout: s.layout,
+            notes: s.notes,
+            version_number: (lastVersion?.version_number || 0) + 1,
+          });
+        }
       }
       toast({ title: "Đã lưu tất cả slides!" });
     } catch {
       toast({ title: "Lỗi khi lưu", variant: "destructive" });
     }
     setSaving(false);
+  };
+
+  const handleRestoreVersion = (version: { title: string; subtitle: string | null; content: string; layout: string; notes: string | null }) => {
+    if (!slide) return;
+    updateSlide("title", version.title);
+    updateSlide("content", version.content);
+    updateSlide("layout", version.layout);
+    if (version.subtitle !== undefined) updateSlide("subtitle", version.subtitle);
+    if (version.notes !== undefined) updateSlide("notes", version.notes);
   };
 
   const addSlide = async () => {

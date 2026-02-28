@@ -30,6 +30,23 @@ const fadeIn = {
   visible: (i: number) => ({ opacity: 1, y: 0, transition: { delay: i * 0.1, duration: 0.5 } }),
 };
 
+/** Render inline markdown: **bold**, *italic* */
+const renderInline = (text: string, accent: string) => {
+  const parts: React.ReactNode[] = [];
+  const regex = /\*\*(.+?)\*\*|\*(.+?)\*/g;
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+  let key = 0;
+  while ((match = regex.exec(text)) !== null) {
+    if (match.index > lastIndex) parts.push(text.slice(lastIndex, match.index));
+    if (match[1]) parts.push(<span key={key++} className={`font-bold ${accent}`}>{match[1]}</span>);
+    else if (match[2]) parts.push(<em key={key++} className="italic">{match[2]}</em>);
+    lastIndex = regex.lastIndex;
+  }
+  if (lastIndex < text.length) parts.push(text.slice(lastIndex));
+  return parts;
+};
+
 // Parse markdown-like content into lines
 const ContentBlock = ({ content, accent }: { content: string; accent: string }) => {
   const lines = content.split("\n").filter(l => l.trim());
@@ -37,6 +54,33 @@ const ContentBlock = ({ content, accent }: { content: string; accent: string }) 
     <div className="space-y-4">
       {lines.map((line, i) => {
         if (line.startsWith("|")) return null;
+
+        // Headings: ### text
+        const headingMatch = line.match(/^(#{1,4})\s+(.+)$/);
+        if (headingMatch) {
+          const level = headingMatch[1].length;
+          const sizes = ["text-[48px]", "text-[42px]", "text-[36px]", "text-[30px]"];
+          return (
+            <motion.div key={i} custom={i} variants={fadeIn} initial="hidden" animate="visible"
+              className={`font-bold text-white ${sizes[level - 1] || sizes[2]} leading-tight mt-2`}
+            >{renderInline(headingMatch[2], accent)}</motion.div>
+          );
+        }
+
+        // Bullet list: * text or - text
+        const bulletMatch = line.match(/^[\*\-]\s+(.+)$/);
+        if (bulletMatch) {
+          return (
+            <motion.div key={i} custom={i} variants={fadeIn} initial="hidden" animate="visible"
+              className="flex items-start gap-3 pl-2"
+            >
+              <span className={`${accent} text-[28px] mt-1 flex-shrink-0`}>•</span>
+              <span className="text-white/80 text-[28px] leading-relaxed">{renderInline(bulletMatch[1], accent)}</span>
+            </motion.div>
+          );
+        }
+
+        // Standalone bold line: **text** rest
         const boldMatch = line.match(/^\*\*(.+?)\*\*\s*(.*)$/);
         if (boldMatch) {
           return (
@@ -46,8 +90,10 @@ const ContentBlock = ({ content, accent }: { content: string; accent: string }) 
             </motion.div>
           );
         }
-        const emojiMatch = line.match(/^([🎯🚀✅📱📘💬🎵🤝👩👨🟢🔵🟡🔴💰📊📈💵⏰🏷️💎⭐🌐📧📞👥📹🔧⏱️📅🧘🤸🌅💆🔥🏠⚡🥗👩‍⚕️📲🏢🌟👨‍💼👩‍🏫👨‍🏫📢🤝🎁❤️🔄📸💻📋🏋️📝✅🖥️💳🎯]+)\s*(.+)$/u);
-        if (emojiMatch) {
+
+        // Emoji-prefixed lines
+        const emojiMatch = line.match(/^([^\w\s\#\*\-\|\"].+?)\s+(.+)$/u);
+        if (emojiMatch && /\p{Emoji}/u.test(emojiMatch[1])) {
           const textPart = emojiMatch[2];
           const innerBold = textPart.match(/\*\*(.+?)\*\*\s*—?\s*(.*)/);
           return (
@@ -60,12 +106,14 @@ const ContentBlock = ({ content, accent }: { content: string; accent: string }) 
                     {innerBold[2] && <span className="text-white/70 text-[28px]"> — {innerBold[2]}</span>}
                   </>
                 ) : (
-                  <span className="text-white/80 text-[30px]">{textPart}</span>
+                  <span className="text-white/80 text-[30px]">{renderInline(textPart, accent)}</span>
                 )}
               </div>
             </motion.div>
           );
         }
+
+        // Quoted text
         if (line.startsWith('"') || line.startsWith('\u201C')) {
           return (
             <motion.p key={i} custom={i} variants={fadeIn} initial="hidden" animate="visible"
@@ -73,6 +121,7 @@ const ContentBlock = ({ content, accent }: { content: string; accent: string }) 
             >{line}</motion.p>
           );
         }
+        // Attribution
         if (line.startsWith("—")) {
           return (
             <motion.p key={i} custom={i} variants={fadeIn} initial="hidden" animate="visible"
@@ -80,10 +129,12 @@ const ContentBlock = ({ content, accent }: { content: string; accent: string }) 
             >{line}</motion.p>
           );
         }
+
+        // Default paragraph with inline formatting
         return (
           <motion.p key={i} custom={i} variants={fadeIn} initial="hidden" animate="visible"
             className="text-[30px] text-white/80 leading-relaxed"
-          >{line}</motion.p>
+          >{renderInline(line, accent)}</motion.p>
         );
       })}
     </div>

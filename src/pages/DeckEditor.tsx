@@ -730,6 +730,14 @@ const DeckEditor = () => {
             className="text-white/60 hover:text-white" title="Chia sẻ">
             <Share2 className="w-4 h-4" />
           </Button>
+          <Button size="sm" variant="ghost" onClick={() => { setShowComments(prev => !prev); setShowVersionHistory(false); }}
+            className={`text-white/60 hover:text-white ${showComments ? "text-orange-400" : ""}`} title="Bình luận">
+            <MessageCircle className="w-4 h-4" />
+          </Button>
+          <Button size="sm" variant="ghost" onClick={() => { setShowVersionHistory(prev => !prev); setShowComments(false); }}
+            className={`text-white/60 hover:text-white ${showVersionHistory ? "text-orange-400" : ""}`} title="Lịch sử phiên bản">
+            <History className="w-4 h-4" />
+          </Button>
           <Button size="sm" variant="ghost" onClick={() => setShowEditorGrid(true)}
             className="text-white/60 hover:text-white" title="Grid View (G)">
             <Grid3X3 className="w-4 h-4" />
@@ -742,8 +750,24 @@ const DeckEditor = () => {
 
       {/* Main editor area */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Thumbnail strip */}
-        <div className="w-[120px] bg-[#0d0d0d] border-r border-white/10 overflow-y-auto shrink-0">
+        {/* Sidebar toggle + Thumbnail strip */}
+        {sidebarCollapsed ? (
+          <div className="w-10 bg-[#0d0d0d] border-r border-white/10 flex flex-col items-center pt-2 shrink-0">
+            <button onClick={() => setSidebarCollapsed(false)}
+              className="p-2 text-white/30 hover:text-white/60 transition-colors" title="Mở sidebar">
+              <PanelLeft className="w-4 h-4" />
+            </button>
+            <span className="text-white/20 text-[9px] mt-2 [writing-mode:vertical-rl]">{slides.length} slides</span>
+          </div>
+        ) : (
+          <div className="w-[120px] bg-[#0d0d0d] border-r border-white/10 overflow-y-auto shrink-0 flex flex-col">
+            <div className="flex items-center justify-between px-2 py-1.5 border-b border-white/10 shrink-0">
+              <span className="text-white/30 text-[9px] uppercase tracking-wider">Slides</span>
+              <button onClick={() => setSidebarCollapsed(true)}
+                className="p-1 text-white/20 hover:text-white/50 transition-colors" title="Thu gọn sidebar">
+                <PanelLeftClose className="w-3 h-3" />
+              </button>
+            </div>
           {slides.map((s, i) => {
             const isDragging = dragIndex === i;
             const isOver = dragOverIndex === i && dragIndex !== null && dragIndex !== i;

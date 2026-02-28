@@ -569,6 +569,35 @@ const DeckEditor = () => {
               Tạo tất cả ảnh
             </Button>
           )}
+          {/* Theme selector */}
+          <div className="relative group">
+            <Button size="sm" variant="ghost" className="text-white/60 hover:text-white" title="Theme">
+              <Palette className="w-4 h-4 mr-1" /> Theme ▾
+            </Button>
+            <div className="absolute right-0 top-full mt-1 bg-[#1a1a1a] border border-white/10 rounded-lg shadow-xl py-1 min-w-[180px] hidden group-hover:block z-50">
+              {THEME_PRESETS.map(t => (
+                <button key={t.id} onClick={() => applyTheme(t.id)}
+                  className={`w-full flex items-center gap-2 px-3 py-2 text-sm transition-colors ${
+                    deckTheme === t.id ? "text-orange-400 bg-orange-400/10" : "text-white/70 hover:bg-white/10 hover:text-white"
+                  }`}>
+                  <span>{t.label}</span>
+                  <span>{t.name}</span>
+                  {deckTheme === t.id && <Check className="w-3 h-3 ml-auto" />}
+                </button>
+              ))}
+              <div className="border-t border-white/10 mt-1 pt-1 px-3 py-1.5">
+                <span className="text-white/30 text-[10px] uppercase tracking-wider">Transition</span>
+                <div className="flex gap-1 mt-1">
+                  {["fade", "slide", "zoom"].map(t => (
+                    <button key={t} onClick={() => updateDeckTransition(t)}
+                      className={`px-2 py-1 text-[11px] rounded capitalize transition-colors ${
+                        deckTransition === t ? "bg-orange-500/20 text-orange-400" : "text-white/40 hover:text-white/70 bg-white/5"
+                      }`}>{t}</button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
           {/* More actions dropdown */}
           <div className="relative group">
             <Button size="sm" variant="ghost" className="text-white/60 hover:text-white">

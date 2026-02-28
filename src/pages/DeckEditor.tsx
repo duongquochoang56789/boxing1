@@ -176,6 +176,16 @@ const DeckEditor = () => {
         e.preventDefault();
         duplicateSlide();
       }
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === "Z") {
+        e.preventDefault();
+        handleRedo();
+        return;
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key === "z") {
+        e.preventDefault();
+        handleUndo();
+        return;
+      }
       if (e.key === "Delete" && !isEditing) {
         deleteSlide();
       }
@@ -190,7 +200,7 @@ const DeckEditor = () => {
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [slides, current]);
+  }, [slides, current, handleUndo, handleRedo]);
 
   const slide = slides[current];
 

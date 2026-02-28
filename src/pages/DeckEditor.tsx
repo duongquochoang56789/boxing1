@@ -370,6 +370,44 @@ const DeckEditor = () => {
     }
   };
 
+
+  const aiAssist = async (action: "rewrite" | "expand" | "summarize" | "notes") => {
+    if (!slide) return;
+    setAiAssisting(action);
+    try {
+      const { data, error } = await supabase.functions.invoke("ai-slide-assist", {
+        body: {
+          action,
+          slideTitle: slide.title,
+          slideContent: slide.content,
+          slideNotes: slide.notes,
+          deckTitle,
+          layout: slide.layout,
+          language: "vi",
+        },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      if (action === "notes") {
+        updateSlide("notes", data.result);
+        toast({ title: "Đã tạo ghi chú thuyết trình!" });
+      } else {
+        updateSlide("content", data.result);
+        toast({ title: action === "rewrite" ? "Đã viết lại nội dung!" : action === "expand" ? "Đã mở rộng nội dung!" : "Đã tóm tắt nội dung!" });
+      }
+    } catch (e: any) {
+      const msg = e?.message || "";
+      if (msg.includes("429")) {
+        toast({ title: "Quá nhiều yêu cầu", description: "Vui lòng đợi 30 giây rồi thử lại.", variant: "destructive" });
+      } else if (msg.includes("402")) {
+        toast({ title: "Hết credits AI", variant: "destructive" });
+      } else {
+        toast({ title: "Lỗi AI: " + (msg || "Unknown"), variant: "destructive" });
+      }
+    }
+    setAiAssisting(null);
+  };
+
   const exportPdf = async () => {
     setExportingPdf(true);
     toast({ title: "Đang xuất PDF..." });

@@ -693,6 +693,10 @@ const DeckEditor = () => {
               </button>
             </div>
           </div>
+          <Button size="sm" variant="ghost" onClick={() => setShowEditorGrid(true)}
+            className="text-white/60 hover:text-white" title="Grid View (G)">
+            <Grid3X3 className="w-4 h-4" />
+          </Button>
           <Button size="sm" onClick={() => navigate(`/slides/${deckId}/present`)} className="bg-orange-500 hover:bg-orange-600 text-white">
             <Presentation className="w-4 h-4 mr-1" /> Trình chiếu
           </Button>

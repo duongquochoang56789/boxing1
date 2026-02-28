@@ -162,45 +162,6 @@ const DeckEditor = () => {
     window.addEventListener("resize", update);
     return () => window.removeEventListener("resize", update);
   }, [slides, current]);
-  // Keyboard shortcuts
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      const target = e.target as HTMLElement;
-      const isEditing = target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable;
-
-      if ((e.ctrlKey || e.metaKey) && e.key === "s") {
-        e.preventDefault();
-        saveAll();
-      }
-      if ((e.ctrlKey || e.metaKey) && e.key === "d") {
-        e.preventDefault();
-        duplicateSlide();
-      }
-      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === "Z") {
-        e.preventDefault();
-        handleRedo();
-        return;
-      }
-      if ((e.ctrlKey || e.metaKey) && e.key === "z") {
-        e.preventDefault();
-        handleUndo();
-        return;
-      }
-      if (e.key === "Delete" && !isEditing) {
-        deleteSlide();
-      }
-      if ((e.ctrlKey || e.metaKey) && e.key === "ArrowUp") {
-        e.preventDefault();
-        setCurrent(prev => Math.max(0, prev - 1));
-      }
-      if ((e.ctrlKey || e.metaKey) && e.key === "ArrowDown") {
-        e.preventDefault();
-        setCurrent(prev => Math.min(slides.length - 1, prev + 1));
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [slides, current, handleUndo, handleRedo]);
 
   const slide = slides[current];
 
@@ -247,7 +208,6 @@ const DeckEditor = () => {
     setSlides(prev => prev.map(s =>
       s.id === entry.slideId ? { ...s, [entry.field]: entry.oldValue } : s
     ));
-    // Also save to DB
     supabase.from("deck_slides").update({ [entry.field]: entry.oldValue }).eq("id", entry.slideId);
   }, [history]);
 
@@ -258,6 +218,47 @@ const DeckEditor = () => {
       s.id === entry.slideId ? { ...s, [entry.field]: entry.newValue } : s
     ));
     supabase.from("deck_slides").update({ [entry.field]: entry.newValue }).eq("id", entry.slideId);
+  }, [history]);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement;
+      const isEditing = target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable;
+
+      if ((e.ctrlKey || e.metaKey) && e.key === "s") {
+        e.preventDefault();
+        saveAll();
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key === "d") {
+        e.preventDefault();
+        duplicateSlide();
+      }
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === "Z") {
+        e.preventDefault();
+        handleRedo();
+        return;
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key === "z") {
+        e.preventDefault();
+        handleUndo();
+        return;
+      }
+      if (e.key === "Delete" && !isEditing) {
+        deleteSlide();
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key === "ArrowUp") {
+        e.preventDefault();
+        setCurrent(prev => Math.max(0, prev - 1));
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key === "ArrowDown") {
+        e.preventDefault();
+        setCurrent(prev => Math.min(slides.length - 1, prev + 1));
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [slides, current, handleUndo, handleRedo]);
   }, [history]);
 
   const saveAll = async () => {

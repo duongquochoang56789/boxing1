@@ -25,6 +25,26 @@ interface DeckSlide {
 const SLIDE_W = 1920;
 const SLIDE_H = 1080;
 
+type TransitionType = "fade" | "slide" | "zoom";
+
+const transitionVariants: Record<TransitionType, { initial: any; animate: any; exit: any }> = {
+  fade: {
+    initial: { opacity: 0 },
+    animate: { opacity: 1 },
+    exit: { opacity: 0 },
+  },
+  slide: {
+    initial: { opacity: 0, x: 100 },
+    animate: { opacity: 1, x: 0 },
+    exit: { opacity: 0, x: -100 },
+  },
+  zoom: {
+    initial: { opacity: 0, scale: 0.85 },
+    animate: { opacity: 1, scale: 1 },
+    exit: { opacity: 0, scale: 1.1 },
+  },
+};
+
 /** Scaled slide in a container that fills its parent */
 const ScaledSlide = ({ slide, className = "" }: { slide: DeckSlide; className?: string }) => {
   const ref = useRef<HTMLDivElement>(null);
@@ -69,10 +89,13 @@ const DeckPresent = () => {
   const [presenterMode, setPresenterMode] = useState(false);
   const [showNotes, setShowNotes] = useState(true);
   const [showGrid, setShowGrid] = useState(false);
+  const [showHints, setShowHints] = useState(true);
+  const [transition, setTransition] = useState<TransitionType>("fade");
   const [elapsed, setElapsed] = useState(0);
   const [scale, setScale] = useState(1);
   const containerRef = useRef<HTMLDivElement>(null);
   const startTimeRef = useRef(Date.now());
+  const hintsTimerRef = useRef<ReturnType<typeof setTimeout>>();
 
   // Fetch slides
   useEffect(() => {
@@ -87,6 +110,14 @@ const DeckPresent = () => {
         setLoading(false);
       });
   }, [deckId]);
+
+  // Auto-hide hints after 4 seconds
+  useEffect(() => {
+    if (showHints && !loading && slides.length > 0) {
+      hintsTimerRef.current = setTimeout(() => setShowHints(false), 4000);
+      return () => { if (hintsTimerRef.current) clearTimeout(hintsTimerRef.current); };
+    }
+  }, [showHints, loading, slides.length]);
 
   // Scale for audience view
   const updateScale = useCallback(() => {
@@ -114,6 +145,7 @@ const DeckPresent = () => {
       if (e.key === "n" || e.key === "N") setShowNotes(prev => !prev);
       if (e.key === "p" || e.key === "P") setPresenterMode(prev => !prev);
       if (e.key === "g" || e.key === "G") setShowGrid(prev => !prev);
+      if (e.key === "?") setShowHints(prev => !prev);
     };
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
@@ -144,6 +176,7 @@ const DeckPresent = () => {
 
   const slide = slides[current];
   const nextSlide = slides[current + 1] || null;
+  const tv = transitionVariants[transition];
 
   if (loading) {
     return (
@@ -159,10 +192,53 @@ const DeckPresent = () => {
     );
   }
 
+  // ─── Keyboard Hints Overlay ───
+  const KeyboardHints = () => (
+    <AnimatePresence>
+      {showHints && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-[10000] bg-black/80 backdrop-blur-sm flex items-center justify-center"
+          onClick={() => setShowHints(false)}
+        >
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.9, opacity: 0 }}
+            className="bg-[#1a1a1a] border border-white/10 rounded-2xl p-8 max-w-md"
+            onClick={e => e.stopPropagation()}
+          >
+            <h3 className="text-white font-bold text-lg mb-5 text-center">Phím tắt trình chiếu</h3>
+            <div className="space-y-3">
+              {[
+                { keys: "← →", desc: "Slide trước / sau" },
+                { keys: "Space", desc: "Slide tiếp theo" },
+                { keys: "P", desc: "Chuyển Presenter / Audience" },
+                { keys: "N", desc: "Ẩn / hiện ghi chú" },
+                { keys: "G", desc: "Xem lưới slide" },
+                { keys: "?", desc: "Hiện bảng phím tắt này" },
+                { keys: "Esc", desc: "Thoát trình chiếu" },
+              ].map(({ keys, desc }) => (
+                <div key={keys} className="flex items-center gap-4">
+                  <kbd className="bg-white/10 text-orange-400 text-sm font-mono px-3 py-1 rounded-lg min-w-[60px] text-center">{keys}</kbd>
+                  <span className="text-white/70 text-sm">{desc}</span>
+                </div>
+              ))}
+            </div>
+            <p className="text-white/30 text-xs text-center mt-5">Nhấn bất kỳ để đóng</p>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+
   // ─── PRESENTER MODE ───
   if (presenterMode) {
     return (
       <div className="fixed inset-0 bg-[#111] z-[9999] flex flex-col">
+        <KeyboardHints />
         {/* Top bar */}
         <div className="flex items-center justify-between px-4 py-2 bg-black/60 border-b border-white/10 shrink-0">
           <div className="flex items-center gap-3">
@@ -170,6 +246,17 @@ const DeckPresent = () => {
             <span className="text-white/40 text-xs">Presenter View</span>
           </div>
           <div className="flex items-center gap-3">
+            {/* Transition selector */}
+            <div className="flex items-center gap-1 bg-white/5 rounded-lg p-0.5">
+              {(["fade", "slide", "zoom"] as TransitionType[]).map(t => (
+                <button key={t} onClick={() => setTransition(t)}
+                  className={`px-2.5 py-1 text-[11px] rounded-md transition-colors capitalize ${
+                    transition === t ? "bg-orange-500/20 text-orange-400 font-medium" : "text-white/40 hover:text-white/70"
+                  }`}
+                >{t}</button>
+              ))}
+            </div>
+            <span className="text-white/20">|</span>
             <button onClick={resetTimer} className="flex items-center gap-1.5 text-white/50 hover:text-white text-xs transition-colors" title="Reset timer">
               <RotateCcw className="w-3.5 h-3.5" />
             </button>
@@ -182,6 +269,7 @@ const DeckPresent = () => {
             <button onClick={() => setPresenterMode(false)} className="flex items-center gap-1.5 text-white/50 hover:text-white text-xs transition-colors" title="Audience view (P)">
               <Monitor className="w-3.5 h-3.5" /> Audience View
             </button>
+            <button onClick={() => setShowHints(true)} className="p-1.5 text-white/30 hover:text-white/60 transition-colors text-xs" title="Phím tắt (?)">?</button>
             <button onClick={(e) => { e.stopPropagation(); navigate(`/slides/${deckId}`); }}
               className="p-1.5 text-white/50 hover:text-white transition-colors" title="Exit (Esc)">
               <Minimize className="w-4 h-4" />
@@ -275,6 +363,7 @@ const DeckPresent = () => {
   // ─── AUDIENCE MODE (default) ───
   return (
     <div ref={containerRef} className="fixed inset-0 bg-black z-[9999] cursor-none" onClick={() => goTo(current + 1)}>
+      <KeyboardHints />
       <div
         className="absolute"
         style={{
@@ -288,10 +377,10 @@ const DeckPresent = () => {
         <AnimatePresence mode="wait">
           <motion.div
             key={slide.slide_order}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
+            initial={tv.initial}
+            animate={tv.animate}
+            exit={tv.exit}
+            transition={{ duration: 0.4, ease: "easeInOut" }}
             className="w-full h-full"
           >
             <SlideRenderer slide={slide} />
@@ -315,6 +404,16 @@ const DeckPresent = () => {
 
       {/* Top-right controls */}
       <div className="absolute top-4 right-4 flex items-center gap-2 opacity-0 hover:opacity-100 transition-opacity" onClick={e => e.stopPropagation()}>
+        {/* Transition selector */}
+        <div className="flex items-center gap-0.5 bg-black/50 rounded-full p-1">
+          {(["fade", "slide", "zoom"] as TransitionType[]).map(t => (
+            <button key={t} onClick={() => setTransition(t)}
+              className={`px-2.5 py-1 text-[11px] rounded-full transition-colors capitalize ${
+                transition === t ? "bg-orange-500/30 text-orange-400" : "text-white/40 hover:text-white/70"
+              }`}
+            >{t}</button>
+          ))}
+        </div>
         <button onClick={() => setPresenterMode(true)}
           className="p-2 bg-black/40 text-white rounded-full hover:bg-black/60 transition-colors" title="Presenter View (P)">
           <Eye className="w-5 h-5" />
@@ -322,6 +421,10 @@ const DeckPresent = () => {
         <button onClick={() => setShowGrid(true)}
           className="p-2 bg-black/40 text-white rounded-full hover:bg-black/60 transition-colors" title="Grid View (G)">
           <Grid3X3 className="w-5 h-5" />
+        </button>
+        <button onClick={() => setShowHints(true)}
+          className="p-2 bg-black/40 text-white rounded-full hover:bg-black/60 transition-colors text-sm font-bold" title="Phím tắt (?)">
+          ?
         </button>
         <button onClick={() => navigate(`/slides/${deckId}`)}
           className="p-2 bg-black/40 text-white rounded-full hover:bg-black/60 transition-colors" title="Exit (Esc)">

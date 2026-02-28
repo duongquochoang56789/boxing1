@@ -164,7 +164,9 @@ export const CoverSlide = ({ slide }: { slide: SlideData }) => {
       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
       <div className="relative z-10 text-center px-20">
         <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}
-          className="text-[96px] font-bold text-white tracking-tight leading-none"
+          className={`font-bold text-white tracking-tight leading-none ${
+            slide.title.length > 20 ? "text-[72px]" : slide.title.length > 12 ? "text-[84px]" : "text-[96px]"
+          }`}
         >
           {slide.title}
         </motion.h1>
@@ -236,7 +238,9 @@ export const StatsSlide = ({ slide }: { slide: SlideData }) => {
             >
               <div className="absolute top-0 left-0 w-full h-1" style={{ background: hex }} />
               {stat.emoji && <span className="text-[44px] block mb-2">{stat.emoji}</span>}
-              <div className={`text-[76px] font-black leading-none ${colors.accent}`}>{stat.value}</div>
+              <div className={`font-black leading-none ${colors.accent} ${
+                stat.value.length > 12 ? "text-[48px]" : stat.value.length > 8 ? "text-[58px]" : "text-[76px]"
+              }`}>{stat.value}</div>
               <div className="text-[24px] text-white/60 mt-4 leading-snug">{stat.label}</div>
             </motion.div>
           ))}
@@ -282,7 +286,9 @@ export const GridSlide = ({ slide }: { slide: SlideData }) => {
                   style={{ background: `${hex}20` }}
                 >{item.emoji}</span>
               )}
-              <h3 className={`text-[30px] font-bold ${colors.accent}`}>{item.title}</h3>
+              <h3 className={`font-bold ${colors.accent} ${
+                item.title.length > 25 ? "text-[22px]" : "text-[30px]"
+              }`}>{item.title}</h3>
               <p className="text-[22px] text-white/55 leading-relaxed">{item.desc}</p>
             </motion.div>
           ))}

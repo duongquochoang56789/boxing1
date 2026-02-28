@@ -9,12 +9,15 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  Save, ArrowLeft, Presentation, Plus, Trash2, ChevronUp, ChevronDown, Loader2, Share2, Copy, Palette, ImageIcon, Download, Check, CloudOff, Images, X, Sparkles, PenLine, Maximize2, Minimize2, FileText
+  Save, ArrowLeft, Presentation, Plus, Trash2, ChevronUp, ChevronDown, Loader2, Share2, Copy, Palette, ImageIcon, Download, Check, CloudOff, Images, X, Sparkles, PenLine, Maximize2, Minimize2, FileText, Undo2, Redo2, BookmarkPlus, BookMarked
 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { BrandedLoader } from "@/components/ui/branded-loader";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import { useSlideHistory } from "@/hooks/useSlideHistory";
+import { useSlideTemplates } from "@/hooks/useSlideTemplates";
+import { Input } from "@/components/ui/input";
 
 interface DeckSlide {
   id: string;
@@ -114,6 +117,11 @@ const DeckEditor = () => {
   const [aiAssisting, setAiAssisting] = useState<string | null>(null);
   const [deckTheme, setDeckTheme] = useState("default");
   const [deckTransition, setDeckTransition] = useState("fade");
+  const [showTemplateDialog, setShowTemplateDialog] = useState(false);
+  const [templateName, setTemplateName] = useState("");
+  const [showTemplateList, setShowTemplateList] = useState(false);
+  const history = useSlideHistory();
+  const { templates, saveTemplate, deleteTemplate } = useSlideTemplates();
 
   // Load deck + slides
   useEffect(() => {
@@ -154,35 +162,6 @@ const DeckEditor = () => {
     window.addEventListener("resize", update);
     return () => window.removeEventListener("resize", update);
   }, [slides, current]);
-  // Keyboard shortcuts
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      const target = e.target as HTMLElement;
-      const isEditing = target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable;
-
-      if ((e.ctrlKey || e.metaKey) && e.key === "s") {
-        e.preventDefault();
-        saveAll();
-      }
-      if ((e.ctrlKey || e.metaKey) && e.key === "d") {
-        e.preventDefault();
-        duplicateSlide();
-      }
-      if (e.key === "Delete" && !isEditing) {
-        deleteSlide();
-      }
-      if ((e.ctrlKey || e.metaKey) && e.key === "ArrowUp") {
-        e.preventDefault();
-        setCurrent(prev => Math.max(0, prev - 1));
-      }
-      if ((e.ctrlKey || e.metaKey) && e.key === "ArrowDown") {
-        e.preventDefault();
-        setCurrent(prev => Math.min(slides.length - 1, prev + 1));
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [slides, current]);
 
   const slide = slides[current];
 
@@ -211,6 +190,10 @@ const DeckEditor = () => {
   }, []);
 
   const updateSlide = (field: keyof DeckSlide, value: string | null) => {
+    const oldValue = slide ? (slide[field] as string | null) : null;
+    if (slide && (field === "content" || field === "title" || field === "subtitle" || field === "notes")) {
+      history.push({ slideId: slide.id, field, oldValue, newValue: value });
+    }
     setSlides(prev => {
       const copy = [...prev];
       copy[current] = { ...copy[current], [field]: value };
@@ -218,6 +201,64 @@ const DeckEditor = () => {
       return copy;
     });
   };
+
+  const handleUndo = useCallback(() => {
+    const entry = history.undo();
+    if (!entry) return;
+    setSlides(prev => prev.map(s =>
+      s.id === entry.slideId ? { ...s, [entry.field]: entry.oldValue } : s
+    ));
+    supabase.from("deck_slides").update({ [entry.field]: entry.oldValue }).eq("id", entry.slideId);
+  }, [history]);
+
+  const handleRedo = useCallback(() => {
+    const entry = history.redo();
+    if (!entry) return;
+    setSlides(prev => prev.map(s =>
+      s.id === entry.slideId ? { ...s, [entry.field]: entry.newValue } : s
+    ));
+    supabase.from("deck_slides").update({ [entry.field]: entry.newValue }).eq("id", entry.slideId);
+  }, [history]);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement;
+      const isEditing = target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable;
+
+      if ((e.ctrlKey || e.metaKey) && e.key === "s") {
+        e.preventDefault();
+        saveAll();
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key === "d") {
+        e.preventDefault();
+        duplicateSlide();
+      }
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === "Z") {
+        e.preventDefault();
+        handleRedo();
+        return;
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key === "z") {
+        e.preventDefault();
+        handleUndo();
+        return;
+      }
+      if (e.key === "Delete" && !isEditing) {
+        deleteSlide();
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key === "ArrowUp") {
+        e.preventDefault();
+        setCurrent(prev => Math.max(0, prev - 1));
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key === "ArrowDown") {
+        e.preventDefault();
+        setCurrent(prev => Math.min(slides.length - 1, prev + 1));
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [slides, current, handleUndo, handleRedo]);
 
   const saveAll = async () => {
     setSaving(true);
@@ -534,6 +575,16 @@ const DeckEditor = () => {
           <span className="text-white/40 text-sm truncate max-w-[200px]">{deckTitle}</span>
         </div>
         <div className="flex items-center gap-2">
+          {/* Undo/Redo */}
+          <div className="flex items-center gap-0.5 mr-1">
+            <Button size="sm" variant="ghost" onClick={handleUndo} className="text-white/40 hover:text-white p-1.5 h-8 w-8" title="Hoàn tác (Ctrl+Z)">
+              <Undo2 className="w-4 h-4" />
+            </Button>
+            <Button size="sm" variant="ghost" onClick={handleRedo} className="text-white/40 hover:text-white p-1.5 h-8 w-8" title="Làm lại (Ctrl+Shift+Z)">
+              <Redo2 className="w-4 h-4" />
+            </Button>
+          </div>
+          <span className="text-white/20">|</span>
           <span className="text-white/50 text-sm">{current + 1} / {slides.length}</span>
           {saveStatus === "saving" && (
             <span className="flex items-center gap-1 text-orange-400 text-xs animate-pulse">
@@ -616,6 +667,18 @@ const DeckEditor = () => {
                 toast({ title: "Đã copy link trình chiếu!" });
               }} className="w-full flex items-center gap-2 px-3 py-2 text-sm text-white/70 hover:bg-white/10 hover:text-white transition-colors">
                 <Share2 className="w-4 h-4" /> Copy link
+              </button>
+              <div className="border-t border-white/10 my-1" />
+              <button onClick={() => {
+                if (slide) {
+                  setTemplateName(slide.title);
+                  setShowTemplateDialog(true);
+                }
+              }} className="w-full flex items-center gap-2 px-3 py-2 text-sm text-white/70 hover:bg-white/10 hover:text-white transition-colors">
+                <BookmarkPlus className="w-4 h-4" /> Lưu template
+              </button>
+              <button onClick={() => setShowTemplateList(true)} className="w-full flex items-center gap-2 px-3 py-2 text-sm text-white/70 hover:bg-white/10 hover:text-white transition-colors">
+                <BookMarked className="w-4 h-4" /> Dùng template ({templates.length})
               </button>
             </div>
           </div>
@@ -863,6 +926,97 @@ const DeckEditor = () => {
               Tạo ảnh ngay
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Save as Template dialog */}
+      <Dialog open={showTemplateDialog} onOpenChange={setShowTemplateDialog}>
+        <DialogContent className="bg-[#1a1a1a] border-white/10 text-white max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <BookmarkPlus className="w-5 h-5 text-orange-400" />
+              Lưu slide làm template
+            </DialogTitle>
+            <DialogDescription className="text-white/50">
+              Template sẽ lưu layout, nội dung, ghi chú và màu nền để tái sử dụng.
+            </DialogDescription>
+          </DialogHeader>
+          <Input
+            value={templateName}
+            onChange={(e) => setTemplateName(e.target.value)}
+            placeholder="Tên template..."
+            className="bg-white/5 border-white/10 text-white"
+          />
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button variant="ghost" onClick={() => setShowTemplateDialog(false)} className="text-white/50 hover:text-white">
+              Huỷ
+            </Button>
+            <Button onClick={() => {
+              if (slide && templateName.trim()) {
+                saveTemplate(templateName.trim(), {
+                  layout: slide.layout,
+                  content: slide.content,
+                  subtitle: slide.subtitle,
+                  section_name: slide.section_name,
+                  background_color: slide.background_color,
+                  notes: slide.notes,
+                  image_prompt: slide.image_prompt,
+                });
+                setShowTemplateDialog(false);
+                toast({ title: `Đã lưu template "${templateName.trim()}"!` });
+              }
+            }} className="bg-orange-500 hover:bg-orange-600 text-white" disabled={!templateName.trim()}>
+              <BookmarkPlus className="w-4 h-4 mr-2" />
+              Lưu
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Template list dialog */}
+      <Dialog open={showTemplateList} onOpenChange={setShowTemplateList}>
+        <DialogContent className="bg-[#1a1a1a] border-white/10 text-white max-w-lg max-h-[70vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <BookMarked className="w-5 h-5 text-orange-400" />
+              Slide Templates ({templates.length})
+            </DialogTitle>
+            <DialogDescription className="text-white/50">
+              Chọn template để áp dụng cho slide hiện tại.
+            </DialogDescription>
+          </DialogHeader>
+          {templates.length === 0 ? (
+            <p className="text-white/30 text-sm text-center py-8">Chưa có template nào. Lưu slide làm template từ menu "Thêm".</p>
+          ) : (
+            <div className="space-y-2">
+              {templates.map(t => (
+                <div key={t.id} className="flex items-center gap-3 p-3 bg-white/5 rounded-lg hover:bg-white/10 transition-colors group">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-white text-sm font-medium truncate">{t.name}</p>
+                    <p className="text-white/40 text-xs">{t.layout} • {new Date(t.savedAt).toLocaleDateString("vi")}</p>
+                  </div>
+                  <Button size="sm" variant="ghost" onClick={() => {
+                    if (slide) {
+                      updateSlide("content", t.content);
+                      updateSlide("layout", t.layout);
+                      if (t.subtitle) updateSlide("subtitle", t.subtitle);
+                      if (t.notes) updateSlide("notes", t.notes);
+                      if (t.image_prompt) updateSlide("image_prompt", t.image_prompt);
+                      updateBgColor(t.background_color);
+                      setShowTemplateList(false);
+                      toast({ title: `Đã áp dụng template "${t.name}"!` });
+                    }
+                  }} className="text-orange-400 hover:bg-orange-400/10 text-xs shrink-0">
+                    Áp dụng
+                  </Button>
+                  <Button size="sm" variant="ghost" onClick={() => deleteTemplate(t.id)}
+                    className="text-red-400/50 hover:text-red-400 hover:bg-red-400/10 p-1.5 h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                    <Trash2 className="w-3 h-3" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>

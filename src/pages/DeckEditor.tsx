@@ -20,6 +20,8 @@ import { useSlideTemplates } from "@/hooks/useSlideTemplates";
 import { Input } from "@/components/ui/input";
 import LazySlideThumb from "@/components/slides/LazySlideThumb";
 import EditorGridView from "@/components/slides/EditorGridView";
+import ShareDeckDialog from "@/components/slides/ShareDeckDialog";
+import { exportToPptx } from "@/lib/exportPptx";
 
 interface DeckSlide {
   id: string;

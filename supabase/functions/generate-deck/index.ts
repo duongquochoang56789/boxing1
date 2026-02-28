@@ -6,6 +6,50 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+// Call Google Gemini API directly
+async function callGeminiDirect(apiKey: string, model: string, systemPrompt: string, userPrompt: string) {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+  const resp = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      contents: [
+        { role: "user", parts: [{ text: `${systemPrompt}\n\n${userPrompt}` }] },
+      ],
+      generationConfig: { temperature: 0.7, maxOutputTokens: 8000 },
+    }),
+  });
+  return resp;
+}
+
+// Call Lovable AI Gateway (OpenAI-compatible)
+async function callLovableGateway(apiKey: string, model: string, systemPrompt: string, userPrompt: string) {
+  const resp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model,
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt },
+      ],
+    }),
+  });
+  return resp;
+}
+
+// Extract text content from either API format
+async function extractTextContent(response: Response, isDirect: boolean): Promise<string> {
+  const data = await response.json();
+  if (isDirect) {
+    return data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+  }
+  return data.choices?.[0]?.message?.content || "";
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -45,7 +89,7 @@ serve(async (req) => {
     }
     const userId = user.id;
 
-    // Build Gemini prompt
+    // Build prompt
     const langLabel = language === "vi" ? "tiếng Việt" : "English";
     const toneMap: Record<string, string> = {
       professional: "chuyên nghiệp, dữ liệu rõ ràng",
@@ -80,32 +124,33 @@ Quy tắc layout:
 
 CHỈ trả về JSON array, không có text khác.`;
 
+    const userPrompt = `Tạo bộ slide thuyết trình về: ${prompt}`;
+
+    // Determine which API to use
+    const GEMINI_API_KEY = Deno.env.get("GOOGLE_GEMINI_API_KEY");
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) {
+    const useDirect = !!GEMINI_API_KEY;
+
+    if (!GEMINI_API_KEY && !LOVABLE_API_KEY) {
       return new Response(JSON.stringify({ error: "AI API key not configured" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const aiMessages = [
-      { role: "system", content: systemPrompt },
-      { role: "user", content: `Tạo bộ slide thuyết trình về: ${prompt}` },
-    ];
+    const models = useDirect
+      ? ["gemini-2.5-flash", "gemini-2.5-flash-lite"]
+      : ["google/gemini-2.5-flash", "google/gemini-2.5-flash-lite"];
 
-    const modelsToTry = ["google/gemini-2.5-flash", "google/gemini-2.5-flash-lite"];
     let aiResponse: Response | null = null;
+    let isDirect = useDirect;
 
-    for (const model of modelsToTry) {
-      console.log(`[generate-deck] Trying model: ${model}`);
-      aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${LOVABLE_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ model, messages: aiMessages }),
-      });
+    for (const model of models) {
+      console.log(`[generate-deck] Trying ${useDirect ? "Gemini direct" : "Lovable Gateway"} model: ${model}`);
+
+      aiResponse = useDirect
+        ? await callGeminiDirect(GEMINI_API_KEY!, model, systemPrompt, userPrompt)
+        : await callLovableGateway(LOVABLE_API_KEY!, model, systemPrompt, userPrompt);
 
       if (aiResponse.ok) {
         console.log(`[generate-deck] Success with model: ${model}`);
@@ -122,13 +167,8 @@ CHỈ trả về JSON array, không có text khác.`;
         });
       }
 
-      // If 402, try next model
-      if (status === 402 && model !== modelsToTry[modelsToTry.length - 1]) {
-        console.log(`[generate-deck] 402 on ${model}, trying fallback...`);
-        continue;
-      }
-
       if (status === 402) {
+        if (model !== models[models.length - 1]) continue;
         return new Response(JSON.stringify({ error: "Hết credits AI, vui lòng liên hệ admin." }), {
           status: 402,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -136,7 +176,10 @@ CHỈ trả về JSON array, không có text khác.`;
       }
 
       const errText = await aiResponse.text();
-      console.error(`[generate-deck] AI gateway error: ${status}`, errText);
+      console.error(`[generate-deck] AI error: ${status}`, errText);
+
+      if (model !== models[models.length - 1]) continue;
+
       return new Response(JSON.stringify({ error: "AI generation failed" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -150,16 +193,14 @@ CHỈ trả về JSON array, không có text khác.`;
       });
     }
 
-    const aiData = await aiResponse.json();
-    const rawContent = aiData.choices?.[0]?.message?.content || "";
+    const rawContent = await extractTextContent(aiResponse, isDirect);
 
-    // Extract JSON from response (handle markdown code blocks)
+    // Extract JSON from response
     let jsonStr = rawContent;
     const jsonMatch = rawContent.match(/```(?:json)?\s*([\s\S]*?)```/);
     if (jsonMatch) {
       jsonStr = jsonMatch[1].trim();
     } else {
-      // Try to find raw JSON array
       const arrMatch = rawContent.match(/\[[\s\S]*\]/);
       if (arrMatch) jsonStr = arrMatch[0];
     }
@@ -182,10 +223,9 @@ CHỈ trả về JSON array, không có text khác.`;
       });
     }
 
-    // Generate share slug
+    // Generate share slug & create deck
     const shareSlug = crypto.randomUUID().split("-")[0];
 
-    // Create deck
     const { data: deck, error: deckError } = await supabase
       .from("decks")
       .insert({
@@ -228,7 +268,6 @@ CHỈ trả về JSON array, không có text khác.`;
 
     if (slidesError) {
       console.error("Slides insert error:", slidesError);
-      // Clean up deck
       await supabase.from("decks").delete().eq("id", deck.id);
       return new Response(JSON.stringify({ error: "Failed to save slides" }), {
         status: 500,

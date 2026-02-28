@@ -117,6 +117,11 @@ const DeckEditor = () => {
   const [aiAssisting, setAiAssisting] = useState<string | null>(null);
   const [deckTheme, setDeckTheme] = useState("default");
   const [deckTransition, setDeckTransition] = useState("fade");
+  const [showTemplateDialog, setShowTemplateDialog] = useState(false);
+  const [templateName, setTemplateName] = useState("");
+  const [showTemplateList, setShowTemplateList] = useState(false);
+  const history = useSlideHistory();
+  const { templates, saveTemplate, deleteTemplate } = useSlideTemplates();
 
   // Load deck + slides
   useEffect(() => {

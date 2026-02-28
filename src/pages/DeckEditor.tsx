@@ -9,8 +9,9 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  Save, ArrowLeft, Presentation, Plus, Trash2, ChevronUp, ChevronDown, Loader2, Share2, Copy, Palette, ImageIcon, Download, Check, CloudOff
+  Save, ArrowLeft, Presentation, Plus, Trash2, ChevronUp, ChevronDown, Loader2, Share2, Copy, Palette, ImageIcon, Download, Check, CloudOff, Images, X
 } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
 import { BrandedLoader } from "@/components/ui/branded-loader";
 
 interface DeckSlide {
@@ -48,6 +49,10 @@ const DeckEditor = () => {
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
   const [generatingImage, setGeneratingImage] = useState(false);
   const [exportingPdf, setExportingPdf] = useState(false);
+  const [batchGenerating, setBatchGenerating] = useState(false);
+  const [batchProgress, setBatchProgress] = useState(0);
+  const [batchTotal, setBatchTotal] = useState(0);
+  const batchCancelledRef = useRef(false);
   const [scale, setScale] = useState(1);
   const previewRef = useRef<HTMLDivElement>(null);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout>>();
@@ -281,6 +286,47 @@ const DeckEditor = () => {
     setGeneratingImage(false);
   };
 
+  const generateAllImages = async () => {
+    const slidesNeedingImages = slides.filter(s => s.image_prompt && !s.image_url);
+    if (slidesNeedingImages.length === 0) {
+      toast({ title: "Tất cả slide đã có ảnh!" });
+      return;
+    }
+    batchCancelledRef.current = false;
+    setBatchGenerating(true);
+    setBatchTotal(slidesNeedingImages.length);
+    setBatchProgress(0);
+
+    let successCount = 0;
+    for (let i = 0; i < slidesNeedingImages.length; i++) {
+      if (batchCancelledRef.current) break;
+      const s = slidesNeedingImages[i];
+      setBatchProgress(i + 1);
+      try {
+        const { data, error } = await supabase.functions.invoke("generate-slide-image", {
+          body: { slideId: s.id, imagePrompt: s.image_prompt },
+        });
+        if (!error && data?.imageUrl) {
+          setSlides(prev => prev.map(sl => sl.id === s.id ? { ...sl, image_url: data.imageUrl } : sl));
+          successCount++;
+        }
+      } catch (e) {
+        console.error(`Batch image error for slide ${s.slide_order}:`, e);
+      }
+      // Small delay between requests to avoid rate limiting
+      if (i < slidesNeedingImages.length - 1 && !batchCancelledRef.current) {
+        await new Promise(r => setTimeout(r, 2000));
+      }
+    }
+
+    setBatchGenerating(false);
+    if (batchCancelledRef.current) {
+      toast({ title: `Đã dừng. Tạo được ${successCount}/${slidesNeedingImages.length} ảnh.` });
+    } else {
+      toast({ title: `Đã tạo ${successCount}/${slidesNeedingImages.length} ảnh thành công!` });
+    }
+  };
+
   const exportPdf = async () => {
     setExportingPdf(true);
     toast({ title: "Đang xuất PDF..." });
@@ -375,6 +421,25 @@ const DeckEditor = () => {
             {generatingImage ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <ImageIcon className="w-4 h-4 mr-1" />}
             {generatingImage ? "Đang tạo..." : "AI Ảnh"}
           </Button>
+          {batchGenerating ? (
+            <div className="flex items-center gap-2 px-2">
+              <div className="w-24">
+                <Progress value={(batchProgress / batchTotal) * 100} className="h-2" />
+              </div>
+              <span className="text-white/60 text-xs whitespace-nowrap">{batchProgress}/{batchTotal}</span>
+              <Button size="sm" variant="ghost" onClick={() => { batchCancelledRef.current = true; }}
+                className="text-red-400/60 hover:text-red-400 p-1 h-6 w-6">
+                <X className="w-3 h-3" />
+              </Button>
+            </div>
+          ) : (
+            <Button size="sm" variant="ghost" onClick={generateAllImages} 
+              disabled={generatingImage || !slides.some(s => s.image_prompt && !s.image_url)}
+              className="text-white/60 hover:text-white" title="Tạo ảnh AI cho tất cả slide">
+              <Images className="w-4 h-4 mr-1" />
+              Tạo tất cả ảnh
+            </Button>
+          )}
           <Button size="sm" variant="ghost" onClick={exportPdf} disabled={exportingPdf} className="text-white/60 hover:text-white">
             {exportingPdf ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Download className="w-4 h-4 mr-1" />}
             {exportingPdf ? "Xuất..." : "PDF"}

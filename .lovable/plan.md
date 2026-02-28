@@ -1,88 +1,90 @@
 
-# Chuyển tất cả Edge Function AI sang Google Gemini + Tự động hóa luồng tạo ảnh
 
-## Phần 1: Chuyển 2 function còn lại sang Gemini trực tiếp
+# Tich hop AI Slide Builder vao Trang chu FLYFIT
 
-### 1A. `generate-slide-image` (tạo ảnh cho deck_slides)
-- Hiện dùng Lovable Gateway (`LOVABLE_API_KEY`) với model `google/gemini-2.5-flash-image`
-- Chuyển sang gọi trực tiếp Google Gemini API endpoint: `generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent` với `responseModalities: ["IMAGE"]`
-- Giữ logic fallback: ưu tiên `GOOGLE_GEMINI_API_KEY`, fallback sang Lovable Gateway nếu không có
-- Giữ nguyên logic upload Storage + update `deck_slides`
+## Tong quan
+Hien tai, AI Slide Builder chi co the truy cap qua menu "Du an" trong Header (di den `/slides`), nhung tren trang chu khong co section nao gioi thieu hay quang ba tinh nang nay. Ke hoach nay se:
 
-### 1B. `generate-slides` (tạo ảnh cho project_slides - bộ 30 slide FLYFIT cũ)
-- Hiện dùng Lovable Gateway cho phần image generation (mode "images")
-- Chuyển sang Gemini trực tiếp tương tự như trên
-- Phần mode "content" không liên quan AI gateway nên giữ nguyên
+1. **Kiem tra va liet ke cac tinh nang chua hoan thien** cua Slide Builder
+2. **Tao mot section moi tren trang chu** de gioi thieu AI Slide Builder, dat giua cac section hien co
 
-## Phần 2: Đánh giá luồng hoạt động hiện tại
+---
 
-### Luồng hiện tại (chưa hoàn chỉnh)
+## Phan 1: Tinh nang Slide Builder chua hoan thien
+
+Dua tren ma nguon hien tai, cac tinh nang da hoat dong:
+- Tao deck bang AI tu prompt
+- Editor voi Markdown, keyboard shortcuts, auto-save indicator
+- 12 loai layout (bao gom image-full, comparison)
+- Xuat PDF, chia se public link
+- Template suggestions khi tao moi
+- Dashboard voi thumbnail, tim kiem, xoa/public/private
+
+Cac tinh nang **chua co hoac chua hoan thien**:
+- **Drag-and-drop sap xep slide**: Chua co code keo tha trong editor (chi co nut di chuyen len/xuong)
+- **Grid View**: Khong co che do grid/overview trong editor
+- **Presenter View** voi timer, notes, next slide preview: Chua co (chi co fullscreen presentation co ban)
+- **Dark mode toggle** trong editor toolbar: Chua co
+- **Xuat PowerPoint (PPTX)**: Chua co, chi co PDF
+- **Realtime collaboration**: Chua co
+
+---
+
+## Phan 2: Tao Section "AI Slide Builder" tren Trang chu
+
+### Vi tri
+Dat section moi ngay **sau VirtualTrainingSection** va **truoc PricingSection** trong Index.tsx. Day la vi tri chien luoc vi:
+- Sau khi nguoi dung da xem dich vu va mo hinh tap luyen
+- Truoc phan bang gia, tao an tuong ve gia tri cong nghe
+
+### Thiet ke Section
+
+Section se bao gom:
+- **Tieu de**: "Tao Slide Thuyet Trinh Bang AI" voi label "Cong Cu AI"
+- **Mo ta ngan**: Nhan manh tinh nang tu dong tao slide tu prompt
+- **3 Feature Cards**: Hien thi 3 diem noi bat (Tao tu dong, 12+ Layout, Chia se de dang)
+- **Mock/Demo Preview**: Hien thi mot mockup giao dien slide builder hoac animation SVG minh hoa
+- **CTA Button**: "Thu ngay mien phi" -> dieu huong den `/slides/new` (yeu cau dang nhap)
+
+### Phong cach
+- Nen gradient nhe (charcoal -> charcoal/95) de tao contrast voi cac section sang mau cream
+- Cards dung glass effect (bg-cream/5 backdrop-blur) tuong tu style cua VirtualTrainingSection
+- Animation: fade-in khi scroll vao view (useInView)
+- Icon su dung lucide-react (Sparkles, Presentation, Layout, Share2...)
+
+### File thay doi
+
+| File | Thay doi |
+|------|---------|
+| **Tao moi**: `src/components/landing/AISlideSection.tsx` | Section gioi thieu AI Slide Builder voi 3 feature cards, mockup preview va CTA |
+| **Sua**: `src/pages/Index.tsx` | Import va them `AISlideSection` vao giua VirtualTrainingSection va PricingSection |
+
+---
+
+## Chi tiet ky thuat
+
+### AISlideSection.tsx
 ```text
-[Nhập prompt] --> generate-deck --> [Nội dung + Cấu trúc + Layout]
-                                          |
-                                          v
-                                    [DeckEditor]
-                                          |
-                                    (Thủ công) Bấm "AI Ảnh" từng slide
-                                          |
-                                          v
-                                    generate-slide-image --> [1 ảnh]
+Component structure:
+- Section wrapper: nen gradient charcoal, padding section-padding
+- Header: label "Cong Cu AI" + heading 2 dong + description
+- Feature grid (3 cols):
+  1. Icon Sparkles + "AI Tu Dong Tao" + mo ta
+  2. Icon Layout + "12+ Bo Cuc Chuyen Nghiep" + mo ta  
+  3. Icon Share2 + "Chia Se & Trinh Chieu" + mo ta
+- Demo area: Mockup 16:9 voi gradient background, fake slide preview
+- CTA: MagneticButton "Tao Slide Ngay" -> navigate("/slides/new")
+- Animation: Framer Motion whileInView + stagger cho cards
 ```
 
-### Vấn đề
-- Người dùng phải bấm nút "AI Ảnh" cho TỪNG slide (15 slide = 15 lần bấm)
-- Không có tùy chọn tạo ảnh hàng loạt (batch)
-- Trải nghiệm không liền mạch
-
-### Luồng đề xuất (cải tiến)
+### Index.tsx thay doi
 ```text
-[Nhập prompt] --> generate-deck --> [Nội dung + Cấu trúc]
-                                          |
-                                          v
-                                    [DeckEditor]
-                                          |
-                     +--------------------+--------------------+
-                     |                                         |
-              [Nút "AI Ảnh"]                          [Nút "Tạo tất cả ảnh"]
-              (từng slide)                            (batch - MỚI)
-                     |                                         |
-                     v                                         v
-           generate-slide-image                   Gọi generate-slide-image
-              (1 ảnh)                             lần lượt cho mỗi slide
-                                                  (hiển thị progress bar)
+- Import AISlideSection
+- Dat giua <VirtualTrainingSection /> va <PricingSection />
 ```
 
-## Phần 3: Thêm nút "Tạo tất cả ảnh" (Batch Generate)
-
-### Frontend (DeckEditor.tsx)
-- Thêm nút "Tạo tất cả ảnh" trên toolbar, bên cạnh nút "AI Ảnh" hiện tại
-- Khi bấm: lặp qua tất cả slide có `image_prompt` nhưng chưa có `image_url`
-- Gọi `generate-slide-image` tuần tự (tránh rate limit)
-- Hiển thị progress: "Đang tạo ảnh slide 3/15..."
-- Cập nhật thumbnail realtime khi mỗi ảnh hoàn thành
-- Cho phép hủy giữa chừng
-
-## Chi tiết kỹ thuật
-
-### File thay đổi
-
-1. **`supabase/functions/generate-slide-image/index.ts`**
-   - Thêm hàm `callGeminiImageDirect(apiKey, prompt)` gọi endpoint `gemini-2.5-flash-image:generateContent` với `responseModalities: ["IMAGE"]`
-   - Logic: kiểm tra `GOOGLE_GEMINI_API_KEY` truoc, fallback sang `LOVABLE_API_KEY` + Lovable Gateway
-   - Parse response: `candidates[0].content.parts[].inlineData.data` (base64)
-   - Giữ nguyên logic upload Storage + update DB
-
-2. **`supabase/functions/generate-slides/index.ts`**
-   - Tương tự: thêm Gemini direct cho phần mode "images"
-   - Ưu tiên `GOOGLE_GEMINI_API_KEY`, fallback Lovable Gateway
-
-3. **`src/pages/DeckEditor.tsx`**
-   - Thêm state: `batchGenerating`, `batchProgress`, `batchTotal`, `batchCancelled`
-   - Thêm hàm `generateAllImages()`: lọc slide chua co anh, goi tuan tu, cap nhat state
-   - Thêm nút "Tạo tất cả ảnh" với icon và progress indicator
-   - Ref `batchCancelledRef` để cho phép hủy giữa chừng
-
-## Kết quả mong đợi
-- Tất cả 6 edge function AI dùng Google Gemini API trực tiếp, không phụ thuộc credits Lovable
-- Luồng tạo slide hoàn chỉnh: Nội dung -> Cấu trúc -> Ảnh (tự động batch)
-- Trải nghiệm người dùng liền mạch hơn
+## Tong ket
+- **1 file moi**: `AISlideSection.tsx`
+- **1 file sua**: `Index.tsx` (them 2 dong import + render)
+- Khong can migration, edge function, hay dependency moi
+- Thiet ke nhat quan voi style hien tai cua landing page (premium, sang trong)

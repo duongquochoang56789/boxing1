@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { Plus, Presentation, Trash2, Share2, Globe, Lock, MoreVertical, Clock, Search, ArrowUpDown, CheckSquare, Square, X } from "lucide-react";
 import { BrandedLoader } from "@/components/ui/branded-loader";
 import { SlideRenderer } from "@/components/slides/SlideLayouts";
+import LazySlideThumb from "@/components/slides/LazySlideThumb";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import {

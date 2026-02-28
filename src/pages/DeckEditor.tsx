@@ -589,6 +589,22 @@ const DeckEditor = () => {
                       {VALID_LAYOUTS.map(l => <SelectItem key={l} value={l}>{l}</SelectItem>)}
                     </SelectContent>
                   </Select>
+                  {/* Smart layout suggestion */}
+                  {slide && (() => {
+                    const suggested = suggestLayout(slide.content);
+                    if (suggested && suggested !== slide.layout) {
+                      return (
+                        <Badge
+                          className="h-8 cursor-pointer bg-orange-400/10 text-orange-400 border-orange-400/30 hover:bg-orange-400/20 text-[10px] whitespace-nowrap animate-in fade-in duration-300"
+                          onClick={() => updateSlide("layout", suggested)}
+                        >
+                          <Sparkles className="w-3 h-3 mr-1" />
+                          Gợi ý: {suggested}
+                        </Badge>
+                      );
+                    }
+                    return null;
+                  })()}
                   <Select value={slide?.section_name || "brand"} onValueChange={(v) => updateSlide("section_name", v)}>
                     <SelectTrigger className="h-8 bg-white/5 border-white/10 text-white text-xs flex-1">
                       <SelectValue />

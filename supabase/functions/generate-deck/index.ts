@@ -82,7 +82,10 @@ async function callLovableGateway(apiKey: string, model: string, systemPrompt: s
 async function extractTextContent(response: Response, isDirect: boolean): Promise<string> {
   const data = await response.json();
   if (isDirect) {
-    return data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+    const parts = data.candidates?.[0]?.content?.parts ?? [];
+    return parts
+      .map((part: { text?: string }) => part?.text ?? "")
+      .join("");
   }
   return data.choices?.[0]?.message?.content || "";
 }

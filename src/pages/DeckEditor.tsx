@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useParams, useNavigate, Link, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
@@ -9,10 +9,12 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  Save, ArrowLeft, Presentation, Plus, Trash2, ChevronUp, ChevronDown, Loader2, Share2, Copy, Palette, ImageIcon, Download, Check, CloudOff, Images, X
+  Save, ArrowLeft, Presentation, Plus, Trash2, ChevronUp, ChevronDown, Loader2, Share2, Copy, Palette, ImageIcon, Download, Check, CloudOff, Images, X, Sparkles
 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { BrandedLoader } from "@/components/ui/branded-loader";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
 
 interface DeckSlide {
   id: string;
@@ -37,8 +39,39 @@ const BG_PRESETS = [
   "#e2e8f0", "#fef3c7", "#fee2e2", "#dbeafe", "#d1fae5", "#ede9fe",
 ];
 
+const LAYOUT_TEMPLATES: Record<string, string> = {
+  cover: "# Tiêu đề chính\n\nPhụ đề hoặc mô tả ngắn gọn về nội dung trình bày",
+  "two-column": "**Điểm 1:** Mô tả chi tiết điểm đầu tiên\n\n**Điểm 2:** Mô tả chi tiết điểm thứ hai\n\n**Điểm 3:** Mô tả chi tiết điểm thứ ba",
+  stats: "**100+** Khách hàng hài lòng\n\n**50%** Tăng trưởng hàng năm\n\n**24/7** Hỗ trợ khách hàng\n\n**99.9%** Uptime",
+  grid: "🎯 **Mục tiêu** Mô tả ngắn\n\n🚀 **Chiến lược** Mô tả ngắn\n\n💡 **Giải pháp** Mô tả ngắn\n\n📈 **Kết quả** Mô tả ngắn",
+  table: "| Tiêu chí | Phương án A | Phương án B |\n|----------|-------------|-------------|\n| Chi phí | Thấp | Trung bình |\n| Thời gian | 2 tháng | 1 tháng |\n| Hiệu quả | Cao | Rất cao |",
+  timeline: "**Q1 2025** Giai đoạn nghiên cứu và lập kế hoạch\n\n**Q2 2025** Phát triển sản phẩm MVP\n\n**Q3 2025** Ra mắt beta và thu thập phản hồi\n\n**Q4 2025** Ra mắt chính thức",
+  quote: '"Trích dẫn ấn tượng hoặc nhận xét từ khách hàng, đối tác"\n\n— Tên người, Chức vụ',
+  pricing: "**Gói Cơ bản** 499K/tháng\n- Tính năng A\n- Tính năng B\n\n**Gói Pro** 999K/tháng\n- Tất cả gói Cơ bản\n- Tính năng C\n- Tính năng D",
+  persona: "**Tên nhân vật** Chức vụ / Vai trò\n\nMô tả ngắn về nhân vật, kinh nghiệm và đóng góp nổi bật.",
+  chart: "**Dữ liệu biểu đồ**\n\nMô tả xu hướng hoặc chỉ số quan trọng cần trực quan hóa.",
+  "image-full": "# Tiêu đề nổi bật\n\nMô tả ngắn phủ lên hình nền toàn slide",
+  comparison: "**Phương án A**\n- Ưu điểm 1\n- Ưu điểm 2\n\n---\n\n**Phương án B**\n- Ưu điểm 1\n- Ưu điểm 2",
+};
+
+const suggestLayout = (content: string): string | null => {
+  if (!content || content.trim().length < 10) return null;
+  if (content.includes("|") && content.includes("---")) return "table";
+  const statMatches = content.match(/\*\*\d[\d,.%+]*\*\*/g);
+  if (statMatches && statMatches.length >= 2) return "stats";
+  if ((content.includes('"') || content.includes('\u201C')) && content.includes('—')) return "quote";
+  const emojiPattern = /[\u{1F300}-\u{1F9FF}]/gu;
+  const emojiMatches = content.match(emojiPattern);
+  if (emojiMatches && emojiMatches.length >= 3) return "grid";
+  const bulletLines = content.split('\n').filter(l => l.trim().startsWith('-') || l.trim().startsWith('•'));
+  if (bulletLines.length >= 4) return "two-column";
+  if (content.includes('VS') || (content.split('---').length >= 2 && !content.includes('|'))) return "comparison";
+  return null;
+};
+
 const DeckEditor = () => {
   const { deckId } = useParams<{ deckId: string }>();
+  const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [slides, setSlides] = useState<DeckSlide[]>([]);
@@ -59,6 +92,7 @@ const DeckEditor = () => {
   const saveStatusTimerRef = useRef<ReturnType<typeof setTimeout>>();
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+  const [showAutoImageDialog, setShowAutoImageDialog] = useState(false);
 
   // Load deck + slides
   useEffect(() => {
@@ -76,6 +110,12 @@ const DeckEditor = () => {
       setDeckTitle(deckRes.data.title);
       setSlides(slidesRes.data as DeckSlide[]);
       setLoading(false);
+
+      // Check for auto-image generation param
+      if (searchParams.get("autoImages") === "true") {
+        setShowAutoImageDialog(true);
+        setSearchParams({}, { replace: true });
+      }
     };
     load();
   }, [deckId]);
@@ -175,12 +215,13 @@ const DeckEditor = () => {
   const addSlide = async () => {
     if (!deckId) return;
     const newOrder = slides.length + 1;
+    const defaultLayout = "two-column";
     const { data, error } = await supabase.from("deck_slides").insert({
       deck_id: deckId,
       slide_order: newOrder,
       title: `Slide ${newOrder}`,
-      content: "",
-      layout: "two-column",
+      content: LAYOUT_TEMPLATES[defaultLayout] || "",
+      layout: defaultLayout,
       section_name: "brand",
       background_color: "#1a1a2e",
     }).select().single();
@@ -548,6 +589,22 @@ const DeckEditor = () => {
                       {VALID_LAYOUTS.map(l => <SelectItem key={l} value={l}>{l}</SelectItem>)}
                     </SelectContent>
                   </Select>
+                  {/* Smart layout suggestion */}
+                  {slide && (() => {
+                    const suggested = suggestLayout(slide.content);
+                    if (suggested && suggested !== slide.layout) {
+                      return (
+                        <Badge
+                          className="h-8 cursor-pointer bg-orange-400/10 text-orange-400 border-orange-400/30 hover:bg-orange-400/20 text-[10px] whitespace-nowrap animate-in fade-in duration-300"
+                          onClick={() => updateSlide("layout", suggested)}
+                        >
+                          <Sparkles className="w-3 h-3 mr-1" />
+                          Gợi ý: {suggested}
+                        </Badge>
+                      );
+                    }
+                    return null;
+                  })()}
                   <Select value={slide?.section_name || "brand"} onValueChange={(v) => updateSlide("section_name", v)}>
                     <SelectTrigger className="h-8 bg-white/5 border-white/10 text-white text-xs flex-1">
                       <SelectValue />
@@ -637,6 +694,30 @@ const DeckEditor = () => {
           </ResizablePanel>
         </ResizablePanelGroup>
       </div>
+
+      {/* Auto-generate images dialog */}
+      <Dialog open={showAutoImageDialog} onOpenChange={setShowAutoImageDialog}>
+        <DialogContent className="bg-[#1a1a1a] border-white/10 text-white max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Images className="w-5 h-5 text-orange-400" />
+              Tạo ảnh minh hoạ tự động?
+            </DialogTitle>
+            <DialogDescription className="text-white/50">
+              AI đã tạo xong nội dung slide. Bạn có muốn AI tự động tạo ảnh minh hoạ cho tất cả slide không? (Mất khoảng 30-60 giây)
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button variant="ghost" onClick={() => setShowAutoImageDialog(false)} className="text-white/50 hover:text-white">
+              Để sau
+            </Button>
+            <Button onClick={() => { setShowAutoImageDialog(false); generateAllImages(); }} className="bg-orange-500 hover:bg-orange-600 text-white">
+              <Sparkles className="w-4 h-4 mr-2" />
+              Tạo ảnh ngay
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

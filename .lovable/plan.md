@@ -1,69 +1,90 @@
 
 
-# Cap do 1: Smart Defaults - Ke hoach trien khai
+# Tich hop AI Slide Builder vao Trang chu FLYFIT
 
 ## Tong quan
-Trien khai 3 tinh nang thong minh co ban de giam thao tac thu cong va tao trai nghiem muot hon cho nguoi dung.
+Hien tai, AI Slide Builder chi co the truy cap qua menu "Du an" trong Header (di den `/slides`), nhung tren trang chu khong co section nao gioi thieu hay quang ba tinh nang nay. Ke hoach nay se:
+
+1. **Kiem tra va liet ke cac tinh nang chua hoan thien** cua Slide Builder
+2. **Tao mot section moi tren trang chu** de gioi thieu AI Slide Builder, dat giua cac section hien co
 
 ---
 
-## 1A. Auto-generate anh sau khi tao deck
+## Phan 1: Tinh nang Slide Builder chua hoan thien
 
-**Luong hoat dong:**
-1. `SlideBuilder.tsx`: Sau khi `generate-deck` thanh cong, navigate den `/slides/{deckId}?autoImages=true`
-2. `DeckEditor.tsx`: Doc URL param `autoImages`, hien dialog hoi nguoi dung co muon AI tu dong tao anh cho tat ca slide khong
-3. Neu dong y: tu dong goi `generateAllImages()` va xoa param khoi URL
-4. Neu tu choi: dong dialog, xoa param
+Dua tren ma nguon hien tai, cac tinh nang da hoat dong:
+- Tao deck bang AI tu prompt
+- Editor voi Markdown, keyboard shortcuts, auto-save indicator
+- 12 loai layout (bao gom image-full, comparison)
+- Xuat PDF, chia se public link
+- Template suggestions khi tao moi
+- Dashboard voi thumbnail, tim kiem, xoa/public/private
 
-**Thay doi cu the:**
-- `SlideBuilder.tsx` line 37: Doi `navigate(\`/slides/${data.deckId}\`)` thanh `navigate(\`/slides/${data.deckId}?autoImages=true\`)`
-- `DeckEditor.tsx`: Them state `showAutoImageDialog`, useEffect doc `searchParams`, hien Dialog voi 2 nut "Tao anh ngay" va "De sau"
-
----
-
-## 1B. Smart layout suggestions
-
-**Logic phan tich noi dung:**
-- Noi dung co bang (bat dau voi `|`) -> goi y `table`
-- Noi dung co nhieu so (`**so**`) -> goi y `stats`
-- Noi dung co nhieu bullet/emoji -> goi y `grid`
-- Noi dung co dau `"` hoac `\u201C` -> goi y `quote`
-- Noi dung ngan, co subtitle -> goi y `cover`
-
-**UI:**
-- Hien mot badge nho ben canh dropdown layout: "Goi y: stats" (click de ap dung)
-- Chi hien khi layout hien tai khac voi goi y
-- Mau cam nhe, animation subtle fade-in
-
-**Thay doi:** Them function `suggestLayout(content)` va hien badge trong editor panel cua `DeckEditor.tsx`
+Cac tinh nang **chua co hoac chua hoan thien**:
+- **Drag-and-drop sap xep slide**: Chua co code keo tha trong editor (chi co nut di chuyen len/xuong)
+- **Grid View**: Khong co che do grid/overview trong editor
+- **Presenter View** voi timer, notes, next slide preview: Chua co (chi co fullscreen presentation co ban)
+- **Dark mode toggle** trong editor toolbar: Chua co
+- **Xuat PowerPoint (PPTX)**: Chua co, chi co PDF
+- **Realtime collaboration**: Chua co
 
 ---
 
-## 1C. Empty state template cho slide moi
+## Phan 2: Tao Section "AI Slide Builder" tren Trang chu
 
-**Logic:**
-- Khi tao slide moi (`addSlide`), thay vi content rong, dien template Markdown mau theo layout
-- Template tuy theo layout duoc chon:
-  - `cover`: "# Tieu de chinh\n\nPhu de hoac mo ta ngan..."
-  - `two-column`: "**Diem 1** Mo ta chi tiet\n**Diem 2** Mo ta chi tiet..."
-  - `stats`: "**100+** Khach hang\n**50%** Tang truong..."
-  - `grid`: Emoji + bold pattern
-  - `table`: Bang Markdown mau
+### Vi tri
+Dat section moi ngay **sau VirtualTrainingSection** va **truoc PricingSection** trong Index.tsx. Day la vi tri chien luoc vi:
+- Sau khi nguoi dung da xem dich vu va mo hinh tap luyen
+- Truoc phan bang gia, tao an tuong ve gia tri cong nghe
 
-**Thay doi:** Sua function `addSlide` trong `DeckEditor.tsx`, them map `LAYOUT_TEMPLATES` va dung lam default content
+### Thiet ke Section
 
----
+Section se bao gom:
+- **Tieu de**: "Tao Slide Thuyet Trinh Bang AI" voi label "Cong Cu AI"
+- **Mo ta ngan**: Nhan manh tinh nang tu dong tao slide tu prompt
+- **3 Feature Cards**: Hien thi 3 diem noi bat (Tao tu dong, 12+ Layout, Chia se de dang)
+- **Mock/Demo Preview**: Hien thi mot mockup giao dien slide builder hoac animation SVG minh hoa
+- **CTA Button**: "Thu ngay mien phi" -> dieu huong den `/slides/new` (yeu cau dang nhap)
 
-## File thay doi
+### Phong cach
+- Nen gradient nhe (charcoal -> charcoal/95) de tao contrast voi cac section sang mau cream
+- Cards dung glass effect (bg-cream/5 backdrop-blur) tuong tu style cua VirtualTrainingSection
+- Animation: fade-in khi scroll vao view (useInView)
+- Icon su dung lucide-react (Sparkles, Presentation, Layout, Share2...)
+
+### File thay doi
 
 | File | Thay doi |
 |------|---------|
-| `src/pages/SlideBuilder.tsx` | Them `?autoImages=true` vao navigate (1 dong) |
-| `src/pages/DeckEditor.tsx` | Them auto-image dialog (useSearchParams + Dialog component), smart layout suggestion (function + badge UI), empty state templates (LAYOUT_TEMPLATES map + update addSlide) |
+| **Tao moi**: `src/components/landing/AISlideSection.tsx` | Section gioi thieu AI Slide Builder voi 3 feature cards, mockup preview va CTA |
+| **Sua**: `src/pages/Index.tsx` | Import va them `AISlideSection` vao giua VirtualTrainingSection va PricingSection |
 
-## Khong can thay doi
-- Khong can migration database
-- Khong can edge function moi
-- Khong can dependency moi
-- Chi thay doi 2 file frontend
+---
 
+## Chi tiet ky thuat
+
+### AISlideSection.tsx
+```text
+Component structure:
+- Section wrapper: nen gradient charcoal, padding section-padding
+- Header: label "Cong Cu AI" + heading 2 dong + description
+- Feature grid (3 cols):
+  1. Icon Sparkles + "AI Tu Dong Tao" + mo ta
+  2. Icon Layout + "12+ Bo Cuc Chuyen Nghiep" + mo ta  
+  3. Icon Share2 + "Chia Se & Trinh Chieu" + mo ta
+- Demo area: Mockup 16:9 voi gradient background, fake slide preview
+- CTA: MagneticButton "Tao Slide Ngay" -> navigate("/slides/new")
+- Animation: Framer Motion whileInView + stagger cho cards
+```
+
+### Index.tsx thay doi
+```text
+- Import AISlideSection
+- Dat giua <VirtualTrainingSection /> va <PricingSection />
+```
+
+## Tong ket
+- **1 file moi**: `AISlideSection.tsx`
+- **1 file sua**: `Index.tsx` (them 2 dong import + render)
+- Khong can migration, edge function, hay dependency moi
+- Thiet ke nhat quan voi style hien tai cua landing page (premium, sang trong)

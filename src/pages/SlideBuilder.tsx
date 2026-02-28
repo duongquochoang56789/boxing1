@@ -34,7 +34,7 @@ const SlideBuilder = () => {
       if (data?.error) throw new Error(data.error);
 
       toast({ title: `Đã tạo ${data.slideCount} slides thành công!` });
-      navigate(`/slides/${data.deckId}`);
+      navigate(`/slides/${data.deckId}?autoImages=true`);
     } catch (err: any) {
       console.error("Generate deck error:", err);
       

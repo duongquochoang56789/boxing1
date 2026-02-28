@@ -129,6 +129,9 @@ const DeckEditor = () => {
   const [exportingPptx, setExportingPptx] = useState(false);
   const [templateName, setTemplateName] = useState("");
   const [showTemplateList, setShowTemplateList] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [showComments, setShowComments] = useState(false);
+  const [showVersionHistory, setShowVersionHistory] = useState(false);
   const history = useSlideHistory();
   const { templates, saveTemplate, deleteTemplate } = useSlideTemplates();
 

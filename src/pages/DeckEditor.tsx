@@ -668,6 +668,18 @@ const DeckEditor = () => {
               }} className="w-full flex items-center gap-2 px-3 py-2 text-sm text-white/70 hover:bg-white/10 hover:text-white transition-colors">
                 <Share2 className="w-4 h-4" /> Copy link
               </button>
+              <div className="border-t border-white/10 my-1" />
+              <button onClick={() => {
+                if (slide) {
+                  setTemplateName(slide.title);
+                  setShowTemplateDialog(true);
+                }
+              }} className="w-full flex items-center gap-2 px-3 py-2 text-sm text-white/70 hover:bg-white/10 hover:text-white transition-colors">
+                <BookmarkPlus className="w-4 h-4" /> Lưu template
+              </button>
+              <button onClick={() => setShowTemplateList(true)} className="w-full flex items-center gap-2 px-3 py-2 text-sm text-white/70 hover:bg-white/10 hover:text-white transition-colors">
+                <BookMarked className="w-4 h-4" /> Dùng template ({templates.length})
+              </button>
             </div>
           </div>
           <Button size="sm" onClick={() => navigate(`/slides/${deckId}/present`)} className="bg-orange-500 hover:bg-orange-600 text-white">

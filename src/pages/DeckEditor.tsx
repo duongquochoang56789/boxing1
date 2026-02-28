@@ -575,6 +575,16 @@ const DeckEditor = () => {
           <span className="text-white/40 text-sm truncate max-w-[200px]">{deckTitle}</span>
         </div>
         <div className="flex items-center gap-2">
+          {/* Undo/Redo */}
+          <div className="flex items-center gap-0.5 mr-1">
+            <Button size="sm" variant="ghost" onClick={handleUndo} className="text-white/40 hover:text-white p-1.5 h-8 w-8" title="Hoàn tác (Ctrl+Z)">
+              <Undo2 className="w-4 h-4" />
+            </Button>
+            <Button size="sm" variant="ghost" onClick={handleRedo} className="text-white/40 hover:text-white p-1.5 h-8 w-8" title="Làm lại (Ctrl+Shift+Z)">
+              <Redo2 className="w-4 h-4" />
+            </Button>
+          </div>
+          <span className="text-white/20">|</span>
           <span className="text-white/50 text-sm">{current + 1} / {slides.length}</span>
           {saveStatus === "saving" && (
             <span className="flex items-center gap-1 text-orange-400 text-xs animate-pulse">

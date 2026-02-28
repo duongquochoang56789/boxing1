@@ -733,11 +733,7 @@ const DeckEditor = () => {
                     boxShadow: isDragging ? "0 4px 20px rgba(0,0,0,0.5), 0 0 12px rgba(251,146,60,0.3)" : "none",
                   }}
                 >
-                  <div className={`aspect-video bg-[#1a1a2e] rounded overflow-hidden relative pointer-events-none transition-transform duration-200 ${isOver ? "scale-90" : ""}`}>
-                    <div style={{ width: SLIDE_W, height: SLIDE_H, transform: "scale(0.05)", transformOrigin: "top left" }}>
-                      <SlideRenderer slide={s} />
-                    </div>
-                  </div>
+                  <LazySlideThumb slide={s} scale={0.05} className={`transition-transform duration-200 ${isOver ? "scale-90" : ""}`} />
                   <span className="text-[10px] text-white/40 mt-1 block truncate">{i + 1}. {s.title}</span>
                 </button>
                 {/* Drop indicator line - below */}

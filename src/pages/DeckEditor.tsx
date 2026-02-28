@@ -110,6 +110,12 @@ const DeckEditor = () => {
       setDeckTitle(deckRes.data.title);
       setSlides(slidesRes.data as DeckSlide[]);
       setLoading(false);
+
+      // Check for auto-image generation param
+      if (searchParams.get("autoImages") === "true") {
+        setShowAutoImageDialog(true);
+        setSearchParams({}, { replace: true });
+      }
     };
     load();
   }, [deckId]);

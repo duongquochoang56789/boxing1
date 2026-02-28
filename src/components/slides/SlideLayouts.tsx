@@ -164,7 +164,9 @@ export const CoverSlide = ({ slide }: { slide: SlideData }) => {
       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
       <div className="relative z-10 text-center px-20">
         <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}
-          className="text-[96px] font-bold text-white tracking-tight leading-none"
+          className={`font-bold text-white tracking-tight leading-none ${
+            slide.title.length > 20 ? "text-[72px]" : slide.title.length > 12 ? "text-[84px]" : "text-[96px]"
+          }`}
         >
           {slide.title}
         </motion.h1>

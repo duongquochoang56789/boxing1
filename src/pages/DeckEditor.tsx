@@ -219,6 +219,10 @@ const DeckEditor = () => {
   }, []);
 
   const updateSlide = (field: keyof DeckSlide, value: string | null) => {
+    const oldValue = slide ? (slide[field] as string | null) : null;
+    if (slide && (field === "content" || field === "title" || field === "subtitle" || field === "notes")) {
+      history.push({ slideId: slide.id, field, oldValue, newValue: value });
+    }
     setSlides(prev => {
       const copy = [...prev];
       copy[current] = { ...copy[current], [field]: value };
@@ -226,6 +230,25 @@ const DeckEditor = () => {
       return copy;
     });
   };
+
+  const handleUndo = useCallback(() => {
+    const entry = history.undo();
+    if (!entry) return;
+    setSlides(prev => prev.map(s =>
+      s.id === entry.slideId ? { ...s, [entry.field]: entry.oldValue } : s
+    ));
+    // Also save to DB
+    supabase.from("deck_slides").update({ [entry.field]: entry.oldValue }).eq("id", entry.slideId);
+  }, [history]);
+
+  const handleRedo = useCallback(() => {
+    const entry = history.redo();
+    if (!entry) return;
+    setSlides(prev => prev.map(s =>
+      s.id === entry.slideId ? { ...s, [entry.field]: entry.newValue } : s
+    ));
+    supabase.from("deck_slides").update({ [entry.field]: entry.newValue }).eq("id", entry.slideId);
+  }, [history]);
 
   const saveAll = async () => {
     setSaving(true);

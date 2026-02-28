@@ -93,7 +93,9 @@ const DeckEditor = () => {
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const [showAutoImageDialog, setShowAutoImageDialog] = useState(false);
-  const [aiAssisting, setAiAssisting] = useState<string | null>(null); // action name or null
+  const [aiAssisting, setAiAssisting] = useState<string | null>(null);
+  const [deckTheme, setDeckTheme] = useState("default");
+  const [deckTransition, setDeckTransition] = useState("fade");
 
   // Load deck + slides
   useEffect(() => {

@@ -695,6 +695,7 @@ const DeckEditor = () => {
             className="text-white/60 hover:text-white" title="Chia sẻ">
             <Share2 className="w-4 h-4" />
           </Button>
+          <Button size="sm" variant="ghost" onClick={() => setShowEditorGrid(true)}
             className="text-white/60 hover:text-white" title="Grid View (G)">
             <Grid3X3 className="w-4 h-4" />
           </Button>

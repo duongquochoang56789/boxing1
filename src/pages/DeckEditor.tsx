@@ -328,6 +328,32 @@ const DeckEditor = () => {
     setSlides(prev => prev.map((s, i) => i === current ? { ...s, background_color: color } : s));
   };
 
+  const applyTheme = async (themeId: string) => {
+    if (!deckId) return;
+    const theme = THEME_PRESETS.find(t => t.id === themeId);
+    if (!theme) return;
+    setDeckTheme(themeId);
+    // Update deck record
+    await supabase.from("decks").update({ theme: themeId } as any).eq("id", deckId);
+    // Apply colors to all slides cyclically
+    const updated = slides.map((s, i) => ({
+      ...s,
+      background_color: theme.colors[i % theme.colors.length],
+    }));
+    setSlides(updated);
+    for (const s of updated) {
+      await supabase.from("deck_slides").update({ background_color: s.background_color }).eq("id", s.id);
+    }
+    toast({ title: `Đã áp dụng theme "${theme.name}"!` });
+  };
+
+  const updateDeckTransition = async (t: string) => {
+    if (!deckId) return;
+    setDeckTransition(t);
+    await supabase.from("decks").update({ transition: t } as any).eq("id", deckId);
+    toast({ title: `Transition: ${t}` });
+  };
+
   const generateImage = async () => {
     if (!slide || !slide.image_prompt) {
       toast({ title: "Slide này chưa có image prompt", variant: "destructive" });

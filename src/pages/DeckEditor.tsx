@@ -1030,6 +1030,15 @@ const DeckEditor = () => {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Editor Grid View */}
+      <EditorGridView
+        open={showEditorGrid}
+        slides={slides}
+        currentIndex={current}
+        onSelect={setCurrent}
+        onClose={() => setShowEditorGrid(false)}
+      />
     </div>
   );
 };

@@ -39,6 +39,36 @@ const BG_PRESETS = [
   "#e2e8f0", "#fef3c7", "#fee2e2", "#dbeafe", "#d1fae5", "#ede9fe",
 ];
 
+const LAYOUT_TEMPLATES: Record<string, string> = {
+  cover: "# Tiêu đề chính\n\nPhụ đề hoặc mô tả ngắn gọn về nội dung trình bày",
+  "two-column": "**Điểm 1:** Mô tả chi tiết điểm đầu tiên\n\n**Điểm 2:** Mô tả chi tiết điểm thứ hai\n\n**Điểm 3:** Mô tả chi tiết điểm thứ ba",
+  stats: "**100+** Khách hàng hài lòng\n\n**50%** Tăng trưởng hàng năm\n\n**24/7** Hỗ trợ khách hàng\n\n**99.9%** Uptime",
+  grid: "🎯 **Mục tiêu** Mô tả ngắn\n\n🚀 **Chiến lược** Mô tả ngắn\n\n💡 **Giải pháp** Mô tả ngắn\n\n📈 **Kết quả** Mô tả ngắn",
+  table: "| Tiêu chí | Phương án A | Phương án B |\n|----------|-------------|-------------|\n| Chi phí | Thấp | Trung bình |\n| Thời gian | 2 tháng | 1 tháng |\n| Hiệu quả | Cao | Rất cao |",
+  timeline: "**Q1 2025** Giai đoạn nghiên cứu và lập kế hoạch\n\n**Q2 2025** Phát triển sản phẩm MVP\n\n**Q3 2025** Ra mắt beta và thu thập phản hồi\n\n**Q4 2025** Ra mắt chính thức",
+  quote: '"Trích dẫn ấn tượng hoặc nhận xét từ khách hàng, đối tác"\n\n— Tên người, Chức vụ',
+  pricing: "**Gói Cơ bản** 499K/tháng\n- Tính năng A\n- Tính năng B\n\n**Gói Pro** 999K/tháng\n- Tất cả gói Cơ bản\n- Tính năng C\n- Tính năng D",
+  persona: "**Tên nhân vật** Chức vụ / Vai trò\n\nMô tả ngắn về nhân vật, kinh nghiệm và đóng góp nổi bật.",
+  chart: "**Dữ liệu biểu đồ**\n\nMô tả xu hướng hoặc chỉ số quan trọng cần trực quan hóa.",
+  "image-full": "# Tiêu đề nổi bật\n\nMô tả ngắn phủ lên hình nền toàn slide",
+  comparison: "**Phương án A**\n- Ưu điểm 1\n- Ưu điểm 2\n\n---\n\n**Phương án B**\n- Ưu điểm 1\n- Ưu điểm 2",
+};
+
+const suggestLayout = (content: string): string | null => {
+  if (!content || content.trim().length < 10) return null;
+  if (content.includes("|") && content.includes("---")) return "table";
+  const statMatches = content.match(/\*\*\d[\d,.%+]*\*\*/g);
+  if (statMatches && statMatches.length >= 2) return "stats";
+  if ((content.includes('"') || content.includes('\u201C')) && content.includes('—')) return "quote";
+  const emojiPattern = /[\u{1F300}-\u{1F9FF}]/gu;
+  const emojiMatches = content.match(emojiPattern);
+  if (emojiMatches && emojiMatches.length >= 3) return "grid";
+  const bulletLines = content.split('\n').filter(l => l.trim().startsWith('-') || l.trim().startsWith('•'));
+  if (bulletLines.length >= 4) return "two-column";
+  if (content.includes('VS') || (content.split('---').length >= 2 && !content.includes('|'))) return "comparison";
+  return null;
+};
+
 const DeckEditor = () => {
   const { deckId } = useParams<{ deckId: string }>();
   const navigate = useNavigate();

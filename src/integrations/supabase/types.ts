@@ -762,6 +762,91 @@ export type Database = {
         }
         Relationships: []
       }
+      slide_comments: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          resolved: boolean
+          slide_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          resolved?: boolean
+          slide_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          resolved?: boolean
+          slide_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "slide_comments_slide_id_fkey"
+            columns: ["slide_id"]
+            isOneToOne: false
+            referencedRelation: "deck_slides"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      slide_versions: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          layout: string
+          notes: string | null
+          slide_id: string
+          subtitle: string | null
+          title: string
+          user_id: string
+          version_number: number
+        }
+        Insert: {
+          content?: string
+          created_at?: string
+          id?: string
+          layout?: string
+          notes?: string | null
+          slide_id: string
+          subtitle?: string | null
+          title: string
+          user_id: string
+          version_number?: number
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          layout?: string
+          notes?: string | null
+          slide_id?: string
+          subtitle?: string | null
+          title?: string
+          user_id?: string
+          version_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "slide_versions_slide_id_fkey"
+            columns: ["slide_id"]
+            isOneToOne: false
+            referencedRelation: "deck_slides"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       trainer_availability: {
         Row: {
           created_at: string

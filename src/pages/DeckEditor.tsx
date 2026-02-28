@@ -20,6 +20,8 @@ import { useSlideTemplates } from "@/hooks/useSlideTemplates";
 import { Input } from "@/components/ui/input";
 import LazySlideThumb from "@/components/slides/LazySlideThumb";
 import EditorGridView from "@/components/slides/EditorGridView";
+import ShareDeckDialog from "@/components/slides/ShareDeckDialog";
+import { exportToPptx } from "@/lib/exportPptx";
 
 interface DeckSlide {
   id: string;
@@ -121,6 +123,8 @@ const DeckEditor = () => {
   const [deckTransition, setDeckTransition] = useState("fade");
   const [showTemplateDialog, setShowTemplateDialog] = useState(false);
   const [showEditorGrid, setShowEditorGrid] = useState(false);
+  const [showShareDialog, setShowShareDialog] = useState(false);
+  const [exportingPptx, setExportingPptx] = useState(false);
   const [templateName, setTemplateName] = useState("");
   const [showTemplateList, setShowTemplateList] = useState(false);
   const history = useSlideHistory();
@@ -515,8 +519,6 @@ const DeckEditor = () => {
       const html2canvas = (await import("html2canvas")).default;
       const { jsPDF } = await import("jspdf");
       const pdf = new jsPDF({ orientation: "landscape", unit: "px", format: [SLIDE_W, SLIDE_H] });
-
-      // Create offscreen container
       const container = document.createElement("div");
       container.style.position = "fixed";
       container.style.left = "-99999px";
@@ -524,40 +526,24 @@ const DeckEditor = () => {
       container.style.width = `${SLIDE_W}px`;
       container.style.height = `${SLIDE_H}px`;
       document.body.appendChild(container);
-
       for (let i = 0; i < slides.length; i++) {
         if (i > 0) pdf.addPage([SLIDE_W, SLIDE_H], "landscape");
-
-        // Render slide into container
         const { createRoot } = await import("react-dom/client");
         const React = await import("react");
         const { SlideRenderer: SR } = await import("@/components/slides/SlideLayouts");
-
         const wrapper = document.createElement("div");
         wrapper.style.width = `${SLIDE_W}px`;
         wrapper.style.height = `${SLIDE_H}px`;
         container.innerHTML = "";
         container.appendChild(wrapper);
-
         const root = createRoot(wrapper);
         root.render(React.createElement(SR, { slide: slides[i] }));
-
-        // Wait for render
         await new Promise(r => setTimeout(r, 300));
-
-        const canvas = await html2canvas(wrapper, {
-          width: SLIDE_W,
-          height: SLIDE_H,
-          scale: 1,
-          useCORS: true,
-          backgroundColor: null,
-        });
-
+        const canvas = await html2canvas(wrapper, { width: SLIDE_W, height: SLIDE_H, scale: 1, useCORS: true, backgroundColor: null });
         const imgData = canvas.toDataURL("image/jpeg", 0.85);
         pdf.addImage(imgData, "JPEG", 0, 0, SLIDE_W, SLIDE_H);
         root.unmount();
       }
-
       document.body.removeChild(container);
       pdf.save(`${deckTitle || "slides"}.pdf`);
       toast({ title: "Đã xuất PDF thành công!" });
@@ -566,6 +552,19 @@ const DeckEditor = () => {
       toast({ title: "Lỗi xuất PDF", variant: "destructive" });
     }
     setExportingPdf(false);
+  };
+
+  const handleExportPptx = async () => {
+    setExportingPptx(true);
+    toast({ title: "Đang xuất PPTX..." });
+    try {
+      await exportToPptx(slides, deckTitle);
+      toast({ title: "Đã xuất PowerPoint thành công!" });
+    } catch (e: any) {
+      console.error("PPTX export error:", e);
+      toast({ title: "Lỗi xuất PPTX", variant: "destructive" });
+    }
+    setExportingPptx(false);
   };
 
   if (loading) {
@@ -672,12 +671,11 @@ const DeckEditor = () => {
               <button onClick={exportPdf} disabled={exportingPdf} className="w-full flex items-center gap-2 px-3 py-2 text-sm text-white/70 hover:bg-white/10 hover:text-white transition-colors disabled:opacity-50">
                 <Download className="w-4 h-4" /> {exportingPdf ? "Đang xuất..." : "Xuất PDF"}
               </button>
-              <button onClick={() => {
-                const shareUrl = `${window.location.origin}/slides/${deckId}/present`;
-                navigator.clipboard.writeText(shareUrl);
-                toast({ title: "Đã copy link trình chiếu!" });
-              }} className="w-full flex items-center gap-2 px-3 py-2 text-sm text-white/70 hover:bg-white/10 hover:text-white transition-colors">
-                <Share2 className="w-4 h-4" /> Copy link
+              <button onClick={handleExportPptx} disabled={exportingPptx} className="w-full flex items-center gap-2 px-3 py-2 text-sm text-white/70 hover:bg-white/10 hover:text-white transition-colors disabled:opacity-50">
+                <Download className="w-4 h-4" /> {exportingPptx ? "Đang xuất..." : "Xuất PPTX"}
+              </button>
+              <button onClick={() => setShowShareDialog(true)} className="w-full flex items-center gap-2 px-3 py-2 text-sm text-white/70 hover:bg-white/10 hover:text-white transition-colors">
+                <Share2 className="w-4 h-4" /> Chia sẻ & Nhúng
               </button>
               <div className="border-t border-white/10 my-1" />
               <button onClick={() => {
@@ -693,6 +691,10 @@ const DeckEditor = () => {
               </button>
             </div>
           </div>
+          <Button size="sm" variant="ghost" onClick={() => setShowShareDialog(true)}
+            className="text-white/60 hover:text-white" title="Chia sẻ">
+            <Share2 className="w-4 h-4" />
+          </Button>
           <Button size="sm" variant="ghost" onClick={() => setShowEditorGrid(true)}
             className="text-white/60 hover:text-white" title="Grid View (G)">
             <Grid3X3 className="w-4 h-4" />
@@ -1038,6 +1040,14 @@ const DeckEditor = () => {
         currentIndex={current}
         onSelect={setCurrent}
         onClose={() => setShowEditorGrid(false)}
+      />
+
+      {/* Share Dialog */}
+      <ShareDeckDialog
+        open={showShareDialog}
+        onClose={() => setShowShareDialog(false)}
+        deckId={deckId || ""}
+        deckTitle={deckTitle}
       />
     </div>
   );

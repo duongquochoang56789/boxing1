@@ -137,6 +137,7 @@ const DeckEditor = () => {
           layout: updated.layout,
           section_name: updated.section_name,
           notes: updated.notes,
+          image_prompt: updated.image_prompt,
         })
         .eq("id", updated.id);
       if (error) { console.error("Auto-save error:", error); setSaveStatus("idle"); return; }
@@ -440,14 +441,28 @@ const DeckEditor = () => {
               Tạo tất cả ảnh
             </Button>
           )}
-          <Button size="sm" variant="ghost" onClick={exportPdf} disabled={exportingPdf} className="text-white/60 hover:text-white">
-            {exportingPdf ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Download className="w-4 h-4 mr-1" />}
-            {exportingPdf ? "Xuất..." : "PDF"}
-          </Button>
-          <Button size="sm" variant="ghost" onClick={saveAll} disabled={saving} className="text-white/60 hover:text-white">
-            <Save className="w-4 h-4 mr-1" /> {saving ? "..." : "Lưu"}
-          </Button>
-          <Button size="sm" variant="ghost" onClick={() => navigate(`/slides/${deckId}/present`)} className="text-white/60 hover:text-white">
+          {/* More actions dropdown */}
+          <div className="relative group">
+            <Button size="sm" variant="ghost" className="text-white/60 hover:text-white">
+              <Save className="w-4 h-4 mr-1" /> Thêm ▾
+            </Button>
+            <div className="absolute right-0 top-full mt-1 bg-[#1a1a1a] border border-white/10 rounded-lg shadow-xl py-1 min-w-[160px] hidden group-hover:block z-50">
+              <button onClick={saveAll} disabled={saving} className="w-full flex items-center gap-2 px-3 py-2 text-sm text-white/70 hover:bg-white/10 hover:text-white transition-colors disabled:opacity-50">
+                <Save className="w-4 h-4" /> {saving ? "Đang lưu..." : "Lưu tất cả"}
+              </button>
+              <button onClick={exportPdf} disabled={exportingPdf} className="w-full flex items-center gap-2 px-3 py-2 text-sm text-white/70 hover:bg-white/10 hover:text-white transition-colors disabled:opacity-50">
+                <Download className="w-4 h-4" /> {exportingPdf ? "Đang xuất..." : "Xuất PDF"}
+              </button>
+              <button onClick={() => {
+                const shareUrl = `${window.location.origin}/slides/${deckId}/present`;
+                navigator.clipboard.writeText(shareUrl);
+                toast({ title: "Đã copy link trình chiếu!" });
+              }} className="w-full flex items-center gap-2 px-3 py-2 text-sm text-white/70 hover:bg-white/10 hover:text-white transition-colors">
+                <Share2 className="w-4 h-4" /> Copy link
+              </button>
+            </div>
+          </div>
+          <Button size="sm" onClick={() => navigate(`/slides/${deckId}/present`)} className="bg-orange-500 hover:bg-orange-600 text-white">
             <Presentation className="w-4 h-4 mr-1" /> Trình chiếu
           </Button>
         </div>
@@ -572,6 +587,18 @@ const DeckEditor = () => {
                 className="flex-1 w-full bg-transparent text-white/80 font-mono text-sm p-4 resize-none outline-none placeholder:text-white/20"
                 placeholder="Nội dung slide (Markdown)..."
               />
+              {/* Image Prompt Editor */}
+              <div className="border-t border-white/10 px-4 py-2">
+                <label className="text-white/30 text-[10px] uppercase tracking-wider flex items-center gap-1 mb-1">
+                  <ImageIcon className="w-3 h-3" /> Image Prompt
+                </label>
+                <textarea
+                  value={slide?.image_prompt || ""}
+                  onChange={(e) => updateSlide("image_prompt", e.target.value || null)}
+                  className="w-full bg-white/5 border border-white/10 rounded text-white/60 text-xs resize-none outline-none h-16 p-2 placeholder:text-white/15 focus:border-orange-400/30 transition-colors"
+                  placeholder="Mô tả hình ảnh AI sẽ tạo cho slide này..."
+                />
+              </div>
               {/* Notes */}
               <div className="border-t border-white/10 px-4 py-2">
                 <textarea

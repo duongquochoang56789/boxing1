@@ -208,7 +208,7 @@ const ContentBlock = ({ content, accent, onBlockSelect, onBlockContextMenu, sele
       }
       i++; // skip closing ```
       elements.push(
-        <BlockWrapper key={`code-${i}`} index={currentBlockIdx} onBlockSelect={onBlockSelect} selectedBlock={selectedBlock} styleMeta={styleMeta}>
+        <BlockWrapper key={`code-${i}`} index={currentBlockIdx} onBlockSelect={onBlockSelect} onBlockContextMenu={onBlockContextMenu} selectedBlock={selectedBlock} styleMeta={styleMeta}>
           <motion.pre custom={elements.length} variants={fadeIn} initial="hidden" animate="visible"
             className="bg-white/5 border border-white/10 rounded-xl p-6 overflow-x-auto"
           >

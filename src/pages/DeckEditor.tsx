@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  Save, ArrowLeft, Presentation, Plus, Trash2, ChevronUp, ChevronDown, Loader2, Share2, Copy, Palette, ImageIcon, Download, Check, CloudOff, Images, X, Sparkles, PenLine, Maximize2, Minimize2, FileText, Undo2, Redo2, BookmarkPlus, BookMarked, Grid3X3, MessageCircle, History, PanelLeftClose, PanelLeft
+  Save, ArrowLeft, Plus, Trash2, ChevronUp, ChevronDown, Loader2, Share2, Copy, Palette, ImageIcon, Download, Check, CloudOff, Images, X, Sparkles, PenLine, Maximize2, Minimize2, FileText, Undo2, Redo2, BookmarkPlus, BookMarked, Grid3X3, MessageCircle, History, PanelLeftClose, PanelLeft, Presentation
 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { BrandedLoader } from "@/components/ui/branded-loader";
@@ -26,6 +26,7 @@ import SlideVersionHistory from "@/components/slides/SlideVersionHistory";
 import { exportToPptx } from "@/lib/exportPptx";
 import BlockToolbar from "@/components/slides/BlockToolbar";
 import BlockContextMenu from "@/components/slides/BlockContextMenu";
+import FloatingToolbar from "@/components/slides/FloatingToolbar";
 
 interface DeckSlide {
   id: string;
@@ -863,144 +864,54 @@ const DeckEditor = () => {
   }
 
   return (
-    <div className="h-screen flex flex-col bg-[#0a0a0a]">
-      {/* Toolbar */}
-      <div className="flex items-center justify-between px-4 py-2 bg-[#111] border-b border-white/10 shrink-0">
-        <div className="flex items-center gap-3">
-          <Link to="/slides" className="p-2 text-white/50 hover:text-white hover:bg-white/10 rounded transition-colors">
-            <ArrowLeft className="w-4 h-4" />
-          </Link>
-          <span className="text-white font-bold">FLY<span className="text-orange-400">FIT</span></span>
-          <span className="text-white/40 text-sm truncate max-w-[200px]">{deckTitle}</span>
-        </div>
-        <div className="flex items-center gap-2">
-          {/* Undo/Redo */}
-          <div className="flex items-center gap-0.5 mr-1">
-            <Button size="sm" variant="ghost" onClick={handleUndo} className="text-white/40 hover:text-white p-1.5 h-8 w-8" title="Hoàn tác (Ctrl+Z)">
-              <Undo2 className="w-4 h-4" />
-            </Button>
-            <Button size="sm" variant="ghost" onClick={handleRedo} className="text-white/40 hover:text-white p-1.5 h-8 w-8" title="Làm lại (Ctrl+Shift+Z)">
-              <Redo2 className="w-4 h-4" />
-            </Button>
-          </div>
-          <span className="text-white/20">|</span>
-          <span className="text-white/50 text-sm">{current + 1} / {slides.length}</span>
-          {saveStatus === "saving" && (
-            <span className="flex items-center gap-1 text-orange-400 text-xs animate-pulse">
-              <Loader2 className="w-3 h-3 animate-spin" /> Đang lưu...
-            </span>
-          )}
-          {saveStatus === "saved" && (
-            <span className="flex items-center gap-1 text-emerald-400 text-xs">
-              <Check className="w-3 h-3" /> Đã lưu
-            </span>
-          )}
-          <Button size="sm" variant="ghost" onClick={generateImage} disabled={generatingImage || !slide?.image_prompt} 
-            className="text-white/60 hover:text-white" title={slide?.image_prompt ? "Tạo ảnh AI" : "Không có image prompt"}>
-            {generatingImage ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <ImageIcon className="w-4 h-4 mr-1" />}
-            {generatingImage ? "Đang tạo..." : "AI Ảnh"}
-          </Button>
-          {batchGenerating ? (
-            <div className="flex items-center gap-2 px-2">
-              <div className="w-24">
-                <Progress value={(batchProgress / batchTotal) * 100} className="h-2" />
-              </div>
-              <span className="text-white/60 text-xs whitespace-nowrap">{batchProgress}/{batchTotal}</span>
-              <Button size="sm" variant="ghost" onClick={() => { batchCancelledRef.current = true; }}
-                className="text-red-400/60 hover:text-red-400 p-1 h-6 w-6">
-                <X className="w-3 h-3" />
-              </Button>
-            </div>
-          ) : (
-            <Button size="sm" variant="ghost" onClick={generateAllImages} 
-              disabled={generatingImage || !slides.some(s => s.image_prompt && !s.image_url)}
-              className="text-white/60 hover:text-white" title="Tạo ảnh AI cho tất cả slide">
-              <Images className="w-4 h-4 mr-1" />
-              Tạo tất cả ảnh
-            </Button>
-          )}
-          {/* Theme selector */}
-          <div className="relative group">
-            <Button size="sm" variant="ghost" className="text-white/60 hover:text-white" title="Theme">
-              <Palette className="w-4 h-4 mr-1" /> Theme ▾
-            </Button>
-            <div className="absolute right-0 top-full mt-1 bg-[#1a1a1a] border border-white/10 rounded-lg shadow-xl py-1 min-w-[180px] hidden group-hover:block z-50">
-              {THEME_PRESETS.map(t => (
-                <button key={t.id} onClick={() => applyTheme(t.id)}
-                  className={`w-full flex items-center gap-2 px-3 py-2 text-sm transition-colors ${
-                    deckTheme === t.id ? "text-orange-400 bg-orange-400/10" : "text-white/70 hover:bg-white/10 hover:text-white"
-                  }`}>
-                  <span>{t.label}</span>
-                  <span>{t.name}</span>
-                  {deckTheme === t.id && <Check className="w-3 h-3 ml-auto" />}
-                </button>
-              ))}
-              <div className="border-t border-white/10 mt-1 pt-1 px-3 py-1.5">
-                <span className="text-white/30 text-[10px] uppercase tracking-wider">Transition</span>
-                <div className="flex gap-1 mt-1">
-                  {["fade", "slide", "zoom"].map(t => (
-                    <button key={t} onClick={() => updateDeckTransition(t)}
-                      className={`px-2 py-1 text-[11px] rounded capitalize transition-colors ${
-                        deckTransition === t ? "bg-orange-500/20 text-orange-400" : "text-white/40 hover:text-white/70 bg-white/5"
-                      }`}>{t}</button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-          {/* More actions dropdown */}
-          <div className="relative group">
-            <Button size="sm" variant="ghost" className="text-white/60 hover:text-white">
-              <Save className="w-4 h-4 mr-1" /> Thêm ▾
-            </Button>
-            <div className="absolute right-0 top-full mt-1 bg-[#1a1a1a] border border-white/10 rounded-lg shadow-xl py-1 min-w-[160px] hidden group-hover:block z-50">
-              <button onClick={saveAll} disabled={saving} className="w-full flex items-center gap-2 px-3 py-2 text-sm text-white/70 hover:bg-white/10 hover:text-white transition-colors disabled:opacity-50">
-                <Save className="w-4 h-4" /> {saving ? "Đang lưu..." : "Lưu tất cả"}
-              </button>
-              <button onClick={exportPdf} disabled={exportingPdf} className="w-full flex items-center gap-2 px-3 py-2 text-sm text-white/70 hover:bg-white/10 hover:text-white transition-colors disabled:opacity-50">
-                <Download className="w-4 h-4" /> {exportingPdf ? "Đang xuất..." : "Xuất PDF"}
-              </button>
-              <button onClick={handleExportPptx} disabled={exportingPptx} className="w-full flex items-center gap-2 px-3 py-2 text-sm text-white/70 hover:bg-white/10 hover:text-white transition-colors disabled:opacity-50">
-                <Download className="w-4 h-4" /> {exportingPptx ? "Đang xuất..." : "Xuất PPTX"}
-              </button>
-              <button onClick={() => setShowShareDialog(true)} className="w-full flex items-center gap-2 px-3 py-2 text-sm text-white/70 hover:bg-white/10 hover:text-white transition-colors">
-                <Share2 className="w-4 h-4" /> Chia sẻ & Nhúng
-              </button>
-              <div className="border-t border-white/10 my-1" />
-              <button onClick={() => {
-                if (slide) {
-                  setTemplateName(slide.title);
-                  setShowTemplateDialog(true);
-                }
-              }} className="w-full flex items-center gap-2 px-3 py-2 text-sm text-white/70 hover:bg-white/10 hover:text-white transition-colors">
-                <BookmarkPlus className="w-4 h-4" /> Lưu template
-              </button>
-              <button onClick={() => setShowTemplateList(true)} className="w-full flex items-center gap-2 px-3 py-2 text-sm text-white/70 hover:bg-white/10 hover:text-white transition-colors">
-                <BookMarked className="w-4 h-4" /> Dùng template ({templates.length})
-              </button>
-            </div>
-          </div>
-          <Button size="sm" variant="ghost" onClick={() => setShowShareDialog(true)}
-            className="text-white/60 hover:text-white" title="Chia sẻ">
-            <Share2 className="w-4 h-4" />
-          </Button>
-          <Button size="sm" variant="ghost" onClick={() => { setShowComments(prev => !prev); setShowVersionHistory(false); }}
-            className={`text-white/60 hover:text-white ${showComments ? "text-orange-400" : ""}`} title="Bình luận">
-            <MessageCircle className="w-4 h-4" />
-          </Button>
-          <Button size="sm" variant="ghost" onClick={() => { setShowVersionHistory(prev => !prev); setShowComments(false); }}
-            className={`text-white/60 hover:text-white ${showVersionHistory ? "text-orange-400" : ""}`} title="Lịch sử phiên bản">
-            <History className="w-4 h-4" />
-          </Button>
-          <Button size="sm" variant="ghost" onClick={() => setShowEditorGrid(true)}
-            className="text-white/60 hover:text-white" title="Grid View (G)">
-            <Grid3X3 className="w-4 h-4" />
-          </Button>
-          <Button size="sm" onClick={() => navigate(`/slides/${deckId}/present`)} className="bg-orange-500 hover:bg-orange-600 text-white">
-            <Presentation className="w-4 h-4 mr-1" /> Trình chiếu
-          </Button>
-        </div>
-      </div>
+    <div className="h-screen flex flex-col bg-[#0a0a0a] relative">
+      {/* Floating Toolbar */}
+      <FloatingToolbar
+        deckId={deckId}
+        deckTitle={deckTitle}
+        currentIndex={current}
+        totalSlides={slides.length}
+        saveStatus={saveStatus}
+        saving={saving}
+        generatingImage={generatingImage}
+        hasImagePrompt={!!(slide?.image_prompt)}
+        batchGenerating={batchGenerating}
+        batchProgress={batchProgress}
+        batchTotal={batchTotal}
+        hasUngeneratedImages={slides.some(s => s.image_prompt && !s.image_url)}
+        exportingPdf={exportingPdf}
+        exportingPptx={exportingPptx}
+        deckTheme={deckTheme}
+        deckTransition={deckTransition}
+        showComments={showComments}
+        showVersionHistory={showVersionHistory}
+        sidebarCollapsed={sidebarCollapsed}
+        templateCount={templates.length}
+        themePresets={THEME_PRESETS}
+        onUndo={handleUndo}
+        onRedo={handleRedo}
+        onSaveAll={saveAll}
+        onGenerateImage={generateImage}
+        onGenerateAllImages={generateAllImages}
+        onCancelBatch={() => { batchCancelledRef.current = true; }}
+        onExportPdf={exportPdf}
+        onExportPptx={handleExportPptx}
+        onApplyTheme={applyTheme}
+        onUpdateTransition={updateDeckTransition}
+        onShare={() => setShowShareDialog(true)}
+        onToggleComments={() => { setShowComments(prev => !prev); setShowVersionHistory(false); }}
+        onToggleVersionHistory={() => { setShowVersionHistory(prev => !prev); setShowComments(false); }}
+        onToggleGrid={() => setShowEditorGrid(true)}
+        onToggleSidebar={() => setSidebarCollapsed(prev => !prev)}
+        onSaveTemplate={() => {
+          if (slide) {
+            setTemplateName(slide.title);
+            setShowTemplateDialog(true);
+          }
+        }}
+        onUseTemplate={() => setShowTemplateList(true)}
+        onPresent={() => navigate(`/slides/${deckId}/present`)}
+      />
 
       {/* Main editor area */}
       <div className="flex-1 flex overflow-hidden">

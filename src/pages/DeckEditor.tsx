@@ -566,6 +566,27 @@ const DeckEditor = () => {
     setAiAssisting(null);
   };
 
+  // Helper: find actual line index for a block index (skips empty and table rows)
+  const findBlockLineIndex = useCallback((content: string, blockIndex: number): number => {
+    const lines = content.split("\n");
+    let contentIdx = 0;
+    for (let i = 0; i < lines.length; i++) {
+      const t = lines[i].trim();
+      if (!t || t.startsWith("|")) continue;
+      if (contentIdx === blockIndex) return i;
+      contentIdx++;
+    }
+    return -1;
+  }, []);
+
+  // Count total content blocks
+  const getBlockCount = useCallback((content: string): number => {
+    return content.split("\n").filter(l => {
+      const t = l.trim();
+      return t && !t.startsWith("|");
+    }).length;
+  }, []);
+
   // Block editor handlers
   const handleBlockSelect = useCallback((blockIndex: number, rect: DOMRect) => {
     setSelectedBlock(blockIndex);
@@ -598,15 +619,7 @@ const DeckEditor = () => {
   const applyBlockStyle = useCallback((key: string, value: string) => {
     if (!slide || selectedBlock === null) return;
     const lines = slide.content.split("\n");
-    // Find the actual content line index (skip empty and table rows)
-    let contentIdx = 0;
-    let lineIdx = -1;
-    for (let i = 0; i < lines.length; i++) {
-      const t = lines[i].trim();
-      if (!t || t.startsWith("|")) continue;
-      if (contentIdx === selectedBlock) { lineIdx = i; break; }
-      contentIdx++;
-    }
+    const lineIdx = findBlockLineIndex(slide.content, selectedBlock);
     if (lineIdx === -1) return;
 
     let line = lines[lineIdx];
@@ -615,11 +628,9 @@ const DeckEditor = () => {
 
     // Update style metadata
     const newMeta = { ...blockStyleMeta };
-    // Toggle: if the value is already set for bold/italic, remove it
     if ((key === "bold" || key === "italic") && blockStyleMeta[key]) {
       delete newMeta[key];
     } else if (value === "" || value === "normal" || value === "400") {
-      // Remove default/empty values
       delete newMeta[key];
     } else {
       newMeta[key] = value;
@@ -633,7 +644,66 @@ const DeckEditor = () => {
     }
     lines[lineIdx] = line;
     updateSlide("content", lines.join("\n"));
-  }, [slide, selectedBlock, blockStyleMeta, updateSlide]);
+  }, [slide, selectedBlock, blockStyleMeta, updateSlide, findBlockLineIndex]);
+
+  // B6: Block manipulation handlers
+  const handleMoveBlockUp = useCallback(() => {
+    if (!slide || selectedBlock === null || selectedBlock === 0) return;
+    const lines = slide.content.split("\n");
+    const curIdx = findBlockLineIndex(slide.content, selectedBlock);
+    const prevIdx = findBlockLineIndex(slide.content, selectedBlock - 1);
+    if (curIdx === -1 || prevIdx === -1) return;
+    [lines[curIdx], lines[prevIdx]] = [lines[prevIdx], lines[curIdx]];
+    updateSlide("content", lines.join("\n"));
+    setSelectedBlock(selectedBlock - 1);
+  }, [slide, selectedBlock, findBlockLineIndex, updateSlide]);
+
+  const handleMoveBlockDown = useCallback(() => {
+    if (!slide || selectedBlock === null) return;
+    const blockCount = getBlockCount(slide.content);
+    if (selectedBlock >= blockCount - 1) return;
+    const lines = slide.content.split("\n");
+    const curIdx = findBlockLineIndex(slide.content, selectedBlock);
+    const nextIdx = findBlockLineIndex(slide.content, selectedBlock + 1);
+    if (curIdx === -1 || nextIdx === -1) return;
+    [lines[curIdx], lines[nextIdx]] = [lines[nextIdx], lines[curIdx]];
+    updateSlide("content", lines.join("\n"));
+    setSelectedBlock(selectedBlock + 1);
+  }, [slide, selectedBlock, findBlockLineIndex, getBlockCount, updateSlide]);
+
+  const handleDuplicateBlock = useCallback(() => {
+    if (!slide || selectedBlock === null) return;
+    const lines = slide.content.split("\n");
+    const lineIdx = findBlockLineIndex(slide.content, selectedBlock);
+    if (lineIdx === -1) return;
+    lines.splice(lineIdx + 1, 0, lines[lineIdx]);
+    updateSlide("content", lines.join("\n"));
+    setSelectedBlock(selectedBlock + 1);
+  }, [slide, selectedBlock, findBlockLineIndex, updateSlide]);
+
+  const handleDeleteBlock = useCallback(() => {
+    if (!slide || selectedBlock === null) return;
+    const blockCount = getBlockCount(slide.content);
+    if (blockCount <= 1) return; // Don't delete last block
+    const lines = slide.content.split("\n");
+    const lineIdx = findBlockLineIndex(slide.content, selectedBlock);
+    if (lineIdx === -1) return;
+    lines.splice(lineIdx, 1);
+    updateSlide("content", lines.join("\n"));
+    const newCount = blockCount - 1;
+    if (selectedBlock >= newCount) setSelectedBlock(newCount - 1);
+    handleBlockClose();
+  }, [slide, selectedBlock, findBlockLineIndex, getBlockCount, updateSlide, handleBlockClose]);
+
+  const handleAddBlock = useCallback(() => {
+    if (!slide || selectedBlock === null) return;
+    const lines = slide.content.split("\n");
+    const lineIdx = findBlockLineIndex(slide.content, selectedBlock);
+    if (lineIdx === -1) return;
+    lines.splice(lineIdx + 1, 0, "Nội dung mới...");
+    updateSlide("content", lines.join("\n"));
+    setSelectedBlock(selectedBlock + 1);
+  }, [slide, selectedBlock, findBlockLineIndex, updateSlide]);
 
   const handleInlineUpdate = useCallback((field: 'title' | 'subtitle' | 'content', value: string) => {
     updateSlide(field, value);

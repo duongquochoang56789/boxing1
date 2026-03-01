@@ -6,7 +6,7 @@ import {
   ArrowLeft, Presentation, Save, Undo2, Redo2, Loader2, Check,
   MoreHorizontal, ImageIcon, Images, X, Palette, Share2, Download,
   BookmarkPlus, BookMarked, MessageCircle, History, Grid3X3,
-  PanelLeftClose, PanelLeft, ChevronDown,
+  PanelLeftClose, PanelLeft, ChevronDown, Maximize, Command,
 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -58,6 +58,8 @@ interface FloatingToolbarProps {
   onSaveTemplate: () => void;
   onUseTemplate: () => void;
   onPresent: () => void;
+  zenMode: boolean;
+  onToggleZen: () => void;
 }
 
 const FloatingToolbar = ({
@@ -100,6 +102,8 @@ const FloatingToolbar = ({
   onSaveTemplate,
   onUseTemplate,
   onPresent,
+  zenMode,
+  onToggleZen,
 }: FloatingToolbarProps) => {
   const [expanded, setExpanded] = useState(false);
 
@@ -150,6 +154,18 @@ const FloatingToolbar = ({
         {/* Grid */}
         <Button size="sm" variant="ghost" onClick={onToggleGrid} className="text-white/40 hover:text-white p-1.5 h-7 w-7" title="Grid (G)">
           <Grid3X3 className="w-3.5 h-3.5" />
+        </Button>
+
+        <div className="w-px h-4 bg-white/10 mx-0.5" />
+
+        {/* Zen Mode */}
+        <Button size="sm" variant="ghost" onClick={onToggleZen} className="text-white/40 hover:text-white p-1.5 h-7 w-7" title="Zen Mode">
+          <Maximize className="w-3.5 h-3.5" />
+        </Button>
+
+        {/* Command Palette hint */}
+        <Button size="sm" variant="ghost" onClick={() => {}} className="text-white/20 hover:text-white/40 p-1.5 h-7 text-[10px] gap-1" title="Ctrl+K">
+          <Command className="w-3 h-3" /> K
         </Button>
 
         <div className="w-px h-4 bg-white/10 mx-0.5" />
@@ -212,7 +228,7 @@ const ExpandedMenu = ({
   onSaveAll, onGenerateImage, onGenerateAllImages, onCancelBatch,
   onExportPdf, onExportPptx, onApplyTheme, onUpdateTransition,
   onShare, onToggleComments, onToggleVersionHistory, onSaveTemplate, onUseTemplate,
-}: Omit<FloatingToolbarProps, 'deckId' | 'deckTitle' | 'currentIndex' | 'totalSlides' | 'saveStatus' | 'sidebarCollapsed' | 'onUndo' | 'onRedo' | 'onToggleGrid' | 'onToggleSidebar' | 'onPresent'>) => {
+}: Omit<FloatingToolbarProps, 'deckId' | 'deckTitle' | 'currentIndex' | 'totalSlides' | 'saveStatus' | 'sidebarCollapsed' | 'onUndo' | 'onRedo' | 'onToggleGrid' | 'onToggleSidebar' | 'onPresent' | 'zenMode' | 'onToggleZen'>) => {
   const [showThemes, setShowThemes] = useState(false);
 
   const MenuItem = ({ icon: Icon, label, onClick, disabled, active, destructive }: {

@@ -32,6 +32,7 @@ import DeckEditor from "./pages/DeckEditor";
 import DeckPresent from "./pages/DeckPresent";
 import SharedDeck from "./pages/SharedDeck";
 import BuilderLanding from "./pages/BuilderLanding";
+import BrandGenerator from "./pages/BrandGenerator";
 import ZaloButton from "@/components/ui/zalo-button";
 import ProjectChatbot from "@/components/ui/ProjectChatbot";
 import { useAnalytics } from "@/hooks/useAnalytics";
@@ -90,6 +91,7 @@ const AnimatedRoutes = () => {
         <Route path="/hero-demo/3" element={<HeroDemo3 />} />
         <Route path="/hero-demo/4" element={<HeroDemo4 />} />
         <Route path="/hero-demo/5" element={<HeroDemo5 />} />
+        <Route path="/brand" element={<ProtectedRoute><BrandGenerator /></ProtectedRoute>} />
         <Route path="/slides" element={<ProtectedRoute><SlideDashboard /></ProtectedRoute>} />
         <Route path="/slides/new" element={<ProtectedRoute><SlideBuilder /></ProtectedRoute>} />
         <Route path="/slides/shared/:slug" element={<SharedDeck />} />

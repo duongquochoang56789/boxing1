@@ -27,6 +27,7 @@ import { exportToPptx } from "@/lib/exportPptx";
 import BlockToolbar from "@/components/slides/BlockToolbar";
 import BlockContextMenu from "@/components/slides/BlockContextMenu";
 import FloatingToolbar from "@/components/slides/FloatingToolbar";
+import CommandPalette from "@/components/slides/CommandPalette";
 
 interface DeckSlide {
   id: string;
@@ -157,6 +158,8 @@ const DeckEditor = () => {
   const [contextMenuPos, setContextMenuPos] = useState<{ x: number; y: number } | null>(null);
   const [contextMenuBlock, setContextMenuBlock] = useState<number | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [zenMode, setZenMode] = useState(false);
+  const [showCommandPalette, setShowCommandPalette] = useState(false);
   const imageInputRef = useRef<HTMLInputElement>(null);
   const history = useSlideHistory();
   const { templates, saveTemplate, deleteTemplate } = useSlideTemplates();
@@ -264,6 +267,11 @@ const DeckEditor = () => {
       const target = e.target as HTMLElement;
       const isEditing = target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable;
 
+      if ((e.ctrlKey || e.metaKey) && e.key === "k") {
+        e.preventDefault();
+        setShowCommandPalette(true);
+        return;
+      }
       if ((e.ctrlKey || e.metaKey) && e.key === "s") {
         e.preventDefault();
         saveAll();
@@ -289,9 +297,9 @@ const DeckEditor = () => {
         e.preventDefault();
         setShowEditorGrid(prev => !prev);
       }
-      if (e.key === "Escape" && showEditorGrid) {
-        e.preventDefault();
-        setShowEditorGrid(false);
+      if (e.key === "Escape") {
+        if (zenMode) { setZenMode(false); return; }
+        if (showEditorGrid) { setShowEditorGrid(false); return; }
       }
       if ((e.ctrlKey || e.metaKey) && e.key === "ArrowUp") {
         e.preventDefault();
@@ -304,7 +312,7 @@ const DeckEditor = () => {
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [slides, current, handleUndo, handleRedo]);
+  }, [slides, current, handleUndo, handleRedo, zenMode, showEditorGrid]);
 
   const saveAll = async () => {
     setSaving(true);
@@ -865,6 +873,56 @@ const DeckEditor = () => {
 
   return (
     <div className="h-screen flex flex-col bg-[#0a0a0a] relative">
+      {/* Zen Mode overlay */}
+      {zenMode && (
+        <div className="fixed inset-0 z-50 bg-black flex items-center justify-center">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+            className="w-full h-full flex items-center justify-center">
+            {slide && (
+              <div style={{ width: SLIDE_W, height: SLIDE_H, transform: `scale(${Math.min(window.innerWidth / SLIDE_W, window.innerHeight / SLIDE_H) * 0.95})`, transformOrigin: "center center" }}>
+                <SlideRenderer slide={slide} />
+              </div>
+            )}
+          </motion.div>
+          <motion.div initial={{ opacity: 1 }} animate={{ opacity: 0 }} transition={{ delay: 2, duration: 1 }}
+            className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-white/10 backdrop-blur px-4 py-2 rounded-lg text-white/60 text-sm">
+            Nhấn ESC để thoát Zen Mode
+          </motion.div>
+        </div>
+      )}
+
+      {/* Command Palette */}
+      <CommandPalette
+        open={showCommandPalette}
+        onOpenChange={setShowCommandPalette}
+        totalSlides={slides.length}
+        currentLayout={slide?.layout || "two-column"}
+        onGoToSlide={(i) => setCurrent(i)}
+        onPresent={() => navigate(`/slides/${deckId}/present`)}
+        onToggleGrid={() => setShowEditorGrid(true)}
+        onUndo={handleUndo}
+        onRedo={handleRedo}
+        onAddSlide={addSlide}
+        onDeleteSlide={deleteSlide}
+        onDuplicateSlide={duplicateSlide}
+        onChangeLayout={(l) => updateSlide("layout", l)}
+        onExportPdf={exportPdf}
+        onExportPptx={handleExportPptx}
+        onGenerateImage={generateImage}
+        onGenerateAllImages={generateAllImages}
+        onShare={() => setShowShareDialog(true)}
+        onToggleComments={() => { setShowComments(prev => !prev); setShowVersionHistory(false); }}
+        onToggleVersionHistory={() => { setShowVersionHistory(prev => !prev); setShowComments(false); }}
+        onToggleZen={() => setZenMode(true)}
+        onSaveTemplate={() => { if (slide) { setTemplateName(slide.title); setShowTemplateDialog(true); } }}
+        onUseTemplate={() => setShowTemplateList(true)}
+        onAiRewrite={() => aiAssist("rewrite")}
+        onAiExpand={() => aiAssist("expand")}
+        onAiSummarize={() => aiAssist("summarize")}
+        onAiNotes={() => aiAssist("notes")}
+        onSaveAll={saveAll}
+      />
+
       {/* Floating Toolbar */}
       <FloatingToolbar
         deckId={deckId}
@@ -911,6 +969,8 @@ const DeckEditor = () => {
         }}
         onUseTemplate={() => setShowTemplateList(true)}
         onPresent={() => navigate(`/slides/${deckId}/present`)}
+        zenMode={zenMode}
+        onToggleZen={() => setZenMode(prev => !prev)}
       />
 
       {/* Main editor area */}

@@ -15,6 +15,7 @@ const navLinks = [
   { name: "HLV", href: "#trainers" },
   { name: "Liên hệ", href: "#contact" },
   { name: "Dự án", href: "/slides", isRoute: true },
+  { name: "Brand Kit", href: "/brand", isRoute: true },
 ];
 
 const Header = () => {

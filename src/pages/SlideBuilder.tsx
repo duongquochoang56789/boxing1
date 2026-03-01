@@ -1,20 +1,21 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Sparkles, ArrowLeft, Loader2, Presentation, Globe, Hash, Palette, Zap } from "lucide-react";
+import { Sparkles, ArrowLeft, Loader2, Presentation, Globe, Hash, Palette, Zap, LayoutTemplate } from "lucide-react";
 import { BrandedLoader } from "@/components/ui/branded-loader";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-
+import TemplateGallery from "@/components/slides/TemplateGallery";
 const SlideBuilder = () => {
   const [prompt, setPrompt] = useState("");
   const [slideCount, setSlideCount] = useState("15");
   const [language, setLanguage] = useState("vi");
   const [tone, setTone] = useState("professional");
   const [loading, setLoading] = useState(false);
+  const [mode, setMode] = useState<"ai" | "template">("ai");
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -106,9 +107,40 @@ const SlideBuilder = () => {
               Tạo Slide Deck <span className="text-orange-400">tự động</span>
             </h1>
             <p className="text-white/50 text-lg max-w-md mx-auto">
-              Nhập chủ đề, AI sẽ tạo bộ slide thuyết trình hoàn chỉnh với nội dung và layout phù hợp.
+              Nhập chủ đề để AI tạo tự động, hoặc chọn một mẫu có sẵn.
             </p>
           </div>
+
+          {/* Mode tabs */}
+          <div className="flex justify-center gap-2">
+            <button
+              onClick={() => setMode("ai")}
+              className={`flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-medium transition-all ${
+                mode === "ai"
+                  ? "bg-orange-500 text-white shadow-lg shadow-orange-500/25"
+                  : "bg-white/5 text-white/50 hover:bg-white/10 hover:text-white border border-white/10"
+              }`}
+            >
+              <Sparkles className="w-4 h-4" />
+              AI Tạo tự động
+            </button>
+            <button
+              onClick={() => setMode("template")}
+              className={`flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-medium transition-all ${
+                mode === "template"
+                  ? "bg-orange-500 text-white shadow-lg shadow-orange-500/25"
+                  : "bg-white/5 text-white/50 hover:bg-white/10 hover:text-white border border-white/10"
+              }`}
+            >
+              <LayoutTemplate className="w-4 h-4" />
+              Chọn mẫu ({">"}20 mẫu)
+            </button>
+          </div>
+
+          {mode === "template" ? (
+            <TemplateGallery />
+          ) : (
+            <>
 
           {/* Prompt Input */}
           <div className="space-y-2">
@@ -226,6 +258,8 @@ const SlideBuilder = () => {
                 ))}
               </div>
             </div>
+          )}
+          </>
           )}
         </motion.div>
       </div>

@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { Bold, Italic, AlignLeft, AlignCenter, AlignRight, ChevronDown, ArrowUpFromLine, ArrowDownFromLine, Square } from "lucide-react";
+import { Bold, Italic, AlignLeft, AlignCenter, AlignRight, ChevronDown, ArrowUpFromLine, ArrowDownFromLine, Square, ArrowUp, ArrowDown, CopyPlus, Trash2, Plus } from "lucide-react";
 
 interface BlockToolbarProps {
   position: { top: number; left: number };
@@ -16,7 +16,14 @@ interface BlockToolbarProps {
   onPadding: (padding: string) => void;
   onMarginTop: (mt: string) => void;
   onMarginBottom: (mb: string) => void;
+  onMoveUp?: () => void;
+  onMoveDown?: () => void;
+  onDuplicateBlock?: () => void;
+  onDeleteBlock?: () => void;
+  onAddBlock?: () => void;
   onClose: () => void;
+  canMoveUp?: boolean;
+  canMoveDown?: boolean;
   currentSize?: string;
   currentColor?: string;
   currentAlign?: string;
@@ -210,7 +217,14 @@ const BlockToolbar: React.FC<BlockToolbarProps> = ({
   onPadding,
   onMarginTop,
   onMarginBottom,
+  onMoveUp,
+  onMoveDown,
+  onDuplicateBlock,
+  onDeleteBlock,
+  onAddBlock,
   onClose,
+  canMoveUp = true,
+  canMoveDown = true,
   currentSize = "md",
   currentColor,
   currentAlign = "left",
@@ -400,6 +414,49 @@ const BlockToolbar: React.FC<BlockToolbarProps> = ({
           icon={<ArrowDownFromLine className="w-3 h-3" />}
           label="Margin Bottom"
         />
+      </div>
+
+      {/* Row 4: Block Controls */}
+      <div className="flex items-center gap-1 border-t border-white/10 pt-1">
+        <button
+          onClick={onMoveUp}
+          disabled={!canMoveUp}
+          className="w-7 h-7 flex items-center justify-center rounded transition-colors text-white/50 hover:text-white hover:bg-white/10 disabled:opacity-20 disabled:cursor-not-allowed"
+          title="Di chuyển lên"
+        >
+          <ArrowUp className="w-3.5 h-3.5" />
+        </button>
+        <button
+          onClick={onMoveDown}
+          disabled={!canMoveDown}
+          className="w-7 h-7 flex items-center justify-center rounded transition-colors text-white/50 hover:text-white hover:bg-white/10 disabled:opacity-20 disabled:cursor-not-allowed"
+          title="Di chuyển xuống"
+        >
+          <ArrowDown className="w-3.5 h-3.5" />
+        </button>
+        <div className="w-px h-5 bg-white/15 mx-0.5" />
+        <button
+          onClick={onDuplicateBlock}
+          className="w-7 h-7 flex items-center justify-center rounded transition-colors text-white/50 hover:text-cyan-400 hover:bg-cyan-400/10"
+          title="Nhân đôi block"
+        >
+          <CopyPlus className="w-3.5 h-3.5" />
+        </button>
+        <button
+          onClick={onAddBlock}
+          className="w-7 h-7 flex items-center justify-center rounded transition-colors text-white/50 hover:text-emerald-400 hover:bg-emerald-400/10"
+          title="Thêm block mới"
+        >
+          <Plus className="w-3.5 h-3.5" />
+        </button>
+        <div className="w-px h-5 bg-white/15 mx-0.5" />
+        <button
+          onClick={onDeleteBlock}
+          className="w-7 h-7 flex items-center justify-center rounded transition-colors text-white/50 hover:text-red-400 hover:bg-red-400/10"
+          title="Xoá block"
+        >
+          <Trash2 className="w-3.5 h-3.5" />
+        </button>
       </div>
     </div>,
     document.body

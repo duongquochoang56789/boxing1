@@ -297,9 +297,9 @@ const DeckEditor = () => {
         e.preventDefault();
         setShowEditorGrid(prev => !prev);
       }
-      if (e.key === "Escape" && showEditorGrid) {
-        e.preventDefault();
-        setShowEditorGrid(false);
+      if (e.key === "Escape") {
+        if (zenMode) { setZenMode(false); return; }
+        if (showEditorGrid) { setShowEditorGrid(false); return; }
       }
       if ((e.ctrlKey || e.metaKey) && e.key === "ArrowUp") {
         e.preventDefault();

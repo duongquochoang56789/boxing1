@@ -993,7 +993,7 @@ export const SwotSlide = ({ slide, editable, onUpdateField }: { slide: SlideData
 };
 
 /* ==================== PROCESS — step-by-step flow ==================== */
-export const ProcessSlide = ({ slide }: { slide: SlideData }) => {
+export const ProcessSlide = ({ slide, editable, onUpdateField }: { slide: SlideData } & EditableProps) => {
   const colors = sectionColors[slide.section_name] || sectionColors.brand;
   const hex = accentHex[slide.section_name] || accentHex.brand;
   const bg = getSlideBg(slide, colors);

@@ -1056,7 +1056,7 @@ export const TeamSlide = ({ slide, editable, onUpdateField }: { slide: SlideData
 
   return (
     <div className={`w-full h-full ${bg.className} flex flex-col justify-center px-16 py-12`} style={bg.style}>
-      <SlideHeader slide={slide} colors={colors} />
+      <SlideHeader slide={slide} colors={colors} editable={editable} onUpdateField={onUpdateField} />
       {members.length > 0 ? (
         <div className={`grid ${cols} gap-6 mt-4 flex-1 items-center`}>
           {members.slice(0, 6).map((m, i) => (

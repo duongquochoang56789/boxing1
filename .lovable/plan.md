@@ -1,142 +1,90 @@
 
 
-# Block Editor WYSIWYG - He thong chinh sua truc quan giong Canva
+# Tich hop AI Slide Builder vao Trang chu FLYFIT
 
-## Block Editor la gi?
+## Tong quan
+Hien tai, AI Slide Builder chi co the truy cap qua menu "Du an" trong Header (di den `/slides`), nhung tren trang chu khong co section nao gioi thieu hay quang ba tinh nang nay. Ke hoach nay se:
 
-Hien tai, ban soan noi dung slide bang Markdown (gõ text trong o textarea ben trai), roi xem ket qua ben phai (preview). **Block Editor** cho phep ban **click thang vao slide preview** de chinh sua -- giong nhu Canva, Google Slides. Moi phan tu tren slide (tieu de, doan van, bullet, so lieu...) tro thanh 1 "block" rieng biet ma ban co the:
-- Click vao de sua noi dung
-- Thay doi font chu, co chu, mau sac
-- Can chinh (trai/giua/phai)
-- Va nhieu tinh nang thiet ke khac
-
-## Chia thanh 6 cap do
-
-| Cap do | Ten | Mo ta ngan |
-|--------|-----|------------|
-| B1 | Inline Text Editing | Click vao Title/Subtitle tren slide de sua tai cho |
-| B2 | Content Block Selection | Moi dong noi dung tro thanh 1 block, click de chon, hover de highlight |
-| B3 | Block Text Formatting | Toolbar xuat hien khi chon block: Bold, Italic, Font Size, Text Color |
-| B4 | Font System | He thong font chu: chon font family, trong luong (weight), khoang cach chu |
-| B5 | Block Alignment & Spacing | Can chinh block (trai/giua/phai), khoang cach giua cac block, padding |
-| B6 | Advanced Block Controls | Duplicate block, xoa block, keo di chuyen thu tu, thêm block mới |
+1. **Kiem tra va liet ke cac tinh nang chua hoan thien** cua Slide Builder
+2. **Tao mot section moi tren trang chu** de gioi thieu AI Slide Builder, dat giua cac section hien co
 
 ---
 
-## Trien khai trong lan nay: B1 + B2 + B3 (co ban nhat)
+## Phan 1: Tinh nang Slide Builder chua hoan thien
 
-### B1: Inline Text Editing
-- Click vao **Title** tren slide preview -> hien con tro, go de sua
-- Click vao **Subtitle** -> tuong tu
-- Khi blur (click ra ngoai), tu dong dong bo nguoc ve Markdown editor ben trai
-- Vien nhe (border dashed) xuat hien khi hover de nguoi dung biet co the click
+Dua tren ma nguon hien tai, cac tinh nang da hoat dong:
+- Tao deck bang AI tu prompt
+- Editor voi Markdown, keyboard shortcuts, auto-save indicator
+- 12 loai layout (bao gom image-full, comparison)
+- Xuat PDF, chia se public link
+- Template suggestions khi tao moi
+- Dashboard voi thumbnail, tim kiem, xoa/public/private
 
-### B2: Content Block Selection
-- Moi phan tu trong ContentBlock (heading, bullet, paragraph) co the click de chon
-- Block dang chon co vien highlight mau cam
-- Hien nut chinh sua nho (floating toolbar) phia tren block dang chon
-- Khi chon 1 block, textarea ben trai tu dong highlight dong tuong ung
+Cac tinh nang **chua co hoac chua hoan thien**:
+- **Drag-and-drop sap xep slide**: Chua co code keo tha trong editor (chi co nut di chuyen len/xuong)
+- **Grid View**: Khong co che do grid/overview trong editor
+- **Presenter View** voi timer, notes, next slide preview: Chua co (chi co fullscreen presentation co ban)
+- **Dark mode toggle** trong editor toolbar: Chua co
+- **Xuat PowerPoint (PPTX)**: Chua co, chi co PDF
+- **Realtime collaboration**: Chua co
 
-### B3: Block Text Formatting Toolbar
-Khi chon 1 block text, hien thanh cong cu noi (floating toolbar) voi:
-- **Bold** (B) / **Italic** (I)
-- **Co chu**: 5 muc (XS, S, M, L, XL)  
-- **Mau chu**: 8 preset mau (trang, cam, xanh, tim, vang, xanh la, hong, xam)
-- **Can chinh**: Trai / Giua / Phai
+---
+
+## Phan 2: Tao Section "AI Slide Builder" tren Trang chu
+
+### Vi tri
+Dat section moi ngay **sau VirtualTrainingSection** va **truoc PricingSection** trong Index.tsx. Day la vi tri chien luoc vi:
+- Sau khi nguoi dung da xem dich vu va mo hinh tap luyen
+- Truoc phan bang gia, tao an tuong ve gia tri cong nghe
+
+### Thiet ke Section
+
+Section se bao gom:
+- **Tieu de**: "Tao Slide Thuyet Trinh Bang AI" voi label "Cong Cu AI"
+- **Mo ta ngan**: Nhan manh tinh nang tu dong tao slide tu prompt
+- **3 Feature Cards**: Hien thi 3 diem noi bat (Tao tu dong, 12+ Layout, Chia se de dang)
+- **Mock/Demo Preview**: Hien thi mot mockup giao dien slide builder hoac animation SVG minh hoa
+- **CTA Button**: "Thu ngay mien phi" -> dieu huong den `/slides/new` (yeu cau dang nhap)
+
+### Phong cach
+- Nen gradient nhe (charcoal -> charcoal/95) de tao contrast voi cac section sang mau cream
+- Cards dung glass effect (bg-cream/5 backdrop-blur) tuong tu style cua VirtualTrainingSection
+- Animation: fade-in khi scroll vao view (useInView)
+- Icon su dung lucide-react (Sparkles, Presentation, Layout, Share2...)
+
+### File thay doi
+
+| File | Thay doi |
+|------|---------|
+| **Tao moi**: `src/components/landing/AISlideSection.tsx` | Section gioi thieu AI Slide Builder voi 3 feature cards, mockup preview va CTA |
+| **Sua**: `src/pages/Index.tsx` | Import va them `AISlideSection` vao giua VirtualTrainingSection va PricingSection |
 
 ---
 
 ## Chi tiet ky thuat
 
-### Thay doi SlideLayouts.tsx
-
-Them props moi cho `SlideRenderer`:
+### AISlideSection.tsx
 ```text
-interface SlideRendererProps {
-  slide: SlideData;
-  editable?: boolean;              // bat che do edit
-  onUpdateField?: (field: 'title' | 'subtitle' | 'content', value: string) => void;
-  onBlockSelect?: (blockIndex: number) => void;  // khi click 1 block
-  selectedBlock?: number | null;
-}
+Component structure:
+- Section wrapper: nen gradient charcoal, padding section-padding
+- Header: label "Cong Cu AI" + heading 2 dong + description
+- Feature grid (3 cols):
+  1. Icon Sparkles + "AI Tu Dong Tao" + mo ta
+  2. Icon Layout + "12+ Bo Cuc Chuyen Nghiep" + mo ta  
+  3. Icon Share2 + "Chia Se & Trinh Chieu" + mo ta
+- Demo area: Mockup 16:9 voi gradient background, fake slide preview
+- CTA: MagneticButton "Tao Slide Ngay" -> navigate("/slides/new")
+- Animation: Framer Motion whileInView + stagger cho cards
 ```
 
-**Title & Subtitle editable**: Cac layout component (CoverSlide, TwoColumnSlide...) se render title/subtitle dung `contentEditable` div khi `editable=true`:
-- hover: border dashed white/20
-- focus: border solid orange-400/50
-- onBlur: goi onUpdateField('title', innerText)
-
-**ContentBlock editable**: Moi element trong ContentBlock duoc boc trong div co:
-- onClick -> goi onBlockSelect(blockIndex)
-- className highlight khi selectedBlock === blockIndex
-- Con tro contentEditable khi duoc chon
-
-### Tao BlockToolbar.tsx (file moi)
-
-Floating toolbar xuat hien phia tren block dang chon:
+### Index.tsx thay doi
 ```text
-Component: BlockToolbar
-Props: 
-  - position: { top, left } (tinh tu block element rect)
-  - onBold, onItalic
-  - onFontSize(size: 'xs'|'sm'|'md'|'lg'|'xl')
-  - onColor(color: string)
-  - onAlign(align: 'left'|'center'|'right')
-  - onClose
-
-Render:
-  - Portal vao document.body
-  - Position absolute theo toa do
-  - Row cac nut: B | I | Size dropdown | Color dots | Align icons
-  - Style: bg-[#1a1a1a] border border-white/20 rounded-lg shadow-2xl
+- Import AISlideSection
+- Dat giua <VirtualTrainingSection /> va <PricingSection />
 ```
 
-### Thay doi DeckEditor.tsx
-
-- Them state: `selectedBlock`, `blockToolbarPos`
-- Truyen `editable={true}` va callbacks vao SlideRenderer trong preview panel
-- Khi `onUpdateField` duoc goi -> cap nhat slide state + trigger auto-save
-- Khi `onBlockSelect` -> tinh vi tri block element -> hien BlockToolbar
-
-### Cach block formatting hoat dong
-
-Khi nguoi dung bam Bold/Italic/Color/Size trong toolbar:
-1. Tim dong tuong ung trong slide.content (theo blockIndex)
-2. Ap dung Markdown formatting (VD: boc `**...**` cho bold)
-3. Hoac them metadata dang `<!-- style:bold,color:#fb923c,size:lg -->` vao cuoi dong
-4. ContentBlock parser se doc metadata nay de render dung style
-
-**Chon cach tiep can metadata comment** vi:
-- Khong pha vo cu phap Markdown
-- De luu tru va parse
-- Nguoi dung khong thay metadata khi trinh chieu
-
-### Format metadata:
-```text
-Dong goc:     * Diem noi bat cua san pham
-Sau format:   * Diem noi bat cua san pham <!-- style:bold,color:#fb923c,size:lg,align:center -->
-```
-
-ContentBlock se parse comment `<!-- style:... -->` va ap dung CSS tuong ung.
-
----
-
-## Tong ket file thay doi
-
-| File | Thao tac | Mo ta |
-|------|----------|-------|
-| `src/components/slides/BlockToolbar.tsx` | Tao moi | Floating toolbar voi Bold/Italic/Size/Color/Align |
-| `src/components/slides/SlideLayouts.tsx` | Sua | Them props editable, onUpdateField, onBlockSelect, selectedBlock. Title/Subtitle contentEditable. ContentBlock parse metadata style |
-| `src/pages/DeckEditor.tsx` | Sua | Them state selectedBlock, truyen editable props vao SlideRenderer, render BlockToolbar |
-
-## Khong can migration hay dependency moi
-- Su dung contentEditable native cua browser
-- CSS inline cho positioning toolbar
-- Metadata style luu trong content string (khong can cot DB moi)
-
-## Cac cap do tiep theo (B4-B6) se lam sau
-
-- **B4 Font System**: Them Google Fonts picker, font weight selector, letter spacing
-- **B5 Alignment & Spacing**: Drag handle de chinh khoang cach, snap-to-grid, padding controls
-- **B6 Advanced Blocks**: Keo tha doi vi tri block, them block moi (text/image/shape), xoa block, duplicate
-
+## Tong ket
+- **1 file moi**: `AISlideSection.tsx`
+- **1 file sua**: `Index.tsx` (them 2 dong import + render)
+- Khong can migration, edge function, hay dependency moi
+- Thiet ke nhat quan voi style hien tai cua landing page (premium, sang trong)

@@ -12,6 +12,40 @@ interface SlideData {
   section_name: string;
 }
 
+interface EditableProps {
+  editable?: boolean;
+  onUpdateField?: (field: 'title' | 'subtitle' | 'content', value: string) => void;
+  onBlockSelect?: (blockIndex: number, rect: DOMRect) => void;
+  selectedBlock?: number | null;
+}
+
+/** Parse style metadata from <!-- style:bold,color:#fb923c,size:lg,align:center --> */
+const parseStyleMeta = (text: string): { cleanText: string; styles: Record<string, string> } => {
+  const match = text.match(/<!--\s*style:(.+?)\s*-->$/);
+  if (!match) return { cleanText: text, styles: {} };
+  const cleanText = text.replace(/\s*<!--\s*style:.+?-->\s*$/, "").trim();
+  const styles: Record<string, string> = {};
+  match[1].split(",").forEach(pair => {
+    const [key, ...rest] = pair.split(":");
+    if (key && rest.length) styles[key.trim()] = rest.join(":").trim();
+    else if (key) styles[key.trim()] = "true";
+  });
+  return { cleanText, styles };
+};
+
+const getStyleClasses = (styles: Record<string, string>): React.CSSProperties => {
+  const css: React.CSSProperties = {};
+  if (styles.bold) css.fontWeight = "bold";
+  if (styles.italic) css.fontStyle = "italic";
+  if (styles.color) css.color = styles.color;
+  if (styles.align) css.textAlign = styles.align as any;
+  if (styles.size) {
+    const sizeMap: Record<string, string> = { xs: "20px", sm: "24px", md: "28px", lg: "36px", xl: "48px" };
+    css.fontSize = sizeMap[styles.size] || css.fontSize;
+  }
+  return css;
+};
+
 const sectionColors: Record<string, { bg: string; accent: string }> = {
   brand: { bg: "from-[#1a1a2e] to-[#16213e]", accent: "text-orange-400" },
   product: { bg: "from-[#0f3460] to-[#1a1a2e]", accent: "text-cyan-400" },
@@ -67,18 +101,59 @@ const renderInlineRich = (text: string, accent: string) => {
   return parts;
 };
 
+// Wrap element with block selection capability
+const BlockWrapper = ({ index, children, onBlockSelect, selectedBlock, styleMeta }: {
+  index: number; children: React.ReactNode;
+  onBlockSelect?: (blockIndex: number, rect: DOMRect) => void;
+  selectedBlock?: number | null;
+  styleMeta?: Record<string, string>;
+}) => {
+  const extraStyle = styleMeta ? getStyleClasses(styleMeta) : {};
+  if (!onBlockSelect) {
+    return Object.keys(extraStyle).length > 0
+      ? <div style={extraStyle}>{children}</div>
+      : <>{children}</>;
+  }
+  return (
+    <div
+      className={`relative cursor-pointer rounded transition-all ${
+        selectedBlock === index
+          ? "ring-2 ring-orange-400/60 bg-orange-400/5"
+          : "hover:ring-1 hover:ring-white/20"
+      }`}
+      style={extraStyle}
+      onClick={(e) => {
+        e.stopPropagation();
+        const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+        onBlockSelect(index, rect);
+      }}
+    >
+      {children}
+    </div>
+  );
+};
+
 // Parse markdown-like content into lines
-const ContentBlock = ({ content, accent }: { content: string; accent: string }) => {
+const ContentBlock = ({ content, accent, onBlockSelect, selectedBlock }: { 
+  content: string; accent: string;
+  onBlockSelect?: (blockIndex: number, rect: DOMRect) => void;
+  selectedBlock?: number | null;
+}) => {
   const lines = content.split("\n");
   const elements: React.ReactNode[] = [];
   let i = 0;
+  let blockIdx = 0;
 
   while (i < lines.length) {
     const line = lines[i];
-    const trimmed = line.trim();
+    const rawTrimmed = line.trim();
+
+    // Parse style metadata
+    const { cleanText: trimmed, styles: styleMeta } = parseStyleMeta(rawTrimmed);
+    const currentBlockIdx = blockIdx++;
 
     // Skip empty lines and table rows
-    if (!trimmed || trimmed.startsWith("|")) { i++; continue; }
+    if (!trimmed || trimmed.startsWith("|")) { i++; blockIdx--; continue; }
 
     // Horizontal rule: --- or ***
     if (/^[-*_]{3,}$/.test(trimmed)) {
@@ -102,27 +177,30 @@ const ContentBlock = ({ content, accent }: { content: string; accent: string }) 
       }
       i++; // skip closing ```
       elements.push(
-        <motion.pre key={`code-${i}`} custom={elements.length} variants={fadeIn} initial="hidden" animate="visible"
-          className="bg-white/5 border border-white/10 rounded-xl p-6 overflow-x-auto"
-        >
-          <code className="text-[22px] font-mono text-emerald-300 leading-relaxed whitespace-pre">
-            {codeLines.join("\n")}
-          </code>
-        </motion.pre>
+        <BlockWrapper key={`code-${i}`} index={currentBlockIdx} onBlockSelect={onBlockSelect} selectedBlock={selectedBlock} styleMeta={styleMeta}>
+          <motion.pre custom={elements.length} variants={fadeIn} initial="hidden" animate="visible"
+            className="bg-white/5 border border-white/10 rounded-xl p-6 overflow-x-auto"
+          >
+            <code className="text-[22px] font-mono text-emerald-300 leading-relaxed whitespace-pre">
+              {codeLines.join("\n")}
+            </code>
+          </motion.pre>
+        </BlockWrapper>
       );
       continue;
     }
 
-    // Inline code: `code`
     // Headings: ### text
     const headingMatch = trimmed.match(/^(#{1,4})\s+(.+)$/);
     if (headingMatch) {
       const level = headingMatch[1].length;
       const sizes = ["text-[48px]", "text-[42px]", "text-[36px]", "text-[30px]"];
       elements.push(
-        <motion.div key={i} custom={elements.length} variants={fadeIn} initial="hidden" animate="visible"
-          className={`font-bold text-white ${sizes[level - 1] || sizes[2]} leading-tight mt-2`}
-        >{renderInline(headingMatch[2], accent)}</motion.div>
+        <BlockWrapper key={i} index={currentBlockIdx} onBlockSelect={onBlockSelect} selectedBlock={selectedBlock} styleMeta={styleMeta}>
+          <motion.div custom={elements.length} variants={fadeIn} initial="hidden" animate="visible"
+            className={`font-bold text-white ${sizes[level - 1] || sizes[2]} leading-tight mt-2`}
+          >{renderInline(headingMatch[2], accent)}</motion.div>
+        </BlockWrapper>
       );
       i++; continue;
     }
@@ -132,39 +210,45 @@ const ContentBlock = ({ content, accent }: { content: string; accent: string }) 
     if (numberedMatch) {
       const listItems: { num: string; text: string }[] = [];
       while (i < lines.length) {
-        const nm = lines[i].trim().match(/^(\d+)[.)]\s+(.+)$/);
+        const { cleanText: ct } = parseStyleMeta(lines[i].trim());
+        const nm = ct.match(/^(\d+)[.)]\s+(.+)$/);
         if (!nm) break;
         listItems.push({ num: nm[1], text: nm[2] });
         i++;
       }
       elements.push(
-        <div key={`ol-${i}`} className="space-y-3 pl-2">
-          {listItems.map((item, li) => (
-            <motion.div key={li} custom={elements.length + li} variants={fadeIn} initial="hidden" animate="visible"
-              className="flex items-start gap-4"
-            >
-              <span className={`${accent} text-[26px] font-bold min-w-[36px] h-[36px] rounded-full bg-white/5 flex items-center justify-center flex-shrink-0 mt-1`}>
-                {item.num}
-              </span>
-              <span className="text-white/80 text-[28px] leading-relaxed">{renderInline(item.text, accent)}</span>
-            </motion.div>
-          ))}
-        </div>
+        <BlockWrapper key={`ol-${i}`} index={currentBlockIdx} onBlockSelect={onBlockSelect} selectedBlock={selectedBlock} styleMeta={styleMeta}>
+          <div className="space-y-3 pl-2">
+            {listItems.map((item, li) => (
+              <motion.div key={li} custom={elements.length + li} variants={fadeIn} initial="hidden" animate="visible"
+                className="flex items-start gap-4"
+              >
+                <span className={`${accent} text-[26px] font-bold min-w-[36px] h-[36px] rounded-full bg-white/5 flex items-center justify-center flex-shrink-0 mt-1`}>
+                  {item.num}
+                </span>
+                <span className="text-white/80 text-[28px] leading-relaxed">{renderInline(item.text, accent)}</span>
+              </motion.div>
+            ))}
+          </div>
+        </BlockWrapper>
       );
       continue;
     }
 
-    // Nested bullet: starts with spaces/tab + * or -
+    // Nested bullet
     const nestedBulletMatch = line.match(/^(\s{2,}|\t+)[\*\-]\s+(.+)$/);
     if (nestedBulletMatch) {
+      const { cleanText: nbText } = parseStyleMeta(nestedBulletMatch[2]);
       const indent = nestedBulletMatch[1].length >= 4 ? 2 : 1;
       elements.push(
-        <motion.div key={i} custom={elements.length} variants={fadeIn} initial="hidden" animate="visible"
-          className="flex items-start gap-3" style={{ paddingLeft: `${indent * 32 + 8}px` }}
-        >
-          <span className={`${accent} text-[22px] mt-1.5 flex-shrink-0 opacity-60`}>◦</span>
-          <span className="text-white/70 text-[26px] leading-relaxed">{renderInline(nestedBulletMatch[2], accent)}</span>
-        </motion.div>
+        <BlockWrapper key={i} index={currentBlockIdx} onBlockSelect={onBlockSelect} selectedBlock={selectedBlock} styleMeta={styleMeta}>
+          <motion.div custom={elements.length} variants={fadeIn} initial="hidden" animate="visible"
+            className="flex items-start gap-3" style={{ paddingLeft: `${indent * 32 + 8}px` }}
+          >
+            <span className={`${accent} text-[22px] mt-1.5 flex-shrink-0 opacity-60`}>◦</span>
+            <span className="text-white/70 text-[26px] leading-relaxed">{renderInline(nbText, accent)}</span>
+          </motion.div>
+        </BlockWrapper>
       );
       i++; continue;
     }
@@ -173,12 +257,14 @@ const ContentBlock = ({ content, accent }: { content: string; accent: string }) 
     const bulletMatch = trimmed.match(/^[\*\-]\s+(.+)$/);
     if (bulletMatch) {
       elements.push(
-        <motion.div key={i} custom={elements.length} variants={fadeIn} initial="hidden" animate="visible"
-          className="flex items-start gap-3 pl-2"
-        >
-          <span className={`${accent} text-[28px] mt-1 flex-shrink-0`}>•</span>
-          <span className="text-white/80 text-[28px] leading-relaxed">{renderInlineRich(bulletMatch[1], accent)}</span>
-        </motion.div>
+        <BlockWrapper key={i} index={currentBlockIdx} onBlockSelect={onBlockSelect} selectedBlock={selectedBlock} styleMeta={styleMeta}>
+          <motion.div custom={elements.length} variants={fadeIn} initial="hidden" animate="visible"
+            className="flex items-start gap-3 pl-2"
+          >
+            <span className={`${accent} text-[28px] mt-1 flex-shrink-0`}>•</span>
+            <span className="text-white/80 text-[28px] leading-relaxed">{renderInlineRich(bulletMatch[1], accent)}</span>
+          </motion.div>
+        </BlockWrapper>
       );
       i++; continue;
     }
@@ -187,10 +273,12 @@ const ContentBlock = ({ content, accent }: { content: string; accent: string }) 
     const boldMatch = trimmed.match(/^\*\*(.+?)\*\*\s*(.*)$/);
     if (boldMatch) {
       elements.push(
-        <motion.div key={i} custom={elements.length} variants={fadeIn} initial="hidden" animate="visible">
-          <span className={`font-bold text-[36px] ${accent}`}>{boldMatch[1]}</span>
-          {boldMatch[2] && <span className="text-white/80 text-[30px] ml-2">{boldMatch[2]}</span>}
-        </motion.div>
+        <BlockWrapper key={i} index={currentBlockIdx} onBlockSelect={onBlockSelect} selectedBlock={selectedBlock} styleMeta={styleMeta}>
+          <motion.div custom={elements.length} variants={fadeIn} initial="hidden" animate="visible">
+            <span className={`font-bold text-[36px] ${accent}`}>{boldMatch[1]}</span>
+            {boldMatch[2] && <span className="text-white/80 text-[30px] ml-2">{boldMatch[2]}</span>}
+          </motion.div>
+        </BlockWrapper>
       );
       i++; continue;
     }
@@ -201,19 +289,21 @@ const ContentBlock = ({ content, accent }: { content: string; accent: string }) 
       const textPart = emojiMatch[2];
       const innerBold = textPart.match(/\*\*(.+?)\*\*\s*—?\s*(.*)/);
       elements.push(
-        <motion.div key={i} custom={elements.length} variants={fadeIn} initial="hidden" animate="visible" className="flex items-start gap-3">
-          <span className="text-[32px] flex-shrink-0">{emojiMatch[1]}</span>
-          <div>
-            {innerBold ? (
-              <>
-                <span className={`font-bold text-[30px] ${accent}`}>{innerBold[1]}</span>
-                {innerBold[2] && <span className="text-white/70 text-[28px]"> — {innerBold[2]}</span>}
-              </>
-            ) : (
-              <span className="text-white/80 text-[30px]">{renderInline(textPart, accent)}</span>
-            )}
-          </div>
-        </motion.div>
+        <BlockWrapper key={i} index={currentBlockIdx} onBlockSelect={onBlockSelect} selectedBlock={selectedBlock} styleMeta={styleMeta}>
+          <motion.div custom={elements.length} variants={fadeIn} initial="hidden" animate="visible" className="flex items-start gap-3">
+            <span className="text-[32px] flex-shrink-0">{emojiMatch[1]}</span>
+            <div>
+              {innerBold ? (
+                <>
+                  <span className={`font-bold text-[30px] ${accent}`}>{innerBold[1]}</span>
+                  {innerBold[2] && <span className="text-white/70 text-[28px]"> — {innerBold[2]}</span>}
+                </>
+              ) : (
+                <span className="text-white/80 text-[30px]">{renderInline(textPart, accent)}</span>
+              )}
+            </div>
+          </motion.div>
+        </BlockWrapper>
       );
       i++; continue;
     }
@@ -221,27 +311,33 @@ const ContentBlock = ({ content, accent }: { content: string; accent: string }) 
     // Quoted text
     if (trimmed.startsWith('"') || trimmed.startsWith('\u201C')) {
       elements.push(
-        <motion.p key={i} custom={elements.length} variants={fadeIn} initial="hidden" animate="visible"
-          className="text-[36px] text-white/90 italic leading-relaxed"
-        >{trimmed}</motion.p>
+        <BlockWrapper key={i} index={currentBlockIdx} onBlockSelect={onBlockSelect} selectedBlock={selectedBlock} styleMeta={styleMeta}>
+          <motion.p custom={elements.length} variants={fadeIn} initial="hidden" animate="visible"
+            className="text-[36px] text-white/90 italic leading-relaxed"
+          >{trimmed}</motion.p>
+        </BlockWrapper>
       );
       i++; continue;
     }
     // Attribution
     if (trimmed.startsWith("—")) {
       elements.push(
-        <motion.p key={i} custom={elements.length} variants={fadeIn} initial="hidden" animate="visible"
-          className="text-[26px] text-white/50 mt-2"
-        >{trimmed}</motion.p>
+        <BlockWrapper key={i} index={currentBlockIdx} onBlockSelect={onBlockSelect} selectedBlock={selectedBlock} styleMeta={styleMeta}>
+          <motion.p custom={elements.length} variants={fadeIn} initial="hidden" animate="visible"
+            className="text-[26px] text-white/50 mt-2"
+          >{trimmed}</motion.p>
+        </BlockWrapper>
       );
       i++; continue;
     }
 
-    // Default paragraph with inline formatting (supports `code`, links)
+    // Default paragraph
     elements.push(
-      <motion.p key={i} custom={elements.length} variants={fadeIn} initial="hidden" animate="visible"
-        className="text-[30px] text-white/80 leading-relaxed"
-      >{renderInlineRich(trimmed, accent)}</motion.p>
+      <BlockWrapper key={i} index={currentBlockIdx} onBlockSelect={onBlockSelect} selectedBlock={selectedBlock} styleMeta={styleMeta}>
+        <motion.p custom={elements.length} variants={fadeIn} initial="hidden" animate="visible"
+          className="text-[30px] text-white/80 leading-relaxed"
+        >{renderInlineRich(trimmed, accent)}</motion.p>
+      </BlockWrapper>
     );
     i++;
   }
@@ -281,25 +377,49 @@ const TableContent = ({ content, accent }: { content: string; accent: string }) 
   );
 };
 
+// Editable text helper
+const EditableText = ({ 
+  value, field, editable, onUpdateField, className, tag = "div" 
+}: { 
+  value: string; field: 'title' | 'subtitle'; editable?: boolean; 
+  onUpdateField?: (field: 'title' | 'subtitle' | 'content', value: string) => void;
+  className?: string; tag?: string;
+}) => {
+  if (!editable) {
+    return React.createElement(tag, { className }, value);
+  }
+  return React.createElement(tag, {
+    className: `${className} outline-none border border-transparent hover:border-dashed hover:border-white/20 focus:border-solid focus:border-orange-400/50 rounded px-2 -mx-2 cursor-text transition-colors`,
+    contentEditable: true,
+    suppressContentEditableWarning: true,
+    onBlur: (e: React.FocusEvent<HTMLElement>) => {
+      const newVal = e.currentTarget.innerText;
+      if (newVal !== value) onUpdateField?.(field, newVal);
+    },
+    onKeyDown: (e: React.KeyboardEvent) => {
+      if (e.key === "Enter") { e.preventDefault(); (e.target as HTMLElement).blur(); }
+    },
+    children: value,
+  });
+};
+
 // Slide header helper
-const SlideHeader = ({ slide, colors }: { slide: SlideData; colors: { accent: string } }) => (
+const SlideHeader = ({ slide, colors, editable, onUpdateField }: { slide: SlideData; colors: { accent: string }; editable?: boolean; onUpdateField?: EditableProps['onUpdateField'] }) => (
   <>
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
       className={`text-[22px] font-medium ${colors.accent} uppercase tracking-widest mb-4`}
     >
       Slide {slide.slide_order}
     </motion.div>
-    <motion.h2 initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}
-      className="text-[52px] font-bold text-white leading-tight mb-3"
-    >
-      {slide.title}
-    </motion.h2>
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}>
+      <EditableText value={slide.title} field="title" editable={editable} onUpdateField={onUpdateField}
+        className="text-[52px] font-bold text-white leading-tight mb-3" />
+    </motion.div>
     {slide.subtitle && (
-      <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}
-        className="text-[30px] text-white/50 mb-8"
-      >
-        {slide.subtitle}
-      </motion.p>
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
+        <EditableText value={slide.subtitle} field="subtitle" editable={editable} onUpdateField={onUpdateField}
+          className="text-[30px] text-white/50 mb-8" />
+      </motion.div>
     )}
   </>
 );
@@ -312,7 +432,7 @@ const getSlideBg = (slide: SlideData, colors: { bg: string }) => {
 };
 
 /* ==================== COVER ==================== */
-export const CoverSlide = ({ slide }: { slide: SlideData }) => {
+export const CoverSlide = ({ slide, editable, onUpdateField, onBlockSelect, selectedBlock }: { slide: SlideData } & EditableProps) => {
   const colors = sectionColors[slide.section_name] || sectionColors.brand;
   const bg = getSlideBg(slide, colors);
   return (
@@ -322,19 +442,17 @@ export const CoverSlide = ({ slide }: { slide: SlideData }) => {
       )}
       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
       <div className="relative z-10 text-center px-20">
-        <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}
-          className={`font-bold text-white tracking-tight leading-none ${
-            slide.title.length > 20 ? "text-[72px]" : slide.title.length > 12 ? "text-[84px]" : "text-[96px]"
-          }`}
-        >
-          {slide.title}
-        </motion.h1>
+        <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
+          <EditableText value={slide.title} field="title" editable={editable} onUpdateField={onUpdateField}
+            className={`font-bold text-white tracking-tight leading-none ${
+              slide.title.length > 20 ? "text-[72px]" : slide.title.length > 12 ? "text-[84px]" : "text-[96px]"
+            }`} />
+        </motion.div>
         {slide.subtitle && (
-          <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
-            className={`text-[48px] mt-6 ${colors.accent} font-medium`}
-          >
-            {slide.subtitle}
-          </motion.p>
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+            <EditableText value={slide.subtitle} field="subtitle" editable={editable} onUpdateField={onUpdateField}
+              className={`text-[48px] mt-6 ${colors.accent} font-medium`} />
+          </motion.div>
         )}
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }}
           className="mt-10 text-[30px] text-white/60 leading-relaxed whitespace-pre-line"
@@ -347,14 +465,14 @@ export const CoverSlide = ({ slide }: { slide: SlideData }) => {
 };
 
 /* ==================== TWO-COLUMN ==================== */
-export const TwoColumnSlide = ({ slide }: { slide: SlideData }) => {
+export const TwoColumnSlide = ({ slide, editable, onUpdateField, onBlockSelect, selectedBlock }: { slide: SlideData } & EditableProps) => {
   const colors = sectionColors[slide.section_name] || sectionColors.brand;
   const bg = getSlideBg(slide, colors);
   return (
     <div className={`w-full h-full ${bg.className} flex`} style={bg.style}>
       <div className="flex-1 flex flex-col justify-center px-16 py-12">
-        <SlideHeader slide={slide} colors={colors} />
-        <ContentBlock content={slide.content} accent={colors.accent} />
+        <SlideHeader slide={slide} colors={colors} editable={editable} onUpdateField={onUpdateField} />
+        <ContentBlock content={slide.content} accent={colors.accent} onBlockSelect={onBlockSelect} selectedBlock={selectedBlock} />
       </div>
       {slide.image_url && (
         <div className="w-[45%] relative">
@@ -379,7 +497,7 @@ const parseStats = (content: string) => {
   return stats;
 };
 
-export const StatsSlide = ({ slide }: { slide: SlideData }) => {
+export const StatsSlide = ({ slide, editable, onUpdateField }: { slide: SlideData } & EditableProps) => {
   const colors = sectionColors[slide.section_name] || sectionColors.brand;
   const stats = parseStats(slide.content);
   const hasStats = stats.length >= 2;
@@ -387,7 +505,7 @@ export const StatsSlide = ({ slide }: { slide: SlideData }) => {
 
   return (
     <div className={`w-full h-full ${getSlideBg(slide, colors).className} flex flex-col justify-center px-16 py-12`} style={getSlideBg(slide, colors).style}>
-      <SlideHeader slide={slide} colors={colors} />
+      <SlideHeader slide={slide} colors={colors} editable={editable} onUpdateField={onUpdateField} />
       {hasStats ? (
         <div className="flex gap-6 mt-4 flex-wrap">
           {stats.map((stat, i) => (
@@ -424,7 +542,7 @@ const parseGridItems = (content: string) => {
   return items;
 };
 
-export const GridSlide = ({ slide }: { slide: SlideData }) => {
+export const GridSlide = ({ slide, editable, onUpdateField }: { slide: SlideData } & EditableProps) => {
   const colors = sectionColors[slide.section_name] || sectionColors.brand;
   const items = parseGridItems(slide.content);
   const hasGrid = items.length >= 2;
@@ -432,7 +550,7 @@ export const GridSlide = ({ slide }: { slide: SlideData }) => {
 
   return (
     <div className={`w-full h-full ${getSlideBg(slide, colors).className} flex flex-col justify-center px-16 py-12`} style={getSlideBg(slide, colors).style}>
-      <SlideHeader slide={slide} colors={colors} />
+      <SlideHeader slide={slide} colors={colors} editable={editable} onUpdateField={onUpdateField} />
       {hasGrid ? (
         <div className={`grid ${items.length <= 4 ? "grid-cols-2" : "grid-cols-3"} gap-5 mt-2 flex-1`}>
           {items.slice(0, 6).map((item, i) => (
@@ -460,11 +578,11 @@ export const GridSlide = ({ slide }: { slide: SlideData }) => {
 };
 
 /* ==================== TABLE ==================== */
-export const TableSlide = ({ slide }: { slide: SlideData }) => {
+export const TableSlide = ({ slide, editable, onUpdateField, onBlockSelect, selectedBlock }: { slide: SlideData } & EditableProps) => {
   const colors = sectionColors[slide.section_name] || sectionColors.brand;
   return (
     <div className={`w-full h-full ${getSlideBg(slide, colors).className} flex flex-col justify-center px-16 py-12`} style={getSlideBg(slide, colors).style}>
-      <SlideHeader slide={slide} colors={colors} />
+      <SlideHeader slide={slide} colors={colors} editable={editable} onUpdateField={onUpdateField} />
       <TableContent content={slide.content} accent={colors.accent} />
     </div>
   );
@@ -483,7 +601,7 @@ const parseTimelineItems = (content: string) => {
   return items;
 };
 
-export const TimelineSlide = ({ slide }: { slide: SlideData }) => {
+export const TimelineSlide = ({ slide, editable, onUpdateField }: { slide: SlideData } & EditableProps) => {
   const colors = sectionColors[slide.section_name] || sectionColors.brand;
   const items = parseTimelineItems(slide.content);
   const hasTimeline = items.length >= 2;
@@ -491,7 +609,7 @@ export const TimelineSlide = ({ slide }: { slide: SlideData }) => {
 
   return (
     <div className={`w-full h-full ${getSlideBg(slide, colors).className} flex flex-col justify-center px-16 py-12`} style={getSlideBg(slide, colors).style}>
-      <SlideHeader slide={slide} colors={colors} />
+      <SlideHeader slide={slide} colors={colors} editable={editable} onUpdateField={onUpdateField} />
       {hasTimeline ? (
         <div className="relative mt-6 flex-1 flex flex-col justify-center">
           {/* Horizontal line */}
@@ -524,7 +642,7 @@ export const TimelineSlide = ({ slide }: { slide: SlideData }) => {
 };
 
 /* ==================== QUOTE ==================== */
-export const QuoteSlide = ({ slide }: { slide: SlideData }) => {
+export const QuoteSlide = ({ slide, editable, onUpdateField, onBlockSelect, selectedBlock }: { slide: SlideData } & EditableProps) => {
   const colors = sectionColors[slide.section_name] || sectionColors.brand;
   return (
     <div className={`w-full h-full ${getSlideBg(slide, colors).className} relative overflow-hidden flex items-center`} style={getSlideBg(slide, colors).style}>
@@ -582,7 +700,7 @@ const parsePricingCards = (content: string) => {
   return cards;
 };
 
-export const PricingSlide = ({ slide }: { slide: SlideData }) => {
+export const PricingSlide = ({ slide, editable, onUpdateField }: { slide: SlideData } & EditableProps) => {
   const colors = sectionColors[slide.section_name] || sectionColors.brand;
   const cards = parsePricingCards(slide.content);
   const hasCards = cards.length >= 2;
@@ -590,7 +708,7 @@ export const PricingSlide = ({ slide }: { slide: SlideData }) => {
 
   return (
     <div className={`w-full h-full ${getSlideBg(slide, colors).className} flex flex-col justify-center px-16 py-12`} style={getSlideBg(slide, colors).style}>
-      <SlideHeader slide={slide} colors={colors} />
+      <SlideHeader slide={slide} colors={colors} editable={editable} onUpdateField={onUpdateField} />
       {hasCards ? (
         <div className="flex gap-6 mt-4 flex-1 items-stretch">
           {cards.slice(0, 4).map((card, i) => (
@@ -632,7 +750,7 @@ export const PricingSlide = ({ slide }: { slide: SlideData }) => {
 };
 
 /* ==================== PERSONA — avatar + profile ==================== */
-export const PersonaSlide = ({ slide }: { slide: SlideData }) => {
+export const PersonaSlide = ({ slide, editable, onUpdateField }: { slide: SlideData } & EditableProps) => {
   const colors = sectionColors[slide.section_name] || sectionColors.brand;
   const hex = accentHex[slide.section_name] || accentHex.brand;
   const lines = slide.content.split("\n").filter(l => l.trim());
@@ -693,12 +811,12 @@ export const PersonaSlide = ({ slide }: { slide: SlideData }) => {
 };
 
 /* ==================== CHART — table + content side by side ==================== */
-export const ChartSlide = ({ slide }: { slide: SlideData }) => {
+export const ChartSlide = ({ slide, editable, onUpdateField, onBlockSelect, selectedBlock }: { slide: SlideData } & EditableProps) => {
   const colors = sectionColors[slide.section_name] || sectionColors.brand;
   const hasTable = slide.content.includes("|");
   return (
     <div className={`w-full h-full ${getSlideBg(slide, colors).className} flex flex-col justify-center px-16 py-12`} style={getSlideBg(slide, colors).style}>
-      <SlideHeader slide={slide} colors={colors} />
+      <SlideHeader slide={slide} colors={colors} editable={editable} onUpdateField={onUpdateField} />
       <div className="flex gap-8 flex-1 items-center">
         <div className="flex-1">
           {hasTable ? (
@@ -718,7 +836,7 @@ export const ChartSlide = ({ slide }: { slide: SlideData }) => {
 };
 
 /* ==================== IMAGE-FULL — full background image with text overlay ==================== */
-export const ImageFullSlide = ({ slide }: { slide: SlideData }) => {
+export const ImageFullSlide = ({ slide, editable, onUpdateField, onBlockSelect, selectedBlock }: { slide: SlideData } & EditableProps) => {
   const colors = sectionColors[slide.section_name] || sectionColors.brand;
   const bg = getSlideBg(slide, colors);
   return (
@@ -750,7 +868,7 @@ export const ImageFullSlide = ({ slide }: { slide: SlideData }) => {
 };
 
 /* ==================== COMPARISON — side-by-side split ==================== */
-export const ComparisonSlide = ({ slide }: { slide: SlideData }) => {
+export const ComparisonSlide = ({ slide, editable, onUpdateField, onBlockSelect, selectedBlock }: { slide: SlideData } & EditableProps) => {
   const colors = sectionColors[slide.section_name] || sectionColors.brand;
   const bg = getSlideBg(slide, colors);
   const hex = accentHex[slide.section_name] || accentHex.brand;
@@ -763,7 +881,7 @@ export const ComparisonSlide = ({ slide }: { slide: SlideData }) => {
   return (
     <div className={`w-full h-full ${bg.className} flex flex-col`} style={bg.style}>
       <div className="px-16 pt-12 pb-6">
-        <SlideHeader slide={slide} colors={colors} />
+        <SlideHeader slide={slide} colors={colors} editable={editable} onUpdateField={onUpdateField} />
       </div>
       <div className="flex-1 flex gap-0 px-16 pb-12">
         {/* Left side */}
@@ -790,7 +908,7 @@ export const ComparisonSlide = ({ slide }: { slide: SlideData }) => {
 };
 
 /* ==================== FUNNEL — marketing funnel ==================== */
-export const FunnelSlide = ({ slide }: { slide: SlideData }) => {
+export const FunnelSlide = ({ slide, editable, onUpdateField }: { slide: SlideData } & EditableProps) => {
   const colors = sectionColors[slide.section_name] || sectionColors.brand;
   const hex = accentHex[slide.section_name] || accentHex.brand;
   const bg = getSlideBg(slide, colors);
@@ -805,7 +923,7 @@ export const FunnelSlide = ({ slide }: { slide: SlideData }) => {
 
   return (
     <div className={`w-full h-full ${bg.className} flex flex-col justify-center px-16 py-12`} style={bg.style}>
-      <SlideHeader slide={slide} colors={colors} />
+      <SlideHeader slide={slide} colors={colors} editable={editable} onUpdateField={onUpdateField} />
       <div className="flex-1 flex flex-col items-center justify-center gap-0 mt-4">
         {steps.slice(0, 6).map((step, i) => {
           const widthPct = 100 - (i * (60 / Math.max(steps.length - 1, 1)));
@@ -830,7 +948,7 @@ export const FunnelSlide = ({ slide }: { slide: SlideData }) => {
 };
 
 /* ==================== SWOT — 2x2 matrix ==================== */
-export const SwotSlide = ({ slide }: { slide: SlideData }) => {
+export const SwotSlide = ({ slide, editable, onUpdateField }: { slide: SlideData } & EditableProps) => {
   const colors = sectionColors[slide.section_name] || sectionColors.brand;
   const bg = getSlideBg(slide, colors);
   const sections = slide.content.split(/\n(?:---)\n|\n\n/).filter(s => s.trim());
@@ -843,7 +961,7 @@ export const SwotSlide = ({ slide }: { slide: SlideData }) => {
 
   return (
     <div className={`w-full h-full ${bg.className} flex flex-col px-16 py-12`} style={bg.style}>
-      <SlideHeader slide={slide} colors={colors} />
+      <SlideHeader slide={slide} colors={colors} editable={editable} onUpdateField={onUpdateField} />
       <div className="flex-1 grid grid-cols-2 grid-rows-2 gap-4 mt-4">
         {quadrants.map((q, i) => {
           const sectionContent = sections[i] || "";
@@ -875,7 +993,7 @@ export const SwotSlide = ({ slide }: { slide: SlideData }) => {
 };
 
 /* ==================== PROCESS — step-by-step flow ==================== */
-export const ProcessSlide = ({ slide }: { slide: SlideData }) => {
+export const ProcessSlide = ({ slide, editable, onUpdateField }: { slide: SlideData } & EditableProps) => {
   const colors = sectionColors[slide.section_name] || sectionColors.brand;
   const hex = accentHex[slide.section_name] || accentHex.brand;
   const bg = getSlideBg(slide, colors);
@@ -892,7 +1010,7 @@ export const ProcessSlide = ({ slide }: { slide: SlideData }) => {
 
   return (
     <div className={`w-full h-full ${bg.className} flex flex-col justify-center px-16 py-12`} style={bg.style}>
-      <SlideHeader slide={slide} colors={colors} />
+      <SlideHeader slide={slide} colors={colors} editable={editable} onUpdateField={onUpdateField} />
       <div className="flex-1 flex items-center gap-2 mt-4">
         {steps.slice(0, 5).map((step, i) => (
           <React.Fragment key={i}>
@@ -921,7 +1039,7 @@ export const ProcessSlide = ({ slide }: { slide: SlideData }) => {
 };
 
 /* ==================== TEAM — member grid ==================== */
-export const TeamSlide = ({ slide }: { slide: SlideData }) => {
+export const TeamSlide = ({ slide, editable, onUpdateField }: { slide: SlideData } & EditableProps) => {
   const colors = sectionColors[slide.section_name] || sectionColors.brand;
   const hex = accentHex[slide.section_name] || accentHex.brand;
   const bg = getSlideBg(slide, colors);
@@ -938,7 +1056,7 @@ export const TeamSlide = ({ slide }: { slide: SlideData }) => {
 
   return (
     <div className={`w-full h-full ${bg.className} flex flex-col justify-center px-16 py-12`} style={bg.style}>
-      <SlideHeader slide={slide} colors={colors} />
+      <SlideHeader slide={slide} colors={colors} editable={editable} onUpdateField={onUpdateField} />
       {members.length > 0 ? (
         <div className={`grid ${cols} gap-6 mt-4 flex-1 items-center`}>
           {members.slice(0, 6).map((m, i) => (
@@ -964,7 +1082,7 @@ export const TeamSlide = ({ slide }: { slide: SlideData }) => {
 };
 
 /* ==================== LAYOUT MAP ==================== */
-const layoutMap: Record<string, React.ComponentType<{ slide: SlideData }>> = {
+const layoutMap: Record<string, React.ComponentType<{ slide: SlideData } & EditableProps>> = {
   cover: CoverSlide,
   "two-column": TwoColumnSlide,
   stats: StatsSlide,
@@ -983,9 +1101,9 @@ const layoutMap: Record<string, React.ComponentType<{ slide: SlideData }>> = {
   team: TeamSlide,
 };
 
-export const SlideRenderer = ({ slide }: { slide: SlideData }) => {
+export const SlideRenderer = ({ slide, editable, onUpdateField, onBlockSelect, selectedBlock }: { slide: SlideData } & EditableProps) => {
   const Layout = layoutMap[slide.layout] || TwoColumnSlide;
-  return <Layout slide={slide} />;
+  return <Layout slide={slide} editable={editable} onUpdateField={onUpdateField} onBlockSelect={onBlockSelect} selectedBlock={selectedBlock} />;
 };
 
 export default SlideRenderer;

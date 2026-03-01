@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useParams, useNavigate, Link, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -24,6 +24,7 @@ import ShareDeckDialog from "@/components/slides/ShareDeckDialog";
 import SlideComments from "@/components/slides/SlideComments";
 import SlideVersionHistory from "@/components/slides/SlideVersionHistory";
 import { exportToPptx } from "@/lib/exportPptx";
+import BlockToolbar from "@/components/slides/BlockToolbar";
 
 interface DeckSlide {
   id: string;
@@ -147,6 +148,9 @@ const DeckEditor = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [showComments, setShowComments] = useState(false);
   const [showVersionHistory, setShowVersionHistory] = useState(false);
+  const [selectedBlock, setSelectedBlock] = useState<number | null>(null);
+  const [blockToolbarPos, setBlockToolbarPos] = useState<{ top: number; left: number } | null>(null);
+  const [blockStyleMeta, setBlockStyleMeta] = useState<Record<string, string>>({});
   const history = useSlideHistory();
   const { templates, saveTemplate, deleteTemplate } = useSlideTemplates();
 
@@ -562,6 +566,75 @@ const DeckEditor = () => {
     setAiAssisting(null);
   };
 
+  // Block editor handlers
+  const handleBlockSelect = useCallback((blockIndex: number, rect: DOMRect) => {
+    setSelectedBlock(blockIndex);
+    setBlockToolbarPos({ top: rect.top, left: rect.left });
+    // Parse existing style metadata for this block
+    if (slide) {
+      const lines = slide.content.split("\n").filter(l => l.trim() && !l.trim().startsWith("|"));
+      const line = lines[blockIndex] || "";
+      const metaMatch = line.match(/<!--\s*style:(.+?)\s*-->$/);
+      if (metaMatch) {
+        const styles: Record<string, string> = {};
+        metaMatch[1].split(",").forEach(p => {
+          const [k, ...v] = p.split(":");
+          if (k && v.length) styles[k.trim()] = v.join(":").trim();
+          else if (k) styles[k.trim()] = "true";
+        });
+        setBlockStyleMeta(styles);
+      } else {
+        setBlockStyleMeta({});
+      }
+    }
+  }, [slide]);
+
+  const handleBlockClose = useCallback(() => {
+    setSelectedBlock(null);
+    setBlockToolbarPos(null);
+    setBlockStyleMeta({});
+  }, []);
+
+  const applyBlockStyle = useCallback((key: string, value: string) => {
+    if (!slide || selectedBlock === null) return;
+    const lines = slide.content.split("\n");
+    // Find the actual content line index (skip empty and table rows)
+    let contentIdx = 0;
+    let lineIdx = -1;
+    for (let i = 0; i < lines.length; i++) {
+      const t = lines[i].trim();
+      if (!t || t.startsWith("|")) continue;
+      if (contentIdx === selectedBlock) { lineIdx = i; break; }
+      contentIdx++;
+    }
+    if (lineIdx === -1) return;
+
+    let line = lines[lineIdx];
+    // Remove existing style comment
+    line = line.replace(/\s*<!--\s*style:.+?-->\s*$/, "");
+
+    // Update style metadata
+    const newMeta = { ...blockStyleMeta, [key]: value };
+    // Toggle: if the value is already set for bold/italic, remove it
+    if ((key === "bold" || key === "italic") && blockStyleMeta[key]) {
+      delete newMeta[key];
+    }
+    setBlockStyleMeta(newMeta);
+
+    // Build style comment
+    const parts = Object.entries(newMeta).map(([k, v]) => v === "true" ? k : `${k}:${v}`);
+    if (parts.length > 0) {
+      line = `${line} <!-- style:${parts.join(",")} -->`;
+    }
+    lines[lineIdx] = line;
+    updateSlide("content", lines.join("\n"));
+  }, [slide, selectedBlock, blockStyleMeta, updateSlide]);
+
+  const handleInlineUpdate = useCallback((field: 'title' | 'subtitle' | 'content', value: string) => {
+    updateSlide(field, value);
+  }, [updateSlide]);
+
+
   const exportPdf = async () => {
     setExportingPdf(true);
     toast({ title: "Đang xuất PDF..." });
@@ -970,7 +1043,7 @@ const DeckEditor = () => {
 
           {/* Live Preview */}
           <ResizablePanel defaultSize={60} minSize={30}>
-            <div ref={previewRef} className="h-full relative overflow-hidden bg-black">
+            <div ref={previewRef} className="h-full relative overflow-hidden bg-black" onClick={() => handleBlockClose()}>
               {slide && (
                 <div
                   className="absolute"
@@ -985,8 +1058,29 @@ const DeckEditor = () => {
                     transformOrigin: "center center",
                   }}
                 >
-                  <SlideRenderer slide={slide} />
+                  <SlideRenderer
+                    slide={slide}
+                    editable={true}
+                    onUpdateField={handleInlineUpdate}
+                    onBlockSelect={handleBlockSelect}
+                    selectedBlock={selectedBlock}
+                  />
                 </div>
+              )}
+              {/* Block Toolbar */}
+              {selectedBlock !== null && blockToolbarPos && (
+                <BlockToolbar
+                  position={blockToolbarPos}
+                  onBold={() => applyBlockStyle("bold", "true")}
+                  onItalic={() => applyBlockStyle("italic", "true")}
+                  onFontSize={(size) => applyBlockStyle("size", size)}
+                  onColor={(color) => applyBlockStyle("color", color)}
+                  onAlign={(align) => applyBlockStyle("align", align)}
+                  onClose={handleBlockClose}
+                  currentSize={blockStyleMeta.size}
+                  currentColor={blockStyleMeta.color}
+                  currentAlign={blockStyleMeta.align}
+                />
               )}
             </div>
           </ResizablePanel>

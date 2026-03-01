@@ -164,9 +164,10 @@ const BlockWrapper = ({ index, children, onBlockSelect, onBlockContextMenu, sele
 };
 
 // Parse markdown-like content into lines
-const ContentBlock = ({ content, accent, onBlockSelect, selectedBlock }: { 
+const ContentBlock = ({ content, accent, onBlockSelect, onBlockContextMenu, selectedBlock }: { 
   content: string; accent: string;
   onBlockSelect?: (blockIndex: number, rect: DOMRect) => void;
+  onBlockContextMenu?: (blockIndex: number, pos: { x: number; y: number }) => void;
   selectedBlock?: number | null;
 }) => {
   const lines = content.split("\n");

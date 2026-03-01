@@ -497,7 +497,7 @@ const parseStats = (content: string) => {
   return stats;
 };
 
-export const StatsSlide = ({ slide }: { slide: SlideData }) => {
+export const StatsSlide = ({ slide, editable, onUpdateField }: { slide: SlideData } & EditableProps) => {
   const colors = sectionColors[slide.section_name] || sectionColors.brand;
   const stats = parseStats(slide.content);
   const hasStats = stats.length >= 2;

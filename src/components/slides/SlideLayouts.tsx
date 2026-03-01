@@ -53,6 +53,18 @@ const getStyleClasses = (styles: Record<string, string>): React.CSSProperties =>
     const lhMap: Record<string, string> = { compact: "1.1", normal: "1.4", relaxed: "1.7", loose: "2.0" };
     css.lineHeight = lhMap[styles.lineheight] || "1.4";
   }
+  if (styles.pad) {
+    const padMap: Record<string, string> = { "0": "0", sm: "8px", md: "16px", lg: "24px", xl: "40px" };
+    css.padding = padMap[styles.pad] || "0";
+  }
+  if (styles.mt) {
+    const mtMap: Record<string, string> = { "0": "0", sm: "8px", md: "16px", lg: "32px", xl: "56px" };
+    css.marginTop = mtMap[styles.mt] || "0";
+  }
+  if (styles.mb) {
+    const mbMap: Record<string, string> = { "0": "0", sm: "8px", md: "16px", lg: "32px", xl: "56px" };
+    css.marginBottom = mbMap[styles.mb] || "0";
+  }
   return css;
 };
 

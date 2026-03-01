@@ -304,7 +304,7 @@ const ContentBlock = ({ content, accent, onBlockSelect, onBlockContextMenu, sele
     const boldMatch = trimmed.match(/^\*\*(.+?)\*\*\s*(.*)$/);
     if (boldMatch) {
       elements.push(
-        <BlockWrapper key={i} index={currentBlockIdx} onBlockSelect={onBlockSelect} selectedBlock={selectedBlock} styleMeta={styleMeta}>
+        <BlockWrapper key={i} index={currentBlockIdx} onBlockSelect={onBlockSelect} onBlockContextMenu={onBlockContextMenu} selectedBlock={selectedBlock} styleMeta={styleMeta}>
           <motion.div custom={elements.length} variants={fadeIn} initial="hidden" animate="visible">
             <span className={`font-bold text-[36px] ${accent}`}>{boldMatch[1]}</span>
             {boldMatch[2] && <span className="text-white/80 text-[30px] ml-2">{boldMatch[2]}</span>}

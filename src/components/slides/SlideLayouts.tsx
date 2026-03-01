@@ -836,7 +836,7 @@ export const ChartSlide = ({ slide, editable, onUpdateField, onBlockSelect, sele
 };
 
 /* ==================== IMAGE-FULL — full background image with text overlay ==================== */
-export const ImageFullSlide = ({ slide }: { slide: SlideData }) => {
+export const ImageFullSlide = ({ slide, editable, onUpdateField, onBlockSelect, selectedBlock }: { slide: SlideData } & EditableProps) => {
   const colors = sectionColors[slide.section_name] || sectionColors.brand;
   const bg = getSlideBg(slide, colors);
   return (

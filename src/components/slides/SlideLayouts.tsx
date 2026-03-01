@@ -881,7 +881,7 @@ export const ComparisonSlide = ({ slide, editable, onUpdateField, onBlockSelect,
   return (
     <div className={`w-full h-full ${bg.className} flex flex-col`} style={bg.style}>
       <div className="px-16 pt-12 pb-6">
-        <SlideHeader slide={slide} colors={colors} />
+        <SlideHeader slide={slide} colors={colors} editable={editable} onUpdateField={onUpdateField} />
       </div>
       <div className="flex-1 flex gap-0 px-16 pb-12">
         {/* Left side */}

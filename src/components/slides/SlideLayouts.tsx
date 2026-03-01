@@ -9,6 +9,7 @@ interface SlideData {
   layout: string;
   image_url: string | null;
   background_color: string;
+  background_image_url?: string | null;
   section_name: string;
 }
 
@@ -462,17 +463,26 @@ const getSlideBg = (slide: SlideData, colors: { bg: string }) => {
   return { style: {}, className: `bg-gradient-to-br ${colors.bg}` };
 };
 
+/** Background image overlay */
+const BgImageOverlay = ({ url }: { url: string }) => (
+  <>
+    <img src={url} alt="" className="absolute inset-0 w-full h-full object-cover" style={{ zIndex: 0 }} />
+    <div className="absolute inset-0 bg-black/50" style={{ zIndex: 1 }} />
+  </>
+);
+
 /* ==================== COVER ==================== */
 export const CoverSlide = ({ slide, editable, onUpdateField, onBlockSelect, selectedBlock }: { slide: SlideData } & EditableProps) => {
   const colors = sectionColors[slide.section_name] || sectionColors.brand;
   const bg = getSlideBg(slide, colors);
   return (
     <div className={`w-full h-full ${bg.className} relative overflow-hidden flex items-center justify-center`} style={bg.style}>
-      {slide.image_url && (
+      {slide.background_image_url && <BgImageOverlay url={slide.background_image_url} />}
+      {!slide.background_image_url && slide.image_url && (
         <img src={slide.image_url} alt="" className="absolute inset-0 w-full h-full object-cover opacity-40" />
       )}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
-      <div className="relative z-10 text-center px-20">
+      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" style={{ zIndex: 2 }} />
+      <div className="relative z-10 text-center px-20" style={{ zIndex: 3 }}>
         <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
           <EditableText value={slide.title} field="title" editable={editable} onUpdateField={onUpdateField}
             className={`font-bold text-white tracking-tight leading-none ${
@@ -500,12 +510,13 @@ export const TwoColumnSlide = ({ slide, editable, onUpdateField, onBlockSelect, 
   const colors = sectionColors[slide.section_name] || sectionColors.brand;
   const bg = getSlideBg(slide, colors);
   return (
-    <div className={`w-full h-full ${bg.className} flex`} style={bg.style}>
-      <div className="flex-1 flex flex-col justify-center px-16 py-12">
+    <div className={`w-full h-full ${bg.className} flex relative`} style={bg.style}>
+      {slide.background_image_url && <BgImageOverlay url={slide.background_image_url} />}
+      <div className="flex-1 flex flex-col justify-center px-16 py-12 relative" style={{ zIndex: 2 }}>
         <SlideHeader slide={slide} colors={colors} editable={editable} onUpdateField={onUpdateField} />
         <ContentBlock content={slide.content} accent={colors.accent} onBlockSelect={onBlockSelect} onBlockContextMenu={onBlockContextMenu} selectedBlock={selectedBlock} />
       </div>
-      {slide.image_url && (
+      {!slide.background_image_url && slide.image_url && (
         <div className="w-[45%] relative">
           <img src={slide.image_url} alt="" className="absolute inset-0 w-full h-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-r from-[#1a1a2e] via-transparent to-transparent" />
@@ -1134,7 +1145,16 @@ const layoutMap: Record<string, React.ComponentType<{ slide: SlideData } & Edita
 
 export const SlideRenderer = ({ slide, editable, onUpdateField, onBlockSelect, onBlockContextMenu, selectedBlock }: { slide: SlideData } & EditableProps) => {
   const Layout = layoutMap[slide.layout] || TwoColumnSlide;
-  return <Layout slide={slide} editable={editable} onUpdateField={onUpdateField} onBlockSelect={onBlockSelect} onBlockContextMenu={onBlockContextMenu} selectedBlock={selectedBlock} />;
+  // For layouts that don't have their own BgImageOverlay handling (Cover and TwoColumn handle it themselves)
+  const hasBgImageHandling = slide.layout === "cover" || slide.layout === "two-column";
+  return (
+    <div className="w-full h-full relative">
+      {slide.background_image_url && !hasBgImageHandling && <BgImageOverlay url={slide.background_image_url} />}
+      <div className={`w-full h-full ${slide.background_image_url && !hasBgImageHandling ? "relative" : ""}`} style={slide.background_image_url && !hasBgImageHandling ? { zIndex: 2 } : {}}>
+        <Layout slide={slide} editable={editable} onUpdateField={onUpdateField} onBlockSelect={onBlockSelect} onBlockContextMenu={onBlockContextMenu} selectedBlock={selectedBlock} />
+      </div>
+    </div>
+  );
 };
 
 export default SlideRenderer;

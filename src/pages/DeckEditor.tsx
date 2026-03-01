@@ -39,6 +39,7 @@ interface DeckSlide {
   image_prompt: string | null;
   section_name: string;
   background_color: string;
+  background_image_url: string | null;
   notes: string | null;
 }
 
@@ -154,6 +155,8 @@ const DeckEditor = () => {
   const [blockStyleMeta, setBlockStyleMeta] = useState<Record<string, string>>({});
   const [contextMenuPos, setContextMenuPos] = useState<{ x: number; y: number } | null>(null);
   const [contextMenuBlock, setContextMenuBlock] = useState<number | null>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const imageInputRef = useRef<HTMLInputElement>(null);
   const history = useSlideHistory();
   const { templates, saveTemplate, deleteTemplate } = useSlideTemplates();
 
@@ -439,6 +442,79 @@ const DeckEditor = () => {
     if (!slide) return;
     await supabase.from("deck_slides").update({ background_color: color }).eq("id", slide.id);
     setSlides(prev => prev.map((s, i) => i === current ? { ...s, background_color: color } : s));
+  };
+
+  // Image upload handler
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !slide) return;
+    if (!file.type.startsWith("image/")) {
+      toast({ title: "Chỉ hỗ trợ file ảnh", variant: "destructive" });
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ title: "File quá lớn (tối đa 5MB)", variant: "destructive" });
+      return;
+    }
+    setUploadingImage(true);
+    try {
+      const ext = file.name.split(".").pop() || "jpg";
+      const path = `${deckId}/${slide.id}-${Date.now()}.${ext}`;
+      const { error: uploadError } = await supabase.storage
+        .from("deck-assets")
+        .upload(path, file, { upsert: true });
+      if (uploadError) throw uploadError;
+      const { data: urlData } = supabase.storage.from("deck-assets").getPublicUrl(path);
+      const publicUrl = urlData.publicUrl;
+      // Update as background image
+      await supabase.from("deck_slides").update({ background_image_url: publicUrl } as any).eq("id", slide.id);
+      setSlides(prev => prev.map((s, i) => i === current ? { ...s, background_image_url: publicUrl } : s));
+      toast({ title: "Đã tải ảnh nền lên!" });
+    } catch (err: any) {
+      console.error("Upload error:", err);
+      toast({ title: "Lỗi tải ảnh: " + (err.message || "Unknown"), variant: "destructive" });
+    }
+    setUploadingImage(false);
+    // Reset input
+    if (imageInputRef.current) imageInputRef.current.value = "";
+  };
+
+  const handleUploadAsSlideImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !slide) return;
+    if (!file.type.startsWith("image/")) {
+      toast({ title: "Chỉ hỗ trợ file ảnh", variant: "destructive" });
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ title: "File quá lớn (tối đa 5MB)", variant: "destructive" });
+      return;
+    }
+    setUploadingImage(true);
+    try {
+      const ext = file.name.split(".").pop() || "jpg";
+      const path = `${deckId}/${slide.id}-img-${Date.now()}.${ext}`;
+      const { error: uploadError } = await supabase.storage
+        .from("deck-assets")
+        .upload(path, file, { upsert: true });
+      if (uploadError) throw uploadError;
+      const { data: urlData } = supabase.storage.from("deck-assets").getPublicUrl(path);
+      const publicUrl = urlData.publicUrl;
+      await supabase.from("deck_slides").update({ image_url: publicUrl }).eq("id", slide.id);
+      setSlides(prev => prev.map((s, i) => i === current ? { ...s, image_url: publicUrl } : s));
+      toast({ title: "Đã tải ảnh slide lên!" });
+    } catch (err: any) {
+      console.error("Upload error:", err);
+      toast({ title: "Lỗi tải ảnh: " + (err.message || "Unknown"), variant: "destructive" });
+    }
+    setUploadingImage(false);
+  };
+
+  const removeBgImage = async () => {
+    if (!slide) return;
+    await supabase.from("deck_slides").update({ background_image_url: null } as any).eq("id", slide.id);
+    setSlides(prev => prev.map((s, i) => i === current ? { ...s, background_image_url: null } : s));
+    toast({ title: "Đã xoá ảnh nền" });
   };
 
   const applyTheme = async (themeId: string) => {
@@ -1054,8 +1130,8 @@ const DeckEditor = () => {
                     <Trash2 className="w-3.5 h-3.5" />
                   </Button>
                 </div>
-                {/* Background color presets */}
-                <div className="flex items-center gap-1.5">
+                {/* Background color presets + image upload */}
+                <div className="flex items-center gap-1.5 flex-wrap">
                   <Palette className="w-3 h-3 text-white/30" />
                   {BG_PRESETS.map(c => (
                     <button
@@ -1066,6 +1142,40 @@ const DeckEditor = () => {
                       title={c}
                     />
                   ))}
+                  <span className="text-white/10 mx-0.5">|</span>
+                  {/* Upload background image */}
+                  <input type="file" ref={imageInputRef} accept="image/*" className="hidden" onChange={handleImageUpload} />
+                  <button
+                    onClick={() => imageInputRef.current?.click()}
+                    disabled={uploadingImage}
+                    className="flex items-center gap-1 px-2 py-0.5 rounded text-[10px] text-white/40 hover:text-white hover:bg-white/10 transition-colors disabled:opacity-50"
+                    title="Tải ảnh nền từ máy"
+                  >
+                    {uploadingImage ? <Loader2 className="w-3 h-3 animate-spin" /> : <ImageIcon className="w-3 h-3" />}
+                    Ảnh nền
+                  </button>
+                  {/* Upload slide image (side image) */}
+                  <input type="file" accept="image/*" className="hidden" id="slide-img-upload" onChange={handleUploadAsSlideImage} />
+                  <button
+                    onClick={() => document.getElementById("slide-img-upload")?.click()}
+                    disabled={uploadingImage}
+                    className="flex items-center gap-1 px-2 py-0.5 rounded text-[10px] text-white/40 hover:text-white hover:bg-white/10 transition-colors disabled:opacity-50"
+                    title="Tải ảnh minh hoạ từ máy"
+                  >
+                    <ImageIcon className="w-3 h-3" />
+                    Ảnh slide
+                  </button>
+                  {/* Show bg image indicator */}
+                  {slide?.background_image_url && (
+                    <button
+                      onClick={removeBgImage}
+                      className="flex items-center gap-1 px-2 py-0.5 rounded text-[10px] text-emerald-400/70 hover:text-red-400 bg-emerald-400/10 hover:bg-red-400/10 transition-colors"
+                      title="Xoá ảnh nền"
+                    >
+                      <X className="w-3 h-3" />
+                      Có ảnh nền
+                    </button>
+                  )}
                 </div>
               </div>
               {/* AI Assist Buttons */}

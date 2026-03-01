@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { Bold, Italic, AlignLeft, AlignCenter, AlignRight, ChevronDown, ArrowUpFromLine, ArrowDownFromLine, Square } from "lucide-react";
+import { Bold, Italic, AlignLeft, AlignCenter, AlignRight, ChevronDown, ArrowUpFromLine, ArrowDownFromLine, Square, ArrowUp, ArrowDown, CopyPlus, Trash2, Plus } from "lucide-react";
 
 interface BlockToolbarProps {
   position: { top: number; left: number };

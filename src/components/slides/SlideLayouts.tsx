@@ -1084,7 +1084,7 @@ export const TeamSlide = ({ slide }: { slide: SlideData }) => {
 };
 
 /* ==================== LAYOUT MAP ==================== */
-const layoutMap: Record<string, React.ComponentType<{ slide: SlideData }>> = {
+const layoutMap: Record<string, React.ComponentType<{ slide: SlideData } & EditableProps>> = {
   cover: CoverSlide,
   "two-column": TwoColumnSlide,
   stats: StatsSlide,
@@ -1103,9 +1103,9 @@ const layoutMap: Record<string, React.ComponentType<{ slide: SlideData }>> = {
   team: TeamSlide,
 };
 
-export const SlideRenderer = ({ slide }: { slide: SlideData }) => {
+export const SlideRenderer = ({ slide, editable, onUpdateField, onBlockSelect, selectedBlock }: { slide: SlideData } & EditableProps) => {
   const Layout = layoutMap[slide.layout] || TwoColumnSlide;
-  return <Layout slide={slide} />;
+  return <Layout slide={slide} editable={editable} onUpdateField={onUpdateField} onBlockSelect={onBlockSelect} selectedBlock={selectedBlock} />;
 };
 
 export default SlideRenderer;

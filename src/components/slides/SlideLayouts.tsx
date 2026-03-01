@@ -700,7 +700,7 @@ const parsePricingCards = (content: string) => {
   return cards;
 };
 
-export const PricingSlide = ({ slide }: { slide: SlideData }) => {
+export const PricingSlide = ({ slide, editable, onUpdateField }: { slide: SlideData } & EditableProps) => {
   const colors = sectionColors[slide.section_name] || sectionColors.brand;
   const cards = parsePricingCards(slide.content);
   const hasCards = cards.length >= 2;

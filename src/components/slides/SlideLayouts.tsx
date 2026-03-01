@@ -578,7 +578,7 @@ export const GridSlide = ({ slide, editable, onUpdateField }: { slide: SlideData
 };
 
 /* ==================== TABLE ==================== */
-export const TableSlide = ({ slide }: { slide: SlideData }) => {
+export const TableSlide = ({ slide, editable, onUpdateField, onBlockSelect, selectedBlock }: { slide: SlideData } & EditableProps) => {
   const colors = sectionColors[slide.section_name] || sectionColors.brand;
   return (
     <div className={`w-full h-full ${getSlideBg(slide, colors).className} flex flex-col justify-center px-16 py-12`} style={getSlideBg(slide, colors).style}>

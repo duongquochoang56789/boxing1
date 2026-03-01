@@ -27,6 +27,7 @@ import { exportToPptx } from "@/lib/exportPptx";
 import BlockToolbar from "@/components/slides/BlockToolbar";
 import BlockContextMenu from "@/components/slides/BlockContextMenu";
 import FloatingToolbar from "@/components/slides/FloatingToolbar";
+import CommandPalette from "@/components/slides/CommandPalette";
 
 interface DeckSlide {
   id: string;

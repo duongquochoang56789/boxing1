@@ -15,6 +15,7 @@ const SlideBuilder = () => {
   const [language, setLanguage] = useState("vi");
   const [tone, setTone] = useState("professional");
   const [loading, setLoading] = useState(false);
+  const [mode, setMode] = useState<"ai" | "template">("ai");
   const navigate = useNavigate();
   const { toast } = useToast();
 

@@ -708,6 +708,18 @@ const DeckEditor = () => {
     setSelectedBlock(selectedBlock + 1);
   }, [slide, selectedBlock, findBlockLineIndex, updateSlide]);
 
+  // Context menu handler
+  const handleBlockContextMenu = useCallback((blockIndex: number, pos: { x: number; y: number }) => {
+    setContextMenuBlock(blockIndex);
+    setContextMenuPos(pos);
+    setSelectedBlock(blockIndex);
+  }, []);
+
+  const closeContextMenu = useCallback(() => {
+    setContextMenuPos(null);
+    setContextMenuBlock(null);
+  }, []);
+
   const handleInlineUpdate = useCallback((field: 'title' | 'subtitle' | 'content', value: string) => {
     updateSlide(field, value);
   }, [updateSlide]);

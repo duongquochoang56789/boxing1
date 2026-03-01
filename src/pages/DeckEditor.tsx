@@ -152,6 +152,8 @@ const DeckEditor = () => {
   const [selectedBlock, setSelectedBlock] = useState<number | null>(null);
   const [blockToolbarPos, setBlockToolbarPos] = useState<{ top: number; left: number } | null>(null);
   const [blockStyleMeta, setBlockStyleMeta] = useState<Record<string, string>>({});
+  const [contextMenuPos, setContextMenuPos] = useState<{ x: number; y: number } | null>(null);
+  const [contextMenuBlock, setContextMenuBlock] = useState<number | null>(null);
   const history = useSlideHistory();
   const { templates, saveTemplate, deleteTemplate } = useSlideTemplates();
 

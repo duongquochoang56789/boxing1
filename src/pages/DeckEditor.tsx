@@ -148,6 +148,9 @@ const DeckEditor = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [showComments, setShowComments] = useState(false);
   const [showVersionHistory, setShowVersionHistory] = useState(false);
+  const [selectedBlock, setSelectedBlock] = useState<number | null>(null);
+  const [blockToolbarPos, setBlockToolbarPos] = useState<{ top: number; left: number } | null>(null);
+  const [blockStyleMeta, setBlockStyleMeta] = useState<Record<string, string>>({});
   const history = useSlideHistory();
   const { templates, saveTemplate, deleteTemplate } = useSlideTemplates();
 

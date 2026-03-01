@@ -24,6 +24,7 @@ import ShareDeckDialog from "@/components/slides/ShareDeckDialog";
 import SlideComments from "@/components/slides/SlideComments";
 import SlideVersionHistory from "@/components/slides/SlideVersionHistory";
 import { exportToPptx } from "@/lib/exportPptx";
+import BlockToolbar from "@/components/slides/BlockToolbar";
 
 interface DeckSlide {
   id: string;

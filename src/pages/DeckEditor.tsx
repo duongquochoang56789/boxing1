@@ -1194,6 +1194,20 @@ const DeckEditor = () => {
                   currentMarginBottom={blockStyleMeta.mb}
                 />
               )}
+              {/* Block Context Menu */}
+              {contextMenuPos && contextMenuBlock !== null && (
+                <BlockContextMenu
+                  position={contextMenuPos}
+                  onMoveUp={() => { setSelectedBlock(contextMenuBlock); setTimeout(handleMoveBlockUp, 0); }}
+                  onMoveDown={() => { setSelectedBlock(contextMenuBlock); setTimeout(handleMoveBlockDown, 0); }}
+                  onDuplicate={() => { setSelectedBlock(contextMenuBlock); setTimeout(handleDuplicateBlock, 0); }}
+                  onDelete={() => { setSelectedBlock(contextMenuBlock); setTimeout(handleDeleteBlock, 0); }}
+                  onAddBelow={() => { setSelectedBlock(contextMenuBlock); setTimeout(handleAddBlock, 0); }}
+                  onClose={closeContextMenu}
+                  canMoveUp={contextMenuBlock > 0}
+                  canMoveDown={slide ? contextMenuBlock < getBlockCount(slide.content) - 1 : false}
+                />
+              )}
             </div>
           </ResizablePanel>
         </ResizablePanelGroup>

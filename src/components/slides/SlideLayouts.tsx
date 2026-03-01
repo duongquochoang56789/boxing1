@@ -708,7 +708,7 @@ export const PricingSlide = ({ slide, editable, onUpdateField }: { slide: SlideD
 
   return (
     <div className={`w-full h-full ${getSlideBg(slide, colors).className} flex flex-col justify-center px-16 py-12`} style={getSlideBg(slide, colors).style}>
-      <SlideHeader slide={slide} colors={colors} />
+      <SlideHeader slide={slide} colors={colors} editable={editable} onUpdateField={onUpdateField} />
       {hasCards ? (
         <div className="flex gap-6 mt-4 flex-1 items-stretch">
           {cards.slice(0, 4).map((card, i) => (

@@ -228,7 +228,7 @@ const ExpandedMenu = ({
   onSaveAll, onGenerateImage, onGenerateAllImages, onCancelBatch,
   onExportPdf, onExportPptx, onApplyTheme, onUpdateTransition,
   onShare, onToggleComments, onToggleVersionHistory, onSaveTemplate, onUseTemplate,
-}: Omit<FloatingToolbarProps, 'deckId' | 'deckTitle' | 'currentIndex' | 'totalSlides' | 'saveStatus' | 'sidebarCollapsed' | 'onUndo' | 'onRedo' | 'onToggleGrid' | 'onToggleSidebar' | 'onPresent'>) => {
+}: Omit<FloatingToolbarProps, 'deckId' | 'deckTitle' | 'currentIndex' | 'totalSlides' | 'saveStatus' | 'sidebarCollapsed' | 'onUndo' | 'onRedo' | 'onToggleGrid' | 'onToggleSidebar' | 'onPresent' | 'zenMode' | 'onToggleZen'>) => {
   const [showThemes, setShowThemes] = useState(false);
 
   const MenuItem = ({ icon: Icon, label, onClick, disabled, active, destructive }: {

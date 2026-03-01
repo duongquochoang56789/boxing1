@@ -1158,7 +1158,14 @@ const DeckEditor = () => {
                   onPadding={(pad) => applyBlockStyle("pad", pad)}
                   onMarginTop={(mt) => applyBlockStyle("mt", mt)}
                   onMarginBottom={(mb) => applyBlockStyle("mb", mb)}
+                  onMoveUp={handleMoveBlockUp}
+                  onMoveDown={handleMoveBlockDown}
+                  onDuplicateBlock={handleDuplicateBlock}
+                  onDeleteBlock={handleDeleteBlock}
+                  onAddBlock={handleAddBlock}
                   onClose={handleBlockClose}
+                  canMoveUp={selectedBlock > 0}
+                  canMoveDown={slide ? selectedBlock < getBlockCount(slide.content) - 1 : false}
                   currentSize={blockStyleMeta.size}
                   currentColor={blockStyleMeta.color}
                   currentAlign={blockStyleMeta.align}

@@ -463,6 +463,14 @@ const getSlideBg = (slide: SlideData, colors: { bg: string }) => {
   return { style: {}, className: `bg-gradient-to-br ${colors.bg}` };
 };
 
+/** Background image overlay */
+const BgImageOverlay = ({ url }: { url: string }) => (
+  <>
+    <img src={url} alt="" className="absolute inset-0 w-full h-full object-cover" style={{ zIndex: 0 }} />
+    <div className="absolute inset-0 bg-black/50" style={{ zIndex: 1 }} />
+  </>
+);
+
 /* ==================== COVER ==================== */
 export const CoverSlide = ({ slide, editable, onUpdateField, onBlockSelect, selectedBlock }: { slide: SlideData } & EditableProps) => {
   const colors = sectionColors[slide.section_name] || sectionColors.brand;

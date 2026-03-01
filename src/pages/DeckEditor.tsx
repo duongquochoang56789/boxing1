@@ -1130,8 +1130,8 @@ const DeckEditor = () => {
                     <Trash2 className="w-3.5 h-3.5" />
                   </Button>
                 </div>
-                {/* Background color presets */}
-                <div className="flex items-center gap-1.5">
+                {/* Background color presets + image upload */}
+                <div className="flex items-center gap-1.5 flex-wrap">
                   <Palette className="w-3 h-3 text-white/30" />
                   {BG_PRESETS.map(c => (
                     <button
@@ -1142,6 +1142,40 @@ const DeckEditor = () => {
                       title={c}
                     />
                   ))}
+                  <span className="text-white/10 mx-0.5">|</span>
+                  {/* Upload background image */}
+                  <input type="file" ref={imageInputRef} accept="image/*" className="hidden" onChange={handleImageUpload} />
+                  <button
+                    onClick={() => imageInputRef.current?.click()}
+                    disabled={uploadingImage}
+                    className="flex items-center gap-1 px-2 py-0.5 rounded text-[10px] text-white/40 hover:text-white hover:bg-white/10 transition-colors disabled:opacity-50"
+                    title="Tải ảnh nền từ máy"
+                  >
+                    {uploadingImage ? <Loader2 className="w-3 h-3 animate-spin" /> : <ImageIcon className="w-3 h-3" />}
+                    Ảnh nền
+                  </button>
+                  {/* Upload slide image (side image) */}
+                  <input type="file" accept="image/*" className="hidden" id="slide-img-upload" onChange={handleUploadAsSlideImage} />
+                  <button
+                    onClick={() => document.getElementById("slide-img-upload")?.click()}
+                    disabled={uploadingImage}
+                    className="flex items-center gap-1 px-2 py-0.5 rounded text-[10px] text-white/40 hover:text-white hover:bg-white/10 transition-colors disabled:opacity-50"
+                    title="Tải ảnh minh hoạ từ máy"
+                  >
+                    <ImageIcon className="w-3 h-3" />
+                    Ảnh slide
+                  </button>
+                  {/* Show bg image indicator */}
+                  {slide?.background_image_url && (
+                    <button
+                      onClick={removeBgImage}
+                      className="flex items-center gap-1 px-2 py-0.5 rounded text-[10px] text-emerald-400/70 hover:text-red-400 bg-emerald-400/10 hover:bg-red-400/10 transition-colors"
+                      title="Xoá ảnh nền"
+                    >
+                      <X className="w-3 h-3" />
+                      Có ảnh nền
+                    </button>
+                  )}
                 </div>
               </div>
               {/* AI Assist Buttons */}

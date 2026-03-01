@@ -36,6 +36,7 @@ interface TemplateGalleryProps {
 
 const TemplateGallery = ({ onClose }: TemplateGalleryProps) => {
   const [category, setCategory] = useState("all");
+  const [searchQuery, setSearchQuery] = useState("");
   const [selectedTemplate, setSelectedTemplate] = useState<SlideTemplate | null>(null);
   const [creating, setCreating] = useState(false);
   const { toast } = useToast();

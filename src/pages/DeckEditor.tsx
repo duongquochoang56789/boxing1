@@ -1195,17 +1195,59 @@ const DeckEditor = () => {
                 />
               )}
               {/* Block Context Menu */}
-              {contextMenuPos && contextMenuBlock !== null && (
+              {contextMenuPos && contextMenuBlock !== null && slide && (
                 <BlockContextMenu
                   position={contextMenuPos}
-                  onMoveUp={() => { setSelectedBlock(contextMenuBlock); setTimeout(handleMoveBlockUp, 0); }}
-                  onMoveDown={() => { setSelectedBlock(contextMenuBlock); setTimeout(handleMoveBlockDown, 0); }}
-                  onDuplicate={() => { setSelectedBlock(contextMenuBlock); setTimeout(handleDuplicateBlock, 0); }}
-                  onDelete={() => { setSelectedBlock(contextMenuBlock); setTimeout(handleDeleteBlock, 0); }}
-                  onAddBelow={() => { setSelectedBlock(contextMenuBlock); setTimeout(handleAddBlock, 0); }}
+                  onMoveUp={() => {
+                    if (contextMenuBlock <= 0) return;
+                    const lines = slide.content.split("\n");
+                    const curIdx = findBlockLineIndex(slide.content, contextMenuBlock);
+                    const prevIdx = findBlockLineIndex(slide.content, contextMenuBlock - 1);
+                    if (curIdx === -1 || prevIdx === -1) return;
+                    [lines[curIdx], lines[prevIdx]] = [lines[prevIdx], lines[curIdx]];
+                    updateSlide("content", lines.join("\n"));
+                    setSelectedBlock(contextMenuBlock - 1);
+                  }}
+                  onMoveDown={() => {
+                    const blockCount = getBlockCount(slide.content);
+                    if (contextMenuBlock >= blockCount - 1) return;
+                    const lines = slide.content.split("\n");
+                    const curIdx = findBlockLineIndex(slide.content, contextMenuBlock);
+                    const nextIdx = findBlockLineIndex(slide.content, contextMenuBlock + 1);
+                    if (curIdx === -1 || nextIdx === -1) return;
+                    [lines[curIdx], lines[nextIdx]] = [lines[nextIdx], lines[curIdx]];
+                    updateSlide("content", lines.join("\n"));
+                    setSelectedBlock(contextMenuBlock + 1);
+                  }}
+                  onDuplicate={() => {
+                    const lines = slide.content.split("\n");
+                    const lineIdx = findBlockLineIndex(slide.content, contextMenuBlock);
+                    if (lineIdx === -1) return;
+                    lines.splice(lineIdx + 1, 0, lines[lineIdx]);
+                    updateSlide("content", lines.join("\n"));
+                    setSelectedBlock(contextMenuBlock + 1);
+                  }}
+                  onDelete={() => {
+                    const blockCount = getBlockCount(slide.content);
+                    if (blockCount <= 1) return;
+                    const lines = slide.content.split("\n");
+                    const lineIdx = findBlockLineIndex(slide.content, contextMenuBlock);
+                    if (lineIdx === -1) return;
+                    lines.splice(lineIdx, 1);
+                    updateSlide("content", lines.join("\n"));
+                    handleBlockClose();
+                  }}
+                  onAddBelow={() => {
+                    const lines = slide.content.split("\n");
+                    const lineIdx = findBlockLineIndex(slide.content, contextMenuBlock);
+                    if (lineIdx === -1) return;
+                    lines.splice(lineIdx + 1, 0, "Nội dung mới...");
+                    updateSlide("content", lines.join("\n"));
+                    setSelectedBlock(contextMenuBlock + 1);
+                  }}
                   onClose={closeContextMenu}
                   canMoveUp={contextMenuBlock > 0}
-                  canMoveDown={slide ? contextMenuBlock < getBlockCount(slide.content) - 1 : false}
+                  canMoveDown={contextMenuBlock < getBlockCount(slide.content) - 1}
                 />
               )}
             </div>

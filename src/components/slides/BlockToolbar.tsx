@@ -16,7 +16,14 @@ interface BlockToolbarProps {
   onPadding: (padding: string) => void;
   onMarginTop: (mt: string) => void;
   onMarginBottom: (mb: string) => void;
+  onMoveUp?: () => void;
+  onMoveDown?: () => void;
+  onDuplicateBlock?: () => void;
+  onDeleteBlock?: () => void;
+  onAddBlock?: () => void;
   onClose: () => void;
+  canMoveUp?: boolean;
+  canMoveDown?: boolean;
   currentSize?: string;
   currentColor?: string;
   currentAlign?: string;

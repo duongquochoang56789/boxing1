@@ -614,10 +614,15 @@ const DeckEditor = () => {
     line = line.replace(/\s*<!--\s*style:.+?-->\s*$/, "");
 
     // Update style metadata
-    const newMeta = { ...blockStyleMeta, [key]: value };
+    const newMeta = { ...blockStyleMeta };
     // Toggle: if the value is already set for bold/italic, remove it
     if ((key === "bold" || key === "italic") && blockStyleMeta[key]) {
       delete newMeta[key];
+    } else if (value === "" || value === "normal" || value === "400") {
+      // Remove default/empty values
+      delete newMeta[key];
+    } else {
+      newMeta[key] = value;
     }
     setBlockStyleMeta(newMeta);
 
@@ -1076,10 +1081,18 @@ const DeckEditor = () => {
                   onFontSize={(size) => applyBlockStyle("size", size)}
                   onColor={(color) => applyBlockStyle("color", color)}
                   onAlign={(align) => applyBlockStyle("align", align)}
+                  onFont={(font) => applyBlockStyle("font", font)}
+                  onWeight={(weight) => applyBlockStyle("weight", weight)}
+                  onSpacing={(spacing) => applyBlockStyle("spacing", spacing)}
+                  onLineHeight={(lh) => applyBlockStyle("lineheight", lh)}
                   onClose={handleBlockClose}
                   currentSize={blockStyleMeta.size}
                   currentColor={blockStyleMeta.color}
                   currentAlign={blockStyleMeta.align}
+                  currentFont={blockStyleMeta.font}
+                  currentWeight={blockStyleMeta.weight}
+                  currentSpacing={blockStyleMeta.spacing}
+                  currentLineHeight={blockStyleMeta.lineheight}
                 />
               )}
             </div>

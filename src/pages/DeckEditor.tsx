@@ -158,6 +158,8 @@ const DeckEditor = () => {
   const [contextMenuPos, setContextMenuPos] = useState<{ x: number; y: number } | null>(null);
   const [contextMenuBlock, setContextMenuBlock] = useState<number | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [zenMode, setZenMode] = useState(false);
+  const [showCommandPalette, setShowCommandPalette] = useState(false);
   const imageInputRef = useRef<HTMLInputElement>(null);
   const history = useSlideHistory();
   const { templates, saveTemplate, deleteTemplate } = useSlideTemplates();

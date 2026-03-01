@@ -642,7 +642,7 @@ export const TimelineSlide = ({ slide, editable, onUpdateField }: { slide: Slide
 };
 
 /* ==================== QUOTE ==================== */
-export const QuoteSlide = ({ slide }: { slide: SlideData }) => {
+export const QuoteSlide = ({ slide, editable, onUpdateField, onBlockSelect, selectedBlock }: { slide: SlideData } & EditableProps) => {
   const colors = sectionColors[slide.section_name] || sectionColors.brand;
   return (
     <div className={`w-full h-full ${getSlideBg(slide, colors).className} relative overflow-hidden flex items-center`} style={getSlideBg(slide, colors).style}>

@@ -39,6 +39,7 @@ interface DeckSlide {
   image_prompt: string | null;
   section_name: string;
   background_color: string;
+  background_image_url: string | null;
   notes: string | null;
 }
 

@@ -26,6 +26,7 @@ import SlideVersionHistory from "@/components/slides/SlideVersionHistory";
 import { exportToPptx } from "@/lib/exportPptx";
 import BlockToolbar from "@/components/slides/BlockToolbar";
 import BlockContextMenu from "@/components/slides/BlockContextMenu";
+import FloatingToolbar from "@/components/slides/FloatingToolbar";
 
 interface DeckSlide {
   id: string;

@@ -1132,9 +1132,9 @@ const layoutMap: Record<string, React.ComponentType<{ slide: SlideData } & Edita
   team: TeamSlide,
 };
 
-export const SlideRenderer = ({ slide, editable, onUpdateField, onBlockSelect, selectedBlock }: { slide: SlideData } & EditableProps) => {
+export const SlideRenderer = ({ slide, editable, onUpdateField, onBlockSelect, onBlockContextMenu, selectedBlock }: { slide: SlideData } & EditableProps) => {
   const Layout = layoutMap[slide.layout] || TwoColumnSlide;
-  return <Layout slide={slide} editable={editable} onUpdateField={onUpdateField} onBlockSelect={onBlockSelect} selectedBlock={selectedBlock} />;
+  return <Layout slide={slide} editable={editable} onUpdateField={onUpdateField} onBlockSelect={onBlockSelect} onBlockContextMenu={onBlockContextMenu} selectedBlock={selectedBlock} />;
 };
 
 export default SlideRenderer;

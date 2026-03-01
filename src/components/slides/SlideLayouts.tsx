@@ -1145,7 +1145,16 @@ const layoutMap: Record<string, React.ComponentType<{ slide: SlideData } & Edita
 
 export const SlideRenderer = ({ slide, editable, onUpdateField, onBlockSelect, onBlockContextMenu, selectedBlock }: { slide: SlideData } & EditableProps) => {
   const Layout = layoutMap[slide.layout] || TwoColumnSlide;
-  return <Layout slide={slide} editable={editable} onUpdateField={onUpdateField} onBlockSelect={onBlockSelect} onBlockContextMenu={onBlockContextMenu} selectedBlock={selectedBlock} />;
+  // For layouts that don't have their own BgImageOverlay handling (Cover and TwoColumn handle it themselves)
+  const hasBgImageHandling = slide.layout === "cover" || slide.layout === "two-column";
+  return (
+    <div className="w-full h-full relative">
+      {slide.background_image_url && !hasBgImageHandling && <BgImageOverlay url={slide.background_image_url} />}
+      <div className={`w-full h-full ${slide.background_image_url && !hasBgImageHandling ? "relative" : ""}`} style={slide.background_image_url && !hasBgImageHandling ? { zIndex: 2 } : {}}>
+        <Layout slide={slide} editable={editable} onUpdateField={onUpdateField} onBlockSelect={onBlockSelect} onBlockContextMenu={onBlockContextMenu} selectedBlock={selectedBlock} />
+      </div>
+    </div>
+  );
 };
 
 export default SlideRenderer;

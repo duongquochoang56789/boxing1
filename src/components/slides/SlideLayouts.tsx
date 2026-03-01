@@ -811,7 +811,7 @@ export const PersonaSlide = ({ slide, editable, onUpdateField }: { slide: SlideD
 };
 
 /* ==================== CHART — table + content side by side ==================== */
-export const ChartSlide = ({ slide }: { slide: SlideData }) => {
+export const ChartSlide = ({ slide, editable, onUpdateField, onBlockSelect, selectedBlock }: { slide: SlideData } & EditableProps) => {
   const colors = sectionColors[slide.section_name] || sectionColors.brand;
   const hasTable = slide.content.includes("|");
   return (

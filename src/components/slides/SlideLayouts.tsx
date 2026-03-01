@@ -342,7 +342,7 @@ const ContentBlock = ({ content, accent, onBlockSelect, onBlockContextMenu, sele
     // Quoted text
     if (trimmed.startsWith('"') || trimmed.startsWith('\u201C')) {
       elements.push(
-        <BlockWrapper key={i} index={currentBlockIdx} onBlockSelect={onBlockSelect} selectedBlock={selectedBlock} styleMeta={styleMeta}>
+        <BlockWrapper key={i} index={currentBlockIdx} onBlockSelect={onBlockSelect} onBlockContextMenu={onBlockContextMenu} selectedBlock={selectedBlock} styleMeta={styleMeta}>
           <motion.p custom={elements.length} variants={fadeIn} initial="hidden" animate="visible"
             className="text-[36px] text-white/90 italic leading-relaxed"
           >{trimmed}</motion.p>

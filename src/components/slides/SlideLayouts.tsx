@@ -505,7 +505,7 @@ export const StatsSlide = ({ slide, editable, onUpdateField }: { slide: SlideDat
 
   return (
     <div className={`w-full h-full ${getSlideBg(slide, colors).className} flex flex-col justify-center px-16 py-12`} style={getSlideBg(slide, colors).style}>
-      <SlideHeader slide={slide} colors={colors} />
+      <SlideHeader slide={slide} colors={colors} editable={editable} onUpdateField={onUpdateField} />
       {hasStats ? (
         <div className="flex gap-6 mt-4 flex-wrap">
           {stats.map((stat, i) => (

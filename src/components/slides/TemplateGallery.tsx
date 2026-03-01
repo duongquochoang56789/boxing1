@@ -54,9 +54,16 @@ const TemplateGallery = ({ onClose }: TemplateGalleryProps) => {
     },
   });
 
-  const filtered = category === "all"
-    ? templates
-    : templates.filter((t) => t.category === category);
+  const filtered = templates.filter((t) => {
+    const matchCategory = category === "all" || t.category === category;
+    if (!searchQuery.trim()) return matchCategory;
+    const q = searchQuery.toLowerCase();
+    return (
+      (t.name.toLowerCase().includes(q) ||
+        t.description.toLowerCase().includes(q) ||
+        t.category.toLowerCase().includes(q))
+    );
+  });
 
   const handleUseTemplate = async (template: SlideTemplate) => {
     setCreating(true);

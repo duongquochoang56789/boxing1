@@ -390,6 +390,7 @@ export type Database = {
       deck_slides: {
         Row: {
           background_color: string
+          background_image_url: string | null
           content: string
           created_at: string
           deck_id: string
@@ -406,6 +407,7 @@ export type Database = {
         }
         Insert: {
           background_color?: string
+          background_image_url?: string | null
           content?: string
           created_at?: string
           deck_id: string
@@ -422,6 +424,7 @@ export type Database = {
         }
         Update: {
           background_color?: string
+          background_image_url?: string | null
           content?: string
           created_at?: string
           deck_id?: string

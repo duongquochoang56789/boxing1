@@ -1076,10 +1076,18 @@ const DeckEditor = () => {
                   onFontSize={(size) => applyBlockStyle("size", size)}
                   onColor={(color) => applyBlockStyle("color", color)}
                   onAlign={(align) => applyBlockStyle("align", align)}
+                  onFont={(font) => applyBlockStyle("font", font)}
+                  onWeight={(weight) => applyBlockStyle("weight", weight)}
+                  onSpacing={(spacing) => applyBlockStyle("spacing", spacing)}
+                  onLineHeight={(lh) => applyBlockStyle("lineheight", lh)}
                   onClose={handleBlockClose}
                   currentSize={blockStyleMeta.size}
                   currentColor={blockStyleMeta.color}
                   currentAlign={blockStyleMeta.align}
+                  currentFont={blockStyleMeta.font}
+                  currentWeight={blockStyleMeta.weight}
+                  currentSpacing={blockStyleMeta.spacing}
+                  currentLineHeight={blockStyleMeta.lineheight}
                 />
               )}
             </div>

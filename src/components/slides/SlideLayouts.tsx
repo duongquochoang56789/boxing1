@@ -868,7 +868,7 @@ export const ImageFullSlide = ({ slide, editable, onUpdateField, onBlockSelect, 
 };
 
 /* ==================== COMPARISON — side-by-side split ==================== */
-export const ComparisonSlide = ({ slide }: { slide: SlideData }) => {
+export const ComparisonSlide = ({ slide, editable, onUpdateField, onBlockSelect, selectedBlock }: { slide: SlideData } & EditableProps) => {
   const colors = sectionColors[slide.section_name] || sectionColors.brand;
   const bg = getSlideBg(slide, colors);
   const hex = accentHex[slide.section_name] || accentHex.brand;

@@ -609,7 +609,7 @@ export const TimelineSlide = ({ slide, editable, onUpdateField }: { slide: Slide
 
   return (
     <div className={`w-full h-full ${getSlideBg(slide, colors).className} flex flex-col justify-center px-16 py-12`} style={getSlideBg(slide, colors).style}>
-      <SlideHeader slide={slide} colors={colors} />
+      <SlideHeader slide={slide} colors={colors} editable={editable} onUpdateField={onUpdateField} />
       {hasTimeline ? (
         <div className="relative mt-6 flex-1 flex flex-col justify-center">
           {/* Horizontal line */}

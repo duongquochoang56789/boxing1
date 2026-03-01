@@ -25,6 +25,7 @@ import SlideComments from "@/components/slides/SlideComments";
 import SlideVersionHistory from "@/components/slides/SlideVersionHistory";
 import { exportToPptx } from "@/lib/exportPptx";
 import BlockToolbar from "@/components/slides/BlockToolbar";
+import BlockContextMenu from "@/components/slides/BlockContextMenu";
 
 interface DeckSlide {
   id: string;
@@ -151,6 +152,8 @@ const DeckEditor = () => {
   const [selectedBlock, setSelectedBlock] = useState<number | null>(null);
   const [blockToolbarPos, setBlockToolbarPos] = useState<{ top: number; left: number } | null>(null);
   const [blockStyleMeta, setBlockStyleMeta] = useState<Record<string, string>>({});
+  const [contextMenuPos, setContextMenuPos] = useState<{ x: number; y: number } | null>(null);
+  const [contextMenuBlock, setContextMenuBlock] = useState<number | null>(null);
   const history = useSlideHistory();
   const { templates, saveTemplate, deleteTemplate } = useSlideTemplates();
 
@@ -705,6 +708,18 @@ const DeckEditor = () => {
     setSelectedBlock(selectedBlock + 1);
   }, [slide, selectedBlock, findBlockLineIndex, updateSlide]);
 
+  // Context menu handler
+  const handleBlockContextMenu = useCallback((blockIndex: number, pos: { x: number; y: number }) => {
+    setContextMenuBlock(blockIndex);
+    setContextMenuPos(pos);
+    setSelectedBlock(blockIndex);
+  }, []);
+
+  const closeContextMenu = useCallback(() => {
+    setContextMenuPos(null);
+    setContextMenuBlock(null);
+  }, []);
+
   const handleInlineUpdate = useCallback((field: 'title' | 'subtitle' | 'content', value: string) => {
     updateSlide(field, value);
   }, [updateSlide]);
@@ -1138,6 +1153,7 @@ const DeckEditor = () => {
                     editable={true}
                     onUpdateField={handleInlineUpdate}
                     onBlockSelect={handleBlockSelect}
+                    onBlockContextMenu={handleBlockContextMenu}
                     selectedBlock={selectedBlock}
                   />
                 </div>
@@ -1176,6 +1192,62 @@ const DeckEditor = () => {
                   currentPadding={blockStyleMeta.pad}
                   currentMarginTop={blockStyleMeta.mt}
                   currentMarginBottom={blockStyleMeta.mb}
+                />
+              )}
+              {/* Block Context Menu */}
+              {contextMenuPos && contextMenuBlock !== null && slide && (
+                <BlockContextMenu
+                  position={contextMenuPos}
+                  onMoveUp={() => {
+                    if (contextMenuBlock <= 0) return;
+                    const lines = slide.content.split("\n");
+                    const curIdx = findBlockLineIndex(slide.content, contextMenuBlock);
+                    const prevIdx = findBlockLineIndex(slide.content, contextMenuBlock - 1);
+                    if (curIdx === -1 || prevIdx === -1) return;
+                    [lines[curIdx], lines[prevIdx]] = [lines[prevIdx], lines[curIdx]];
+                    updateSlide("content", lines.join("\n"));
+                    setSelectedBlock(contextMenuBlock - 1);
+                  }}
+                  onMoveDown={() => {
+                    const blockCount = getBlockCount(slide.content);
+                    if (contextMenuBlock >= blockCount - 1) return;
+                    const lines = slide.content.split("\n");
+                    const curIdx = findBlockLineIndex(slide.content, contextMenuBlock);
+                    const nextIdx = findBlockLineIndex(slide.content, contextMenuBlock + 1);
+                    if (curIdx === -1 || nextIdx === -1) return;
+                    [lines[curIdx], lines[nextIdx]] = [lines[nextIdx], lines[curIdx]];
+                    updateSlide("content", lines.join("\n"));
+                    setSelectedBlock(contextMenuBlock + 1);
+                  }}
+                  onDuplicate={() => {
+                    const lines = slide.content.split("\n");
+                    const lineIdx = findBlockLineIndex(slide.content, contextMenuBlock);
+                    if (lineIdx === -1) return;
+                    lines.splice(lineIdx + 1, 0, lines[lineIdx]);
+                    updateSlide("content", lines.join("\n"));
+                    setSelectedBlock(contextMenuBlock + 1);
+                  }}
+                  onDelete={() => {
+                    const blockCount = getBlockCount(slide.content);
+                    if (blockCount <= 1) return;
+                    const lines = slide.content.split("\n");
+                    const lineIdx = findBlockLineIndex(slide.content, contextMenuBlock);
+                    if (lineIdx === -1) return;
+                    lines.splice(lineIdx, 1);
+                    updateSlide("content", lines.join("\n"));
+                    handleBlockClose();
+                  }}
+                  onAddBelow={() => {
+                    const lines = slide.content.split("\n");
+                    const lineIdx = findBlockLineIndex(slide.content, contextMenuBlock);
+                    if (lineIdx === -1) return;
+                    lines.splice(lineIdx + 1, 0, "Nội dung mới...");
+                    updateSlide("content", lines.join("\n"));
+                    setSelectedBlock(contextMenuBlock + 1);
+                  }}
+                  onClose={closeContextMenu}
+                  canMoveUp={contextMenuBlock > 0}
+                  canMoveDown={contextMenuBlock < getBlockCount(slide.content) - 1}
                 />
               )}
             </div>

@@ -16,6 +16,7 @@ interface EditableProps {
   editable?: boolean;
   onUpdateField?: (field: 'title' | 'subtitle' | 'content', value: string) => void;
   onBlockSelect?: (blockIndex: number, rect: DOMRect) => void;
+  onBlockContextMenu?: (blockIndex: number, pos: { x: number; y: number }) => void;
   selectedBlock?: number | null;
 }
 
@@ -124,9 +125,10 @@ const renderInlineRich = (text: string, accent: string) => {
 };
 
 // Wrap element with block selection capability
-const BlockWrapper = ({ index, children, onBlockSelect, selectedBlock, styleMeta }: {
+const BlockWrapper = ({ index, children, onBlockSelect, onBlockContextMenu, selectedBlock, styleMeta }: {
   index: number; children: React.ReactNode;
   onBlockSelect?: (blockIndex: number, rect: DOMRect) => void;
+  onBlockContextMenu?: (blockIndex: number, pos: { x: number; y: number }) => void;
   selectedBlock?: number | null;
   styleMeta?: Record<string, string>;
 }) => {
@@ -149,6 +151,12 @@ const BlockWrapper = ({ index, children, onBlockSelect, selectedBlock, styleMeta
         const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
         onBlockSelect(index, rect);
       }}
+      onContextMenu={(e) => {
+        if (!onBlockContextMenu) return;
+        e.preventDefault();
+        e.stopPropagation();
+        onBlockContextMenu(index, { x: e.clientX, y: e.clientY });
+      }}
     >
       {children}
     </div>
@@ -156,9 +164,10 @@ const BlockWrapper = ({ index, children, onBlockSelect, selectedBlock, styleMeta
 };
 
 // Parse markdown-like content into lines
-const ContentBlock = ({ content, accent, onBlockSelect, selectedBlock }: { 
+const ContentBlock = ({ content, accent, onBlockSelect, onBlockContextMenu, selectedBlock }: { 
   content: string; accent: string;
   onBlockSelect?: (blockIndex: number, rect: DOMRect) => void;
+  onBlockContextMenu?: (blockIndex: number, pos: { x: number; y: number }) => void;
   selectedBlock?: number | null;
 }) => {
   const lines = content.split("\n");
@@ -199,7 +208,7 @@ const ContentBlock = ({ content, accent, onBlockSelect, selectedBlock }: {
       }
       i++; // skip closing ```
       elements.push(
-        <BlockWrapper key={`code-${i}`} index={currentBlockIdx} onBlockSelect={onBlockSelect} selectedBlock={selectedBlock} styleMeta={styleMeta}>
+        <BlockWrapper key={`code-${i}`} index={currentBlockIdx} onBlockSelect={onBlockSelect} onBlockContextMenu={onBlockContextMenu} selectedBlock={selectedBlock} styleMeta={styleMeta}>
           <motion.pre custom={elements.length} variants={fadeIn} initial="hidden" animate="visible"
             className="bg-white/5 border border-white/10 rounded-xl p-6 overflow-x-auto"
           >
@@ -218,7 +227,7 @@ const ContentBlock = ({ content, accent, onBlockSelect, selectedBlock }: {
       const level = headingMatch[1].length;
       const sizes = ["text-[48px]", "text-[42px]", "text-[36px]", "text-[30px]"];
       elements.push(
-        <BlockWrapper key={i} index={currentBlockIdx} onBlockSelect={onBlockSelect} selectedBlock={selectedBlock} styleMeta={styleMeta}>
+        <BlockWrapper key={i} index={currentBlockIdx} onBlockSelect={onBlockSelect} onBlockContextMenu={onBlockContextMenu} selectedBlock={selectedBlock} styleMeta={styleMeta}>
           <motion.div custom={elements.length} variants={fadeIn} initial="hidden" animate="visible"
             className={`font-bold text-white ${sizes[level - 1] || sizes[2]} leading-tight mt-2`}
           >{renderInline(headingMatch[2], accent)}</motion.div>
@@ -239,7 +248,7 @@ const ContentBlock = ({ content, accent, onBlockSelect, selectedBlock }: {
         i++;
       }
       elements.push(
-        <BlockWrapper key={`ol-${i}`} index={currentBlockIdx} onBlockSelect={onBlockSelect} selectedBlock={selectedBlock} styleMeta={styleMeta}>
+        <BlockWrapper key={`ol-${i}`} index={currentBlockIdx} onBlockSelect={onBlockSelect} onBlockContextMenu={onBlockContextMenu} selectedBlock={selectedBlock} styleMeta={styleMeta}>
           <div className="space-y-3 pl-2">
             {listItems.map((item, li) => (
               <motion.div key={li} custom={elements.length + li} variants={fadeIn} initial="hidden" animate="visible"
@@ -263,7 +272,7 @@ const ContentBlock = ({ content, accent, onBlockSelect, selectedBlock }: {
       const { cleanText: nbText } = parseStyleMeta(nestedBulletMatch[2]);
       const indent = nestedBulletMatch[1].length >= 4 ? 2 : 1;
       elements.push(
-        <BlockWrapper key={i} index={currentBlockIdx} onBlockSelect={onBlockSelect} selectedBlock={selectedBlock} styleMeta={styleMeta}>
+        <BlockWrapper key={i} index={currentBlockIdx} onBlockSelect={onBlockSelect} onBlockContextMenu={onBlockContextMenu} selectedBlock={selectedBlock} styleMeta={styleMeta}>
           <motion.div custom={elements.length} variants={fadeIn} initial="hidden" animate="visible"
             className="flex items-start gap-3" style={{ paddingLeft: `${indent * 32 + 8}px` }}
           >
@@ -279,7 +288,7 @@ const ContentBlock = ({ content, accent, onBlockSelect, selectedBlock }: {
     const bulletMatch = trimmed.match(/^[\*\-]\s+(.+)$/);
     if (bulletMatch) {
       elements.push(
-        <BlockWrapper key={i} index={currentBlockIdx} onBlockSelect={onBlockSelect} selectedBlock={selectedBlock} styleMeta={styleMeta}>
+        <BlockWrapper key={i} index={currentBlockIdx} onBlockSelect={onBlockSelect} onBlockContextMenu={onBlockContextMenu} selectedBlock={selectedBlock} styleMeta={styleMeta}>
           <motion.div custom={elements.length} variants={fadeIn} initial="hidden" animate="visible"
             className="flex items-start gap-3 pl-2"
           >
@@ -295,7 +304,7 @@ const ContentBlock = ({ content, accent, onBlockSelect, selectedBlock }: {
     const boldMatch = trimmed.match(/^\*\*(.+?)\*\*\s*(.*)$/);
     if (boldMatch) {
       elements.push(
-        <BlockWrapper key={i} index={currentBlockIdx} onBlockSelect={onBlockSelect} selectedBlock={selectedBlock} styleMeta={styleMeta}>
+        <BlockWrapper key={i} index={currentBlockIdx} onBlockSelect={onBlockSelect} onBlockContextMenu={onBlockContextMenu} selectedBlock={selectedBlock} styleMeta={styleMeta}>
           <motion.div custom={elements.length} variants={fadeIn} initial="hidden" animate="visible">
             <span className={`font-bold text-[36px] ${accent}`}>{boldMatch[1]}</span>
             {boldMatch[2] && <span className="text-white/80 text-[30px] ml-2">{boldMatch[2]}</span>}
@@ -311,7 +320,7 @@ const ContentBlock = ({ content, accent, onBlockSelect, selectedBlock }: {
       const textPart = emojiMatch[2];
       const innerBold = textPart.match(/\*\*(.+?)\*\*\s*—?\s*(.*)/);
       elements.push(
-        <BlockWrapper key={i} index={currentBlockIdx} onBlockSelect={onBlockSelect} selectedBlock={selectedBlock} styleMeta={styleMeta}>
+        <BlockWrapper key={i} index={currentBlockIdx} onBlockSelect={onBlockSelect} onBlockContextMenu={onBlockContextMenu} selectedBlock={selectedBlock} styleMeta={styleMeta}>
           <motion.div custom={elements.length} variants={fadeIn} initial="hidden" animate="visible" className="flex items-start gap-3">
             <span className="text-[32px] flex-shrink-0">{emojiMatch[1]}</span>
             <div>
@@ -333,7 +342,7 @@ const ContentBlock = ({ content, accent, onBlockSelect, selectedBlock }: {
     // Quoted text
     if (trimmed.startsWith('"') || trimmed.startsWith('\u201C')) {
       elements.push(
-        <BlockWrapper key={i} index={currentBlockIdx} onBlockSelect={onBlockSelect} selectedBlock={selectedBlock} styleMeta={styleMeta}>
+        <BlockWrapper key={i} index={currentBlockIdx} onBlockSelect={onBlockSelect} onBlockContextMenu={onBlockContextMenu} selectedBlock={selectedBlock} styleMeta={styleMeta}>
           <motion.p custom={elements.length} variants={fadeIn} initial="hidden" animate="visible"
             className="text-[36px] text-white/90 italic leading-relaxed"
           >{trimmed}</motion.p>
@@ -344,7 +353,7 @@ const ContentBlock = ({ content, accent, onBlockSelect, selectedBlock }: {
     // Attribution
     if (trimmed.startsWith("—")) {
       elements.push(
-        <BlockWrapper key={i} index={currentBlockIdx} onBlockSelect={onBlockSelect} selectedBlock={selectedBlock} styleMeta={styleMeta}>
+        <BlockWrapper key={i} index={currentBlockIdx} onBlockSelect={onBlockSelect} onBlockContextMenu={onBlockContextMenu} selectedBlock={selectedBlock} styleMeta={styleMeta}>
           <motion.p custom={elements.length} variants={fadeIn} initial="hidden" animate="visible"
             className="text-[26px] text-white/50 mt-2"
           >{trimmed}</motion.p>
@@ -355,7 +364,7 @@ const ContentBlock = ({ content, accent, onBlockSelect, selectedBlock }: {
 
     // Default paragraph
     elements.push(
-      <BlockWrapper key={i} index={currentBlockIdx} onBlockSelect={onBlockSelect} selectedBlock={selectedBlock} styleMeta={styleMeta}>
+      <BlockWrapper key={i} index={currentBlockIdx} onBlockSelect={onBlockSelect} onBlockContextMenu={onBlockContextMenu} selectedBlock={selectedBlock} styleMeta={styleMeta}>
         <motion.p custom={elements.length} variants={fadeIn} initial="hidden" animate="visible"
           className="text-[30px] text-white/80 leading-relaxed"
         >{renderInlineRich(trimmed, accent)}</motion.p>
@@ -487,14 +496,14 @@ export const CoverSlide = ({ slide, editable, onUpdateField, onBlockSelect, sele
 };
 
 /* ==================== TWO-COLUMN ==================== */
-export const TwoColumnSlide = ({ slide, editable, onUpdateField, onBlockSelect, selectedBlock }: { slide: SlideData } & EditableProps) => {
+export const TwoColumnSlide = ({ slide, editable, onUpdateField, onBlockSelect, onBlockContextMenu, selectedBlock }: { slide: SlideData } & EditableProps) => {
   const colors = sectionColors[slide.section_name] || sectionColors.brand;
   const bg = getSlideBg(slide, colors);
   return (
     <div className={`w-full h-full ${bg.className} flex`} style={bg.style}>
       <div className="flex-1 flex flex-col justify-center px-16 py-12">
         <SlideHeader slide={slide} colors={colors} editable={editable} onUpdateField={onUpdateField} />
-        <ContentBlock content={slide.content} accent={colors.accent} onBlockSelect={onBlockSelect} selectedBlock={selectedBlock} />
+        <ContentBlock content={slide.content} accent={colors.accent} onBlockSelect={onBlockSelect} onBlockContextMenu={onBlockContextMenu} selectedBlock={selectedBlock} />
       </div>
       {slide.image_url && (
         <div className="w-[45%] relative">
@@ -1123,9 +1132,9 @@ const layoutMap: Record<string, React.ComponentType<{ slide: SlideData } & Edita
   team: TeamSlide,
 };
 
-export const SlideRenderer = ({ slide, editable, onUpdateField, onBlockSelect, selectedBlock }: { slide: SlideData } & EditableProps) => {
+export const SlideRenderer = ({ slide, editable, onUpdateField, onBlockSelect, onBlockContextMenu, selectedBlock }: { slide: SlideData } & EditableProps) => {
   const Layout = layoutMap[slide.layout] || TwoColumnSlide;
-  return <Layout slide={slide} editable={editable} onUpdateField={onUpdateField} onBlockSelect={onBlockSelect} selectedBlock={selectedBlock} />;
+  return <Layout slide={slide} editable={editable} onUpdateField={onUpdateField} onBlockSelect={onBlockSelect} onBlockContextMenu={onBlockContextMenu} selectedBlock={selectedBlock} />;
 };
 
 export default SlideRenderer;

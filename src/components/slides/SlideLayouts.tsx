@@ -1010,7 +1010,7 @@ export const ProcessSlide = ({ slide, editable, onUpdateField }: { slide: SlideD
 
   return (
     <div className={`w-full h-full ${bg.className} flex flex-col justify-center px-16 py-12`} style={bg.style}>
-      <SlideHeader slide={slide} colors={colors} />
+      <SlideHeader slide={slide} colors={colors} editable={editable} onUpdateField={onUpdateField} />
       <div className="flex-1 flex items-center gap-2 mt-4">
         {steps.slice(0, 5).map((step, i) => (
           <React.Fragment key={i}>

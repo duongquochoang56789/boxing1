@@ -258,7 +258,6 @@ const SlideBuilder = () => {
                 ))}
               </div>
             </div>
-            </div>
           )}
           </>
           )}

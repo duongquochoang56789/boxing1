@@ -614,10 +614,15 @@ const DeckEditor = () => {
     line = line.replace(/\s*<!--\s*style:.+?-->\s*$/, "");
 
     // Update style metadata
-    const newMeta = { ...blockStyleMeta, [key]: value };
+    const newMeta = { ...blockStyleMeta };
     // Toggle: if the value is already set for bold/italic, remove it
     if ((key === "bold" || key === "italic") && blockStyleMeta[key]) {
       delete newMeta[key];
+    } else if (value === "" || value === "normal" || value === "400") {
+      // Remove default/empty values
+      delete newMeta[key];
+    } else {
+      newMeta[key] = value;
     }
     setBlockStyleMeta(newMeta);
 

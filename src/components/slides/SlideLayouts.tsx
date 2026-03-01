@@ -432,7 +432,7 @@ const getSlideBg = (slide: SlideData, colors: { bg: string }) => {
 };
 
 /* ==================== COVER ==================== */
-export const CoverSlide = ({ slide }: { slide: SlideData }) => {
+export const CoverSlide = ({ slide, editable, onUpdateField, onBlockSelect, selectedBlock }: { slide: SlideData } & EditableProps) => {
   const colors = sectionColors[slide.section_name] || sectionColors.brand;
   const bg = getSlideBg(slide, colors);
   return (
@@ -442,19 +442,17 @@ export const CoverSlide = ({ slide }: { slide: SlideData }) => {
       )}
       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
       <div className="relative z-10 text-center px-20">
-        <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}
-          className={`font-bold text-white tracking-tight leading-none ${
-            slide.title.length > 20 ? "text-[72px]" : slide.title.length > 12 ? "text-[84px]" : "text-[96px]"
-          }`}
-        >
-          {slide.title}
-        </motion.h1>
+        <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
+          <EditableText value={slide.title} field="title" editable={editable} onUpdateField={onUpdateField}
+            className={`font-bold text-white tracking-tight leading-none ${
+              slide.title.length > 20 ? "text-[72px]" : slide.title.length > 12 ? "text-[84px]" : "text-[96px]"
+            }`} />
+        </motion.div>
         {slide.subtitle && (
-          <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
-            className={`text-[48px] mt-6 ${colors.accent} font-medium`}
-          >
-            {slide.subtitle}
-          </motion.p>
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+            <EditableText value={slide.subtitle} field="subtitle" editable={editable} onUpdateField={onUpdateField}
+              className={`text-[48px] mt-6 ${colors.accent} font-medium`} />
+          </motion.div>
         )}
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }}
           className="mt-10 text-[30px] text-white/60 leading-relaxed whitespace-pre-line"

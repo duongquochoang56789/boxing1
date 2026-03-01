@@ -364,7 +364,7 @@ const ContentBlock = ({ content, accent, onBlockSelect, onBlockContextMenu, sele
 
     // Default paragraph
     elements.push(
-      <BlockWrapper key={i} index={currentBlockIdx} onBlockSelect={onBlockSelect} selectedBlock={selectedBlock} styleMeta={styleMeta}>
+      <BlockWrapper key={i} index={currentBlockIdx} onBlockSelect={onBlockSelect} onBlockContextMenu={onBlockContextMenu} selectedBlock={selectedBlock} styleMeta={styleMeta}>
         <motion.p custom={elements.length} variants={fadeIn} initial="hidden" animate="visible"
           className="text-[30px] text-white/80 leading-relaxed"
         >{renderInlineRich(trimmed, accent)}</motion.p>

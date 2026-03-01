@@ -961,7 +961,7 @@ export const SwotSlide = ({ slide, editable, onUpdateField }: { slide: SlideData
 
   return (
     <div className={`w-full h-full ${bg.className} flex flex-col px-16 py-12`} style={bg.style}>
-      <SlideHeader slide={slide} colors={colors} />
+      <SlideHeader slide={slide} colors={colors} editable={editable} onUpdateField={onUpdateField} />
       <div className="flex-1 grid grid-cols-2 grid-rows-2 gap-4 mt-4">
         {quadrants.map((q, i) => {
           const sectionContent = sections[i] || "";

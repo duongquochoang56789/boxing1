@@ -58,6 +58,8 @@ interface FloatingToolbarProps {
   onSaveTemplate: () => void;
   onUseTemplate: () => void;
   onPresent: () => void;
+  zenMode: boolean;
+  onToggleZen: () => void;
 }
 
 const FloatingToolbar = ({

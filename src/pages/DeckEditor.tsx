@@ -444,6 +444,79 @@ const DeckEditor = () => {
     setSlides(prev => prev.map((s, i) => i === current ? { ...s, background_color: color } : s));
   };
 
+  // Image upload handler
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !slide) return;
+    if (!file.type.startsWith("image/")) {
+      toast({ title: "Chỉ hỗ trợ file ảnh", variant: "destructive" });
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ title: "File quá lớn (tối đa 5MB)", variant: "destructive" });
+      return;
+    }
+    setUploadingImage(true);
+    try {
+      const ext = file.name.split(".").pop() || "jpg";
+      const path = `${deckId}/${slide.id}-${Date.now()}.${ext}`;
+      const { error: uploadError } = await supabase.storage
+        .from("deck-assets")
+        .upload(path, file, { upsert: true });
+      if (uploadError) throw uploadError;
+      const { data: urlData } = supabase.storage.from("deck-assets").getPublicUrl(path);
+      const publicUrl = urlData.publicUrl;
+      // Update as background image
+      await supabase.from("deck_slides").update({ background_image_url: publicUrl } as any).eq("id", slide.id);
+      setSlides(prev => prev.map((s, i) => i === current ? { ...s, background_image_url: publicUrl } : s));
+      toast({ title: "Đã tải ảnh nền lên!" });
+    } catch (err: any) {
+      console.error("Upload error:", err);
+      toast({ title: "Lỗi tải ảnh: " + (err.message || "Unknown"), variant: "destructive" });
+    }
+    setUploadingImage(false);
+    // Reset input
+    if (imageInputRef.current) imageInputRef.current.value = "";
+  };
+
+  const handleUploadAsSlideImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !slide) return;
+    if (!file.type.startsWith("image/")) {
+      toast({ title: "Chỉ hỗ trợ file ảnh", variant: "destructive" });
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ title: "File quá lớn (tối đa 5MB)", variant: "destructive" });
+      return;
+    }
+    setUploadingImage(true);
+    try {
+      const ext = file.name.split(".").pop() || "jpg";
+      const path = `${deckId}/${slide.id}-img-${Date.now()}.${ext}`;
+      const { error: uploadError } = await supabase.storage
+        .from("deck-assets")
+        .upload(path, file, { upsert: true });
+      if (uploadError) throw uploadError;
+      const { data: urlData } = supabase.storage.from("deck-assets").getPublicUrl(path);
+      const publicUrl = urlData.publicUrl;
+      await supabase.from("deck_slides").update({ image_url: publicUrl }).eq("id", slide.id);
+      setSlides(prev => prev.map((s, i) => i === current ? { ...s, image_url: publicUrl } : s));
+      toast({ title: "Đã tải ảnh slide lên!" });
+    } catch (err: any) {
+      console.error("Upload error:", err);
+      toast({ title: "Lỗi tải ảnh: " + (err.message || "Unknown"), variant: "destructive" });
+    }
+    setUploadingImage(false);
+  };
+
+  const removeBgImage = async () => {
+    if (!slide) return;
+    await supabase.from("deck_slides").update({ background_image_url: null } as any).eq("id", slide.id);
+    setSlides(prev => prev.map((s, i) => i === current ? { ...s, background_image_url: null } : s));
+    toast({ title: "Đã xoá ảnh nền" });
+  };
+
   const applyTheme = async (themeId: string) => {
     if (!deckId) return;
     const theme = THEME_PRESETS.find(t => t.id === themeId);

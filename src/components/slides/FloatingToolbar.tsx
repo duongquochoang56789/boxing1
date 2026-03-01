@@ -158,6 +158,18 @@ const FloatingToolbar = ({
 
         <div className="w-px h-4 bg-white/10 mx-0.5" />
 
+        {/* Zen Mode */}
+        <Button size="sm" variant="ghost" onClick={onToggleZen} className="text-white/40 hover:text-white p-1.5 h-7 w-7" title="Zen Mode">
+          <Maximize className="w-3.5 h-3.5" />
+        </Button>
+
+        {/* Command Palette hint */}
+        <Button size="sm" variant="ghost" onClick={() => {}} className="text-white/20 hover:text-white/40 p-1.5 h-7 text-[10px] gap-1" title="Ctrl+K">
+          <Command className="w-3 h-3" /> K
+        </Button>
+
+        <div className="w-px h-4 bg-white/10 mx-0.5" />
+
         {/* Present */}
         <Button size="sm" onClick={onPresent} className="bg-orange-500 hover:bg-orange-600 text-white h-7 px-3 text-xs gap-1.5">
           <Presentation className="w-3.5 h-3.5" /> Trình chiếu

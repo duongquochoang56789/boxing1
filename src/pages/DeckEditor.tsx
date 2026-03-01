@@ -969,6 +969,8 @@ const DeckEditor = () => {
         }}
         onUseTemplate={() => setShowTemplateList(true)}
         onPresent={() => navigate(`/slides/${deckId}/present`)}
+        zenMode={zenMode}
+        onToggleZen={() => setZenMode(prev => !prev)}
       />
 
       {/* Main editor area */}

@@ -948,7 +948,7 @@ export const FunnelSlide = ({ slide, editable, onUpdateField }: { slide: SlideDa
 };
 
 /* ==================== SWOT — 2x2 matrix ==================== */
-export const SwotSlide = ({ slide }: { slide: SlideData }) => {
+export const SwotSlide = ({ slide, editable, onUpdateField }: { slide: SlideData } & EditableProps) => {
   const colors = sectionColors[slide.section_name] || sectionColors.brand;
   const bg = getSlideBg(slide, colors);
   const sections = slide.content.split(/\n(?:---)\n|\n\n/).filter(s => s.trim());

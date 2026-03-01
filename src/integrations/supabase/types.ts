@@ -803,6 +803,45 @@ export type Database = {
           },
         ]
       }
+      slide_templates: {
+        Row: {
+          accent_color: string
+          category: string
+          created_at: string
+          description: string
+          id: string
+          is_featured: boolean
+          name: string
+          slide_count: number
+          slides: Json
+          thumbnail_emoji: string
+        }
+        Insert: {
+          accent_color?: string
+          category?: string
+          created_at?: string
+          description?: string
+          id?: string
+          is_featured?: boolean
+          name: string
+          slide_count?: number
+          slides?: Json
+          thumbnail_emoji?: string
+        }
+        Update: {
+          accent_color?: string
+          category?: string
+          created_at?: string
+          description?: string
+          id?: string
+          is_featured?: boolean
+          name?: string
+          slide_count?: number
+          slides?: Json
+          thumbnail_emoji?: string
+        }
+        Relationships: []
+      }
       slide_versions: {
         Row: {
           content: string

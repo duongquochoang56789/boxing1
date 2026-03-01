@@ -353,7 +353,7 @@ const ContentBlock = ({ content, accent, onBlockSelect, onBlockContextMenu, sele
     // Attribution
     if (trimmed.startsWith("—")) {
       elements.push(
-        <BlockWrapper key={i} index={currentBlockIdx} onBlockSelect={onBlockSelect} selectedBlock={selectedBlock} styleMeta={styleMeta}>
+        <BlockWrapper key={i} index={currentBlockIdx} onBlockSelect={onBlockSelect} onBlockContextMenu={onBlockContextMenu} selectedBlock={selectedBlock} styleMeta={styleMeta}>
           <motion.p custom={elements.length} variants={fadeIn} initial="hidden" animate="visible"
             className="text-[26px] text-white/50 mt-2"
           >{trimmed}</motion.p>

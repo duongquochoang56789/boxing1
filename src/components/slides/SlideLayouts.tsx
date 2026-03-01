@@ -101,18 +101,59 @@ const renderInlineRich = (text: string, accent: string) => {
   return parts;
 };
 
+// Wrap element with block selection capability
+const BlockWrapper = ({ index, children, onBlockSelect, selectedBlock, styleMeta }: {
+  index: number; children: React.ReactNode;
+  onBlockSelect?: (blockIndex: number, rect: DOMRect) => void;
+  selectedBlock?: number | null;
+  styleMeta?: Record<string, string>;
+}) => {
+  const extraStyle = styleMeta ? getStyleClasses(styleMeta) : {};
+  if (!onBlockSelect) {
+    return Object.keys(extraStyle).length > 0
+      ? <div style={extraStyle}>{children}</div>
+      : <>{children}</>;
+  }
+  return (
+    <div
+      className={`relative cursor-pointer rounded transition-all ${
+        selectedBlock === index
+          ? "ring-2 ring-orange-400/60 bg-orange-400/5"
+          : "hover:ring-1 hover:ring-white/20"
+      }`}
+      style={extraStyle}
+      onClick={(e) => {
+        e.stopPropagation();
+        const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+        onBlockSelect(index, rect);
+      }}
+    >
+      {children}
+    </div>
+  );
+};
+
 // Parse markdown-like content into lines
-const ContentBlock = ({ content, accent }: { content: string; accent: string }) => {
+const ContentBlock = ({ content, accent, onBlockSelect, selectedBlock }: { 
+  content: string; accent: string;
+  onBlockSelect?: (blockIndex: number, rect: DOMRect) => void;
+  selectedBlock?: number | null;
+}) => {
   const lines = content.split("\n");
   const elements: React.ReactNode[] = [];
   let i = 0;
+  let blockIdx = 0;
 
   while (i < lines.length) {
     const line = lines[i];
-    const trimmed = line.trim();
+    const rawTrimmed = line.trim();
+
+    // Parse style metadata
+    const { cleanText: trimmed, styles: styleMeta } = parseStyleMeta(rawTrimmed);
+    const currentBlockIdx = blockIdx++;
 
     // Skip empty lines and table rows
-    if (!trimmed || trimmed.startsWith("|")) { i++; continue; }
+    if (!trimmed || trimmed.startsWith("|")) { i++; blockIdx--; continue; }
 
     // Horizontal rule: --- or ***
     if (/^[-*_]{3,}$/.test(trimmed)) {
@@ -136,27 +177,30 @@ const ContentBlock = ({ content, accent }: { content: string; accent: string }) 
       }
       i++; // skip closing ```
       elements.push(
-        <motion.pre key={`code-${i}`} custom={elements.length} variants={fadeIn} initial="hidden" animate="visible"
-          className="bg-white/5 border border-white/10 rounded-xl p-6 overflow-x-auto"
-        >
-          <code className="text-[22px] font-mono text-emerald-300 leading-relaxed whitespace-pre">
-            {codeLines.join("\n")}
-          </code>
-        </motion.pre>
+        <BlockWrapper key={`code-${i}`} index={currentBlockIdx} onBlockSelect={onBlockSelect} selectedBlock={selectedBlock} styleMeta={styleMeta}>
+          <motion.pre custom={elements.length} variants={fadeIn} initial="hidden" animate="visible"
+            className="bg-white/5 border border-white/10 rounded-xl p-6 overflow-x-auto"
+          >
+            <code className="text-[22px] font-mono text-emerald-300 leading-relaxed whitespace-pre">
+              {codeLines.join("\n")}
+            </code>
+          </motion.pre>
+        </BlockWrapper>
       );
       continue;
     }
 
-    // Inline code: `code`
     // Headings: ### text
     const headingMatch = trimmed.match(/^(#{1,4})\s+(.+)$/);
     if (headingMatch) {
       const level = headingMatch[1].length;
       const sizes = ["text-[48px]", "text-[42px]", "text-[36px]", "text-[30px]"];
       elements.push(
-        <motion.div key={i} custom={elements.length} variants={fadeIn} initial="hidden" animate="visible"
-          className={`font-bold text-white ${sizes[level - 1] || sizes[2]} leading-tight mt-2`}
-        >{renderInline(headingMatch[2], accent)}</motion.div>
+        <BlockWrapper key={i} index={currentBlockIdx} onBlockSelect={onBlockSelect} selectedBlock={selectedBlock} styleMeta={styleMeta}>
+          <motion.div custom={elements.length} variants={fadeIn} initial="hidden" animate="visible"
+            className={`font-bold text-white ${sizes[level - 1] || sizes[2]} leading-tight mt-2`}
+          >{renderInline(headingMatch[2], accent)}</motion.div>
+        </BlockWrapper>
       );
       i++; continue;
     }
@@ -166,39 +210,45 @@ const ContentBlock = ({ content, accent }: { content: string; accent: string }) 
     if (numberedMatch) {
       const listItems: { num: string; text: string }[] = [];
       while (i < lines.length) {
-        const nm = lines[i].trim().match(/^(\d+)[.)]\s+(.+)$/);
+        const { cleanText: ct } = parseStyleMeta(lines[i].trim());
+        const nm = ct.match(/^(\d+)[.)]\s+(.+)$/);
         if (!nm) break;
         listItems.push({ num: nm[1], text: nm[2] });
         i++;
       }
       elements.push(
-        <div key={`ol-${i}`} className="space-y-3 pl-2">
-          {listItems.map((item, li) => (
-            <motion.div key={li} custom={elements.length + li} variants={fadeIn} initial="hidden" animate="visible"
-              className="flex items-start gap-4"
-            >
-              <span className={`${accent} text-[26px] font-bold min-w-[36px] h-[36px] rounded-full bg-white/5 flex items-center justify-center flex-shrink-0 mt-1`}>
-                {item.num}
-              </span>
-              <span className="text-white/80 text-[28px] leading-relaxed">{renderInline(item.text, accent)}</span>
-            </motion.div>
-          ))}
-        </div>
+        <BlockWrapper key={`ol-${i}`} index={currentBlockIdx} onBlockSelect={onBlockSelect} selectedBlock={selectedBlock} styleMeta={styleMeta}>
+          <div className="space-y-3 pl-2">
+            {listItems.map((item, li) => (
+              <motion.div key={li} custom={elements.length + li} variants={fadeIn} initial="hidden" animate="visible"
+                className="flex items-start gap-4"
+              >
+                <span className={`${accent} text-[26px] font-bold min-w-[36px] h-[36px] rounded-full bg-white/5 flex items-center justify-center flex-shrink-0 mt-1`}>
+                  {item.num}
+                </span>
+                <span className="text-white/80 text-[28px] leading-relaxed">{renderInline(item.text, accent)}</span>
+              </motion.div>
+            ))}
+          </div>
+        </BlockWrapper>
       );
       continue;
     }
 
-    // Nested bullet: starts with spaces/tab + * or -
+    // Nested bullet
     const nestedBulletMatch = line.match(/^(\s{2,}|\t+)[\*\-]\s+(.+)$/);
     if (nestedBulletMatch) {
+      const { cleanText: nbText } = parseStyleMeta(nestedBulletMatch[2]);
       const indent = nestedBulletMatch[1].length >= 4 ? 2 : 1;
       elements.push(
-        <motion.div key={i} custom={elements.length} variants={fadeIn} initial="hidden" animate="visible"
-          className="flex items-start gap-3" style={{ paddingLeft: `${indent * 32 + 8}px` }}
-        >
-          <span className={`${accent} text-[22px] mt-1.5 flex-shrink-0 opacity-60`}>◦</span>
-          <span className="text-white/70 text-[26px] leading-relaxed">{renderInline(nestedBulletMatch[2], accent)}</span>
-        </motion.div>
+        <BlockWrapper key={i} index={currentBlockIdx} onBlockSelect={onBlockSelect} selectedBlock={selectedBlock} styleMeta={styleMeta}>
+          <motion.div custom={elements.length} variants={fadeIn} initial="hidden" animate="visible"
+            className="flex items-start gap-3" style={{ paddingLeft: `${indent * 32 + 8}px` }}
+          >
+            <span className={`${accent} text-[22px] mt-1.5 flex-shrink-0 opacity-60`}>◦</span>
+            <span className="text-white/70 text-[26px] leading-relaxed">{renderInline(nbText, accent)}</span>
+          </motion.div>
+        </BlockWrapper>
       );
       i++; continue;
     }
@@ -207,12 +257,14 @@ const ContentBlock = ({ content, accent }: { content: string; accent: string }) 
     const bulletMatch = trimmed.match(/^[\*\-]\s+(.+)$/);
     if (bulletMatch) {
       elements.push(
-        <motion.div key={i} custom={elements.length} variants={fadeIn} initial="hidden" animate="visible"
-          className="flex items-start gap-3 pl-2"
-        >
-          <span className={`${accent} text-[28px] mt-1 flex-shrink-0`}>•</span>
-          <span className="text-white/80 text-[28px] leading-relaxed">{renderInlineRich(bulletMatch[1], accent)}</span>
-        </motion.div>
+        <BlockWrapper key={i} index={currentBlockIdx} onBlockSelect={onBlockSelect} selectedBlock={selectedBlock} styleMeta={styleMeta}>
+          <motion.div custom={elements.length} variants={fadeIn} initial="hidden" animate="visible"
+            className="flex items-start gap-3 pl-2"
+          >
+            <span className={`${accent} text-[28px] mt-1 flex-shrink-0`}>•</span>
+            <span className="text-white/80 text-[28px] leading-relaxed">{renderInlineRich(bulletMatch[1], accent)}</span>
+          </motion.div>
+        </BlockWrapper>
       );
       i++; continue;
     }
@@ -221,10 +273,12 @@ const ContentBlock = ({ content, accent }: { content: string; accent: string }) 
     const boldMatch = trimmed.match(/^\*\*(.+?)\*\*\s*(.*)$/);
     if (boldMatch) {
       elements.push(
-        <motion.div key={i} custom={elements.length} variants={fadeIn} initial="hidden" animate="visible">
-          <span className={`font-bold text-[36px] ${accent}`}>{boldMatch[1]}</span>
-          {boldMatch[2] && <span className="text-white/80 text-[30px] ml-2">{boldMatch[2]}</span>}
-        </motion.div>
+        <BlockWrapper key={i} index={currentBlockIdx} onBlockSelect={onBlockSelect} selectedBlock={selectedBlock} styleMeta={styleMeta}>
+          <motion.div custom={elements.length} variants={fadeIn} initial="hidden" animate="visible">
+            <span className={`font-bold text-[36px] ${accent}`}>{boldMatch[1]}</span>
+            {boldMatch[2] && <span className="text-white/80 text-[30px] ml-2">{boldMatch[2]}</span>}
+          </motion.div>
+        </BlockWrapper>
       );
       i++; continue;
     }
@@ -235,19 +289,21 @@ const ContentBlock = ({ content, accent }: { content: string; accent: string }) 
       const textPart = emojiMatch[2];
       const innerBold = textPart.match(/\*\*(.+?)\*\*\s*—?\s*(.*)/);
       elements.push(
-        <motion.div key={i} custom={elements.length} variants={fadeIn} initial="hidden" animate="visible" className="flex items-start gap-3">
-          <span className="text-[32px] flex-shrink-0">{emojiMatch[1]}</span>
-          <div>
-            {innerBold ? (
-              <>
-                <span className={`font-bold text-[30px] ${accent}`}>{innerBold[1]}</span>
-                {innerBold[2] && <span className="text-white/70 text-[28px]"> — {innerBold[2]}</span>}
-              </>
-            ) : (
-              <span className="text-white/80 text-[30px]">{renderInline(textPart, accent)}</span>
-            )}
-          </div>
-        </motion.div>
+        <BlockWrapper key={i} index={currentBlockIdx} onBlockSelect={onBlockSelect} selectedBlock={selectedBlock} styleMeta={styleMeta}>
+          <motion.div custom={elements.length} variants={fadeIn} initial="hidden" animate="visible" className="flex items-start gap-3">
+            <span className="text-[32px] flex-shrink-0">{emojiMatch[1]}</span>
+            <div>
+              {innerBold ? (
+                <>
+                  <span className={`font-bold text-[30px] ${accent}`}>{innerBold[1]}</span>
+                  {innerBold[2] && <span className="text-white/70 text-[28px]"> — {innerBold[2]}</span>}
+                </>
+              ) : (
+                <span className="text-white/80 text-[30px]">{renderInline(textPart, accent)}</span>
+              )}
+            </div>
+          </motion.div>
+        </BlockWrapper>
       );
       i++; continue;
     }
@@ -255,27 +311,33 @@ const ContentBlock = ({ content, accent }: { content: string; accent: string }) 
     // Quoted text
     if (trimmed.startsWith('"') || trimmed.startsWith('\u201C')) {
       elements.push(
-        <motion.p key={i} custom={elements.length} variants={fadeIn} initial="hidden" animate="visible"
-          className="text-[36px] text-white/90 italic leading-relaxed"
-        >{trimmed}</motion.p>
+        <BlockWrapper key={i} index={currentBlockIdx} onBlockSelect={onBlockSelect} selectedBlock={selectedBlock} styleMeta={styleMeta}>
+          <motion.p custom={elements.length} variants={fadeIn} initial="hidden" animate="visible"
+            className="text-[36px] text-white/90 italic leading-relaxed"
+          >{trimmed}</motion.p>
+        </BlockWrapper>
       );
       i++; continue;
     }
     // Attribution
     if (trimmed.startsWith("—")) {
       elements.push(
-        <motion.p key={i} custom={elements.length} variants={fadeIn} initial="hidden" animate="visible"
-          className="text-[26px] text-white/50 mt-2"
-        >{trimmed}</motion.p>
+        <BlockWrapper key={i} index={currentBlockIdx} onBlockSelect={onBlockSelect} selectedBlock={selectedBlock} styleMeta={styleMeta}>
+          <motion.p custom={elements.length} variants={fadeIn} initial="hidden" animate="visible"
+            className="text-[26px] text-white/50 mt-2"
+          >{trimmed}</motion.p>
+        </BlockWrapper>
       );
       i++; continue;
     }
 
-    // Default paragraph with inline formatting (supports `code`, links)
+    // Default paragraph
     elements.push(
-      <motion.p key={i} custom={elements.length} variants={fadeIn} initial="hidden" animate="visible"
-        className="text-[30px] text-white/80 leading-relaxed"
-      >{renderInlineRich(trimmed, accent)}</motion.p>
+      <BlockWrapper key={i} index={currentBlockIdx} onBlockSelect={onBlockSelect} selectedBlock={selectedBlock} styleMeta={styleMeta}>
+        <motion.p custom={elements.length} variants={fadeIn} initial="hidden" animate="visible"
+          className="text-[30px] text-white/80 leading-relaxed"
+        >{renderInlineRich(trimmed, accent)}</motion.p>
+      </BlockWrapper>
     );
     i++;
   }

@@ -312,7 +312,7 @@ const DeckEditor = () => {
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [slides, current, handleUndo, handleRedo]);
+  }, [slides, current, handleUndo, handleRedo, zenMode, showEditorGrid]);
 
   const saveAll = async () => {
     setSaving(true);

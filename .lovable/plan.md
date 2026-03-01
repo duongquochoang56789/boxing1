@@ -1,86 +1,90 @@
 
 
-# Ke hoach: Search trong Template Gallery + Chuyen doi sang UI Minimalist
+# Tich hop AI Slide Builder vao Trang chu FLYFIT
 
-## Phan 1: Them tinh nang Search vao Template Gallery
+## Tong quan
+Hien tai, AI Slide Builder chi co the truy cap qua menu "Du an" trong Header (di den `/slides`), nhung tren trang chu khong co section nao gioi thieu hay quang ba tinh nang nay. Ke hoach nay se:
 
-### Thay doi
-
-**File sua: `src/components/slides/TemplateGallery.tsx`**
-- Them state `searchQuery` (string)
-- Them thanh tim kiem phia tren category filter: input voi icon Search, placeholder "Tim kiem mau slide..."
-- Cap nhat logic `filtered`: loc theo ca `category` VA `searchQuery` (match ten, mo ta, category)
-- Khi co searchQuery, tu dong chuyen category ve "all" de ket qua khong bi gioi han
-- Hien thi so ket qua ("X mau") ben canh thanh tim kiem
-- Nut X de xoa nhanh searchQuery
-
-### Logic loc
-
-```text
-filtered = templates
-  -> loc theo category (neu khong phai "all")
-  -> loc theo searchQuery: name hoac description chua tu khoa (case-insensitive, normalize tieng Viet)
-```
+1. **Kiem tra va liet ke cac tinh nang chua hoan thien** cua Slide Builder
+2. **Tao mot section moi tren trang chu** de gioi thieu AI Slide Builder, dat giua cac section hien co
 
 ---
 
-## Phan 2: Ke hoach chuyen sang UI Minimalist
+## Phan 1: Tinh nang Slide Builder chua hoan thien
 
-### Triet ly Minimalist cho Slide Builder
+Dua tren ma nguon hien tai, cac tinh nang da hoat dong:
+- Tao deck bang AI tu prompt
+- Editor voi Markdown, keyboard shortcuts, auto-save indicator
+- 12 loai layout (bao gom image-full, comparison)
+- Xuat PDF, chia se public link
+- Template suggestions khi tao moi
+- Dashboard voi thumbnail, tim kiem, xoa/public/private
 
-Hien tai DeckEditor co **qua nhieu nut va tuy chon** hien thi cung luc tren man hinh (toolbar day dac, sidebar lon, nhieu dropdown). Cach tiep can minimalist:
+Cac tinh nang **chua co hoac chua hoan thien**:
+- **Drag-and-drop sap xep slide**: Chua co code keo tha trong editor (chi co nut di chuyen len/xuong)
+- **Grid View**: Khong co che do grid/overview trong editor
+- **Presenter View** voi timer, notes, next slide preview: Chua co (chi co fullscreen presentation co ban)
+- **Dark mode toggle** trong editor toolbar: Chua co
+- **Xuat PowerPoint (PPTX)**: Chua co, chi co PDF
+- **Realtime collaboration**: Chua co
 
-### Nguyen tac thiet ke
+---
 
-1. **An cho den khi can** - Chi hien cong cu khi nguoi dung tuong tac (hover, click, select)
-2. **Progressive disclosure** - Hien thi tung lop, khong do het len man hinh
-3. **Focus mode** - Man hinh mac dinh chi co slide preview, sidebar thu gon
-4. **Contextual toolbar** - Toolbar chi hien khi chon block/element
-5. **Command palette** - Dung Ctrl+K de truy cap moi tinh nang (thay cho nhieu nut)
+## Phan 2: Tao Section "AI Slide Builder" tren Trang chu
 
-### Cac thay doi cu the (lo trinh tuong lai)
+### Vi tri
+Dat section moi ngay **sau VirtualTrainingSection** va **truoc PricingSection** trong Index.tsx. Day la vi tri chien luoc vi:
+- Sau khi nguoi dung da xem dich vu va mo hinh tap luyen
+- Truoc phan bang gia, tao an tuong ve gia tri cong nghe
 
+### Thiet ke Section
+
+Section se bao gom:
+- **Tieu de**: "Tao Slide Thuyet Trinh Bang AI" voi label "Cong Cu AI"
+- **Mo ta ngan**: Nhan manh tinh nang tu dong tao slide tu prompt
+- **3 Feature Cards**: Hien thi 3 diem noi bat (Tao tu dong, 12+ Layout, Chia se de dang)
+- **Mock/Demo Preview**: Hien thi mot mockup giao dien slide builder hoac animation SVG minh hoa
+- **CTA Button**: "Thu ngay mien phi" -> dieu huong den `/slides/new` (yeu cau dang nhap)
+
+### Phong cach
+- Nen gradient nhe (charcoal -> charcoal/95) de tao contrast voi cac section sang mau cream
+- Cards dung glass effect (bg-cream/5 backdrop-blur) tuong tu style cua VirtualTrainingSection
+- Animation: fade-in khi scroll vao view (useInView)
+- Icon su dung lucide-react (Sparkles, Presentation, Layout, Share2...)
+
+### File thay doi
+
+| File | Thay doi |
+|------|---------|
+| **Tao moi**: `src/components/landing/AISlideSection.tsx` | Section gioi thieu AI Slide Builder voi 3 feature cards, mockup preview va CTA |
+| **Sua**: `src/pages/Index.tsx` | Import va them `AISlideSection` vao giua VirtualTrainingSection va PricingSection |
+
+---
+
+## Chi tiet ky thuat
+
+### AISlideSection.tsx
 ```text
-+-------+----------------------------------------+-----------+
-| Buoc  | Noi dung                               | Do kho    |
-+-------+----------------------------------------+-----------+
-| U1    | Thu gon toolbar thanh floating bar      | Trung     |
-|       | Chi hien: Save, Present, More (...)     |           |
-|       | Click "..." mo full toolbar             |           |
-+-------+----------------------------------------+-----------+
-| U2    | Sidebar thu gon mac dinh               | Thap      |
-|       | Chi hien so slide nho, hover mo rong    |           |
-|       | (da co sidebarCollapsed, can polish)    |           |
-+-------+----------------------------------------+-----------+
-| U3    | Command Palette (Ctrl+K)               | Trung     |
-|       | Tim kiem: layout, theme, export, AI...  |           |
-|       | Thay the nhieu dropdown menu            |           |
-+-------+----------------------------------------+-----------+
-| U4    | Contextual panels thay tabs             | Trung     |
-|       | Click slide -> panel edit ben phai      |           |
-|       | Click image -> panel image options      |           |
-|       | Khong hien gi khi khong chon            |           |
-+-------+----------------------------------------+-----------+
-| U5    | Zen mode / Focus mode                   | Thap      |
-|       | An het UI, chi con slide full-screen    |           |
-|       | ESC de thoat                            |           |
-+-------+----------------------------------------+-----------+
+Component structure:
+- Section wrapper: nen gradient charcoal, padding section-padding
+- Header: label "Cong Cu AI" + heading 2 dong + description
+- Feature grid (3 cols):
+  1. Icon Sparkles + "AI Tu Dong Tao" + mo ta
+  2. Icon Layout + "12+ Bo Cuc Chuyen Nghiep" + mo ta  
+  3. Icon Share2 + "Chia Se & Trinh Chieu" + mo ta
+- Demo area: Mockup 16:9 voi gradient background, fake slide preview
+- CTA: MagneticButton "Tao Slide Ngay" -> navigate("/slides/new")
+- Animation: Framer Motion whileInView + stagger cho cards
 ```
 
-### Khi nao chuyen sang UI moi?
+### Index.tsx thay doi
+```text
+- Import AISlideSection
+- Dat giua <VirtualTrainingSection /> va <PricingSection />
+```
 
-De nghi: **Sau khi hoan thanh Phase 1+2 trong roadmap** (C1-C4, M1-M3). Ly do:
-- Hien tai dang them tinh nang -> doi UI som se phai lam lai
-- Khi da co day du tinh nang, moi biet can "an" gi va "hien" gi
-- UI minimalist la buoc **polish cuoi cung** truoc khi ra mat thu tien
-
-### Trinh tu thuc hien ngay
-
-Trong session nay chi lam **Phan 1** (search template gallery) vi day la tinh nang nho, ro rang. Phan 2 (minimalist UI) se la ke hoach cho giai doan sau.
-
-### Tom tat thay doi
-
-| File | Loai | Mo ta |
-|------|------|-------|
-| `src/components/slides/TemplateGallery.tsx` | Sua | Them search input + logic loc theo tu khoa |
-
+## Tong ket
+- **1 file moi**: `AISlideSection.tsx`
+- **1 file sua**: `Index.tsx` (them 2 dong import + render)
+- Khong can migration, edge function, hay dependency moi
+- Thiet ke nhat quan voi style hien tai cua landing page (premium, sang trong)

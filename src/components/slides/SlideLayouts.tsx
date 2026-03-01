@@ -908,7 +908,7 @@ export const ComparisonSlide = ({ slide, editable, onUpdateField, onBlockSelect,
 };
 
 /* ==================== FUNNEL — marketing funnel ==================== */
-export const FunnelSlide = ({ slide }: { slide: SlideData }) => {
+export const FunnelSlide = ({ slide, editable, onUpdateField }: { slide: SlideData } & EditableProps) => {
   const colors = sectionColors[slide.section_name] || sectionColors.brand;
   const hex = accentHex[slide.section_name] || accentHex.brand;
   const bg = getSlideBg(slide, colors);

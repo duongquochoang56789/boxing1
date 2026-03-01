@@ -31,6 +31,7 @@ import SlideDashboard from "./pages/SlideDashboard";
 import DeckEditor from "./pages/DeckEditor";
 import DeckPresent from "./pages/DeckPresent";
 import SharedDeck from "./pages/SharedDeck";
+import BuilderLanding from "./pages/BuilderLanding";
 import ZaloButton from "@/components/ui/zalo-button";
 import ProjectChatbot from "@/components/ui/ProjectChatbot";
 import { useAnalytics } from "@/hooks/useAnalytics";
@@ -45,6 +46,7 @@ const AnimatedRoutes = () => {
     <AnimatePresence mode="wait">
       <Routes location={location} key={location.pathname}>
         <Route path="/" element={<Index />} />
+        <Route path="/builder" element={<BuilderLanding />} />
         <Route path="/auth" element={<PageTransition><Auth /></PageTransition>} />
         <Route 
           path="/dashboard" 

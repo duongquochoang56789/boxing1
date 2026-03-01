@@ -1043,7 +1043,7 @@ const DeckEditor = () => {
 
           {/* Live Preview */}
           <ResizablePanel defaultSize={60} minSize={30}>
-            <div ref={previewRef} className="h-full relative overflow-hidden bg-black">
+            <div ref={previewRef} className="h-full relative overflow-hidden bg-black" onClick={() => handleBlockClose()}>
               {slide && (
                 <div
                   className="absolute"
@@ -1058,8 +1058,29 @@ const DeckEditor = () => {
                     transformOrigin: "center center",
                   }}
                 >
-                  <SlideRenderer slide={slide} />
+                  <SlideRenderer
+                    slide={slide}
+                    editable={true}
+                    onUpdateField={handleInlineUpdate}
+                    onBlockSelect={handleBlockSelect}
+                    selectedBlock={selectedBlock}
+                  />
                 </div>
+              )}
+              {/* Block Toolbar */}
+              {selectedBlock !== null && blockToolbarPos && (
+                <BlockToolbar
+                  position={blockToolbarPos}
+                  onBold={() => applyBlockStyle("bold", "true")}
+                  onItalic={() => applyBlockStyle("italic", "true")}
+                  onFontSize={(size) => applyBlockStyle("size", size)}
+                  onColor={(color) => applyBlockStyle("color", color)}
+                  onAlign={(align) => applyBlockStyle("align", align)}
+                  onClose={handleBlockClose}
+                  currentSize={blockStyleMeta.size}
+                  currentColor={blockStyleMeta.color}
+                  currentAlign={blockStyleMeta.align}
+                />
               )}
             </div>
           </ResizablePanel>

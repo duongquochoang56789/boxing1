@@ -1,14 +1,14 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Sparkles, ArrowLeft, Loader2, Presentation, Globe, Hash, Palette, Zap } from "lucide-react";
+import { Sparkles, ArrowLeft, Loader2, Presentation, Globe, Hash, Palette, Zap, LayoutTemplate } from "lucide-react";
 import { BrandedLoader } from "@/components/ui/branded-loader";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-
+import TemplateGallery from "@/components/slides/TemplateGallery";
 const SlideBuilder = () => {
   const [prompt, setPrompt] = useState("");
   const [slideCount, setSlideCount] = useState("15");

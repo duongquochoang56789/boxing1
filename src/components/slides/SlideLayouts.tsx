@@ -750,7 +750,7 @@ export const PricingSlide = ({ slide, editable, onUpdateField }: { slide: SlideD
 };
 
 /* ==================== PERSONA — avatar + profile ==================== */
-export const PersonaSlide = ({ slide }: { slide: SlideData }) => {
+export const PersonaSlide = ({ slide, editable, onUpdateField }: { slide: SlideData } & EditableProps) => {
   const colors = sectionColors[slide.section_name] || sectionColors.brand;
   const hex = accentHex[slide.section_name] || accentHex.brand;
   const lines = slide.content.split("\n").filter(l => l.trim());

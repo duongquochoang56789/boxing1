@@ -107,9 +107,40 @@ const SlideBuilder = () => {
               Tạo Slide Deck <span className="text-orange-400">tự động</span>
             </h1>
             <p className="text-white/50 text-lg max-w-md mx-auto">
-              Nhập chủ đề, AI sẽ tạo bộ slide thuyết trình hoàn chỉnh với nội dung và layout phù hợp.
+              Nhập chủ đề để AI tạo tự động, hoặc chọn một mẫu có sẵn.
             </p>
           </div>
+
+          {/* Mode tabs */}
+          <div className="flex justify-center gap-2">
+            <button
+              onClick={() => setMode("ai")}
+              className={`flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-medium transition-all ${
+                mode === "ai"
+                  ? "bg-orange-500 text-white shadow-lg shadow-orange-500/25"
+                  : "bg-white/5 text-white/50 hover:bg-white/10 hover:text-white border border-white/10"
+              }`}
+            >
+              <Sparkles className="w-4 h-4" />
+              AI Tạo tự động
+            </button>
+            <button
+              onClick={() => setMode("template")}
+              className={`flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-medium transition-all ${
+                mode === "template"
+                  ? "bg-orange-500 text-white shadow-lg shadow-orange-500/25"
+                  : "bg-white/5 text-white/50 hover:bg-white/10 hover:text-white border border-white/10"
+              }`}
+            >
+              <LayoutTemplate className="w-4 h-4" />
+              Chọn mẫu ({">"}20 mẫu)
+            </button>
+          </div>
+
+          {mode === "template" ? (
+            <TemplateGallery />
+          ) : (
+            <>
 
           {/* Prompt Input */}
           <div className="space-y-2">

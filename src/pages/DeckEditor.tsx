@@ -635,6 +635,7 @@ const DeckEditor = () => {
   }, [updateSlide]);
 
 
+  const exportPdf = async () => {
     setExportingPdf(true);
     toast({ title: "Đang xuất PDF..." });
     try {

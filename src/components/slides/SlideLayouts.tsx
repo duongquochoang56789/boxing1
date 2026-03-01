@@ -12,6 +12,40 @@ interface SlideData {
   section_name: string;
 }
 
+interface EditableProps {
+  editable?: boolean;
+  onUpdateField?: (field: 'title' | 'subtitle' | 'content', value: string) => void;
+  onBlockSelect?: (blockIndex: number, rect: DOMRect) => void;
+  selectedBlock?: number | null;
+}
+
+/** Parse style metadata from <!-- style:bold,color:#fb923c,size:lg,align:center --> */
+const parseStyleMeta = (text: string): { cleanText: string; styles: Record<string, string> } => {
+  const match = text.match(/<!--\s*style:(.+?)\s*-->$/);
+  if (!match) return { cleanText: text, styles: {} };
+  const cleanText = text.replace(/\s*<!--\s*style:.+?-->\s*$/, "").trim();
+  const styles: Record<string, string> = {};
+  match[1].split(",").forEach(pair => {
+    const [key, ...rest] = pair.split(":");
+    if (key && rest.length) styles[key.trim()] = rest.join(":").trim();
+    else if (key) styles[key.trim()] = "true";
+  });
+  return { cleanText, styles };
+};
+
+const getStyleClasses = (styles: Record<string, string>): React.CSSProperties => {
+  const css: React.CSSProperties = {};
+  if (styles.bold) css.fontWeight = "bold";
+  if (styles.italic) css.fontStyle = "italic";
+  if (styles.color) css.color = styles.color;
+  if (styles.align) css.textAlign = styles.align as any;
+  if (styles.size) {
+    const sizeMap: Record<string, string> = { xs: "20px", sm: "24px", md: "28px", lg: "36px", xl: "48px" };
+    css.fontSize = sizeMap[styles.size] || css.fontSize;
+  }
+  return css;
+};
+
 const sectionColors: Record<string, { bg: string; accent: string }> = {
   brand: { bg: "from-[#1a1a2e] to-[#16213e]", accent: "text-orange-400" },
   product: { bg: "from-[#0f3460] to-[#1a1a2e]", accent: "text-cyan-400" },

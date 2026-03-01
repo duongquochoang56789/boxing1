@@ -6,7 +6,7 @@ import {
   ArrowLeft, Presentation, Save, Undo2, Redo2, Loader2, Check,
   MoreHorizontal, ImageIcon, Images, X, Palette, Share2, Download,
   BookmarkPlus, BookMarked, MessageCircle, History, Grid3X3,
-  PanelLeftClose, PanelLeft, ChevronDown,
+  PanelLeftClose, PanelLeft, ChevronDown, Maximize, Command,
 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";

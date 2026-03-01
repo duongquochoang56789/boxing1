@@ -2,6 +2,7 @@ import BuilderHeader from "@/components/builder-landing/BuilderHeader";
 import BuilderHero from "@/components/builder-landing/BuilderHero";
 import BuilderHowItWorks from "@/components/builder-landing/BuilderHowItWorks";
 import BuilderFeatures from "@/components/builder-landing/BuilderFeatures";
+import BuilderDemo from "@/components/builder-landing/BuilderDemo";
 import BuilderPricing from "@/components/builder-landing/BuilderPricing";
 import BuilderFooter from "@/components/builder-landing/BuilderFooter";
 
@@ -12,6 +13,7 @@ const BuilderLanding = () => {
       <BuilderHero />
       <BuilderHowItWorks />
       <BuilderFeatures />
+      <BuilderDemo />
       <BuilderPricing />
       <BuilderFooter />
     </div>

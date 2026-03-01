@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { Bold, Italic, AlignLeft, AlignCenter, AlignRight, ChevronDown } from "lucide-react";
+import { Bold, Italic, AlignLeft, AlignCenter, AlignRight, ChevronDown, ArrowUpFromLine, ArrowDownFromLine, Square } from "lucide-react";
 
 interface BlockToolbarProps {
   position: { top: number; left: number };
@@ -13,6 +13,9 @@ interface BlockToolbarProps {
   onWeight: (weight: string) => void;
   onSpacing: (spacing: string) => void;
   onLineHeight: (lh: string) => void;
+  onPadding: (padding: string) => void;
+  onMarginTop: (mt: string) => void;
+  onMarginBottom: (mb: string) => void;
   onClose: () => void;
   currentSize?: string;
   currentColor?: string;
@@ -21,6 +24,9 @@ interface BlockToolbarProps {
   currentWeight?: string;
   currentSpacing?: string;
   currentLineHeight?: string;
+  currentPadding?: string;
+  currentMarginTop?: string;
+  currentMarginBottom?: string;
 }
 
 const FONT_SIZES = [
@@ -81,6 +87,22 @@ const LINE_HEIGHT_LIST = [
   { label: "Loose", value: "loose" },
 ];
 
+const PADDING_LIST = [
+  { label: "None", value: "0" },
+  { label: "S", value: "sm" },
+  { label: "M", value: "md" },
+  { label: "L", value: "lg" },
+  { label: "XL", value: "xl" },
+];
+
+const MARGIN_LIST = [
+  { label: "0", value: "0" },
+  { label: "S", value: "sm" },
+  { label: "M", value: "md" },
+  { label: "L", value: "lg" },
+  { label: "XL", value: "xl" },
+];
+
 /** Lazy-load a Google Font by injecting a <link> into <head> */
 const loadGoogleFont = (fontName: string) => {
   if (!fontName) return;
@@ -119,7 +141,7 @@ const ToolbarDropdown = ({ label, options, value, onChange, fontPreview }: {
       <button
         onClick={() => setOpen(!open)}
         className={`flex items-center gap-1 px-2 py-1 rounded text-[10px] font-medium transition-colors ${
-          value && value !== "normal" && value !== "400" && value !== ""
+          value && value !== "normal" && value !== "400" && value !== "" && value !== "0"
             ? "bg-orange-500/20 text-orange-400"
             : "text-white/50 hover:text-white/80 hover:bg-white/10"
         }`}
@@ -148,6 +170,32 @@ const ToolbarDropdown = ({ label, options, value, onChange, fontPreview }: {
   );
 };
 
+// Preset button row for spacing controls
+const PresetButtons = ({ options, value, onChange, icon, label }: {
+  options: { label: string; value: string }[];
+  value?: string;
+  onChange: (v: string) => void;
+  icon: React.ReactNode;
+  label: string;
+}) => (
+  <div className="flex items-center gap-0.5">
+    <span className="text-white/30 mr-0.5" title={label}>{icon}</span>
+    {options.map(o => (
+      <button
+        key={o.value}
+        onClick={() => onChange(o.value)}
+        className={`px-1.5 py-0.5 text-[9px] rounded font-medium transition-colors ${
+          (value || "0") === o.value
+            ? "bg-orange-500/30 text-orange-400"
+            : "text-white/40 hover:text-white/70 hover:bg-white/10"
+        }`}
+      >
+        {o.label}
+      </button>
+    ))}
+  </div>
+);
+
 const BlockToolbar: React.FC<BlockToolbarProps> = ({
   position,
   onBold,
@@ -159,6 +207,9 @@ const BlockToolbar: React.FC<BlockToolbarProps> = ({
   onWeight,
   onSpacing,
   onLineHeight,
+  onPadding,
+  onMarginTop,
+  onMarginBottom,
   onClose,
   currentSize = "md",
   currentColor,
@@ -167,6 +218,9 @@ const BlockToolbar: React.FC<BlockToolbarProps> = ({
   currentWeight = "400",
   currentSpacing = "normal",
   currentLineHeight = "normal",
+  currentPadding = "0",
+  currentMarginTop = "0",
+  currentMarginBottom = "0",
 }) => {
   const ref = useRef<HTMLDivElement>(null);
 
@@ -196,7 +250,7 @@ const BlockToolbar: React.FC<BlockToolbarProps> = ({
   // Clamp position so toolbar stays visible
   const style: React.CSSProperties = {
     position: "fixed",
-    top: Math.max(8, position.top - 90),
+    top: Math.max(8, position.top - 120),
     left: Math.max(8, position.left),
     zIndex: 99999,
   };
@@ -227,7 +281,6 @@ const BlockToolbar: React.FC<BlockToolbarProps> = ({
 
         <div className="w-px h-5 bg-white/15 mx-0.5" />
 
-        {/* Font Size */}
         <div className="flex items-center gap-0.5">
           {FONT_SIZES.map((s) => (
             <button
@@ -246,7 +299,6 @@ const BlockToolbar: React.FC<BlockToolbarProps> = ({
 
         <div className="w-px h-5 bg-white/15 mx-0.5" />
 
-        {/* Colors */}
         <div className="flex items-center gap-0.5">
           {COLOR_PRESETS.map((c) => (
             <button
@@ -265,7 +317,6 @@ const BlockToolbar: React.FC<BlockToolbarProps> = ({
 
         <div className="w-px h-5 bg-white/15 mx-0.5" />
 
-        {/* Alignment */}
         <button
           onClick={() => onAlign("left")}
           className={`w-7 h-7 flex items-center justify-center rounded transition-colors ${
@@ -321,6 +372,33 @@ const BlockToolbar: React.FC<BlockToolbarProps> = ({
           options={LINE_HEIGHT_LIST}
           value={currentLineHeight}
           onChange={onLineHeight}
+        />
+      </div>
+
+      {/* Row 3: Padding, Margin Top, Margin Bottom */}
+      <div className="flex items-center gap-2 border-t border-white/10 pt-1">
+        <PresetButtons
+          options={PADDING_LIST}
+          value={currentPadding}
+          onChange={onPadding}
+          icon={<Square className="w-3 h-3" />}
+          label="Padding"
+        />
+        <div className="w-px h-4 bg-white/10" />
+        <PresetButtons
+          options={MARGIN_LIST}
+          value={currentMarginTop}
+          onChange={onMarginTop}
+          icon={<ArrowUpFromLine className="w-3 h-3" />}
+          label="Margin Top"
+        />
+        <div className="w-px h-4 bg-white/10" />
+        <PresetButtons
+          options={MARGIN_LIST}
+          value={currentMarginBottom}
+          onChange={onMarginBottom}
+          icon={<ArrowDownFromLine className="w-3 h-3" />}
+          label="Margin Bottom"
         />
       </div>
     </div>,

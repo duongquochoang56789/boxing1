@@ -542,7 +542,7 @@ const parseGridItems = (content: string) => {
   return items;
 };
 
-export const GridSlide = ({ slide }: { slide: SlideData }) => {
+export const GridSlide = ({ slide, editable, onUpdateField }: { slide: SlideData } & EditableProps) => {
   const colors = sectionColors[slide.section_name] || sectionColors.brand;
   const items = parseGridItems(slide.content);
   const hasGrid = items.length >= 2;

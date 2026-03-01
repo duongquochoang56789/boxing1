@@ -43,6 +43,16 @@ const getStyleClasses = (styles: Record<string, string>): React.CSSProperties =>
     const sizeMap: Record<string, string> = { xs: "20px", sm: "24px", md: "28px", lg: "36px", xl: "48px" };
     css.fontSize = sizeMap[styles.size] || css.fontSize;
   }
+  if (styles.font) css.fontFamily = `'${styles.font}', sans-serif`;
+  if (styles.weight) css.fontWeight = parseInt(styles.weight) || styles.weight;
+  if (styles.spacing) {
+    const spacingMap: Record<string, string> = { tight: "-0.02em", normal: "0", wide: "0.1em", xwide: "0.2em" };
+    css.letterSpacing = spacingMap[styles.spacing] || "0";
+  }
+  if (styles.lineheight) {
+    const lhMap: Record<string, string> = { compact: "1.1", normal: "1.4", relaxed: "1.7", loose: "2.0" };
+    css.lineHeight = lhMap[styles.lineheight] || "1.4";
+  }
   return css;
 };
 

@@ -288,7 +288,7 @@ const ContentBlock = ({ content, accent, onBlockSelect, onBlockContextMenu, sele
     const bulletMatch = trimmed.match(/^[\*\-]\s+(.+)$/);
     if (bulletMatch) {
       elements.push(
-        <BlockWrapper key={i} index={currentBlockIdx} onBlockSelect={onBlockSelect} selectedBlock={selectedBlock} styleMeta={styleMeta}>
+        <BlockWrapper key={i} index={currentBlockIdx} onBlockSelect={onBlockSelect} onBlockContextMenu={onBlockContextMenu} selectedBlock={selectedBlock} styleMeta={styleMeta}>
           <motion.div custom={elements.length} variants={fadeIn} initial="hidden" animate="visible"
             className="flex items-start gap-3 pl-2"
           >

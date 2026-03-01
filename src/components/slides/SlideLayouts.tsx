@@ -320,7 +320,7 @@ const ContentBlock = ({ content, accent, onBlockSelect, onBlockContextMenu, sele
       const textPart = emojiMatch[2];
       const innerBold = textPart.match(/\*\*(.+?)\*\*\s*—?\s*(.*)/);
       elements.push(
-        <BlockWrapper key={i} index={currentBlockIdx} onBlockSelect={onBlockSelect} selectedBlock={selectedBlock} styleMeta={styleMeta}>
+        <BlockWrapper key={i} index={currentBlockIdx} onBlockSelect={onBlockSelect} onBlockContextMenu={onBlockContextMenu} selectedBlock={selectedBlock} styleMeta={styleMeta}>
           <motion.div custom={elements.length} variants={fadeIn} initial="hidden" animate="visible" className="flex items-start gap-3">
             <span className="text-[32px] flex-shrink-0">{emojiMatch[1]}</span>
             <div>

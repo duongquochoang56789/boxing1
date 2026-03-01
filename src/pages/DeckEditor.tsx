@@ -1153,6 +1153,7 @@ const DeckEditor = () => {
                     editable={true}
                     onUpdateField={handleInlineUpdate}
                     onBlockSelect={handleBlockSelect}
+                    onBlockContextMenu={handleBlockContextMenu}
                     selectedBlock={selectedBlock}
                   />
                 </div>

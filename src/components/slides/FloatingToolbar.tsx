@@ -102,6 +102,8 @@ const FloatingToolbar = ({
   onSaveTemplate,
   onUseTemplate,
   onPresent,
+  zenMode,
+  onToggleZen,
 }: FloatingToolbarProps) => {
   const [expanded, setExpanded] = useState(false);
 

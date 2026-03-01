@@ -16,6 +16,7 @@ interface EditableProps {
   editable?: boolean;
   onUpdateField?: (field: 'title' | 'subtitle' | 'content', value: string) => void;
   onBlockSelect?: (blockIndex: number, rect: DOMRect) => void;
+  onBlockContextMenu?: (blockIndex: number, pos: { x: number; y: number }) => void;
   selectedBlock?: number | null;
 }
 

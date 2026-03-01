@@ -125,9 +125,10 @@ const renderInlineRich = (text: string, accent: string) => {
 };
 
 // Wrap element with block selection capability
-const BlockWrapper = ({ index, children, onBlockSelect, selectedBlock, styleMeta }: {
+const BlockWrapper = ({ index, children, onBlockSelect, onBlockContextMenu, selectedBlock, styleMeta }: {
   index: number; children: React.ReactNode;
   onBlockSelect?: (blockIndex: number, rect: DOMRect) => void;
+  onBlockContextMenu?: (blockIndex: number, pos: { x: number; y: number }) => void;
   selectedBlock?: number | null;
   styleMeta?: Record<string, string>;
 }) => {
@@ -149,6 +150,12 @@ const BlockWrapper = ({ index, children, onBlockSelect, selectedBlock, styleMeta
         e.stopPropagation();
         const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
         onBlockSelect(index, rect);
+      }}
+      onContextMenu={(e) => {
+        if (!onBlockContextMenu) return;
+        e.preventDefault();
+        e.stopPropagation();
+        onBlockContextMenu(index, { x: e.clientX, y: e.clientY });
       }}
     >
       {children}

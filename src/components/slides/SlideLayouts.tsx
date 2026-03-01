@@ -923,7 +923,7 @@ export const FunnelSlide = ({ slide, editable, onUpdateField }: { slide: SlideDa
 
   return (
     <div className={`w-full h-full ${bg.className} flex flex-col justify-center px-16 py-12`} style={bg.style}>
-      <SlideHeader slide={slide} colors={colors} />
+      <SlideHeader slide={slide} colors={colors} editable={editable} onUpdateField={onUpdateField} />
       <div className="flex-1 flex flex-col items-center justify-center gap-0 mt-4">
         {steps.slice(0, 6).map((step, i) => {
           const widthPct = 100 - (i * (60 / Math.max(steps.length - 1, 1)));

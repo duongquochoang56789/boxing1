@@ -248,7 +248,7 @@ const ContentBlock = ({ content, accent, onBlockSelect, onBlockContextMenu, sele
         i++;
       }
       elements.push(
-        <BlockWrapper key={`ol-${i}`} index={currentBlockIdx} onBlockSelect={onBlockSelect} selectedBlock={selectedBlock} styleMeta={styleMeta}>
+        <BlockWrapper key={`ol-${i}`} index={currentBlockIdx} onBlockSelect={onBlockSelect} onBlockContextMenu={onBlockContextMenu} selectedBlock={selectedBlock} styleMeta={styleMeta}>
           <div className="space-y-3 pl-2">
             {listItems.map((item, li) => (
               <motion.div key={li} custom={elements.length + li} variants={fadeIn} initial="hidden" animate="visible"

@@ -816,7 +816,7 @@ export const ChartSlide = ({ slide, editable, onUpdateField, onBlockSelect, sele
   const hasTable = slide.content.includes("|");
   return (
     <div className={`w-full h-full ${getSlideBg(slide, colors).className} flex flex-col justify-center px-16 py-12`} style={getSlideBg(slide, colors).style}>
-      <SlideHeader slide={slide} colors={colors} />
+      <SlideHeader slide={slide} colors={colors} editable={editable} onUpdateField={onUpdateField} />
       <div className="flex gap-8 flex-1 items-center">
         <div className="flex-1">
           {hasTable ? (

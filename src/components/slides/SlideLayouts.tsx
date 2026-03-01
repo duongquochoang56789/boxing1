@@ -315,25 +315,49 @@ const TableContent = ({ content, accent }: { content: string; accent: string }) 
   );
 };
 
+// Editable text helper
+const EditableText = ({ 
+  value, field, editable, onUpdateField, className, tag = "div" 
+}: { 
+  value: string; field: 'title' | 'subtitle'; editable?: boolean; 
+  onUpdateField?: (field: 'title' | 'subtitle' | 'content', value: string) => void;
+  className?: string; tag?: string;
+}) => {
+  if (!editable) {
+    return React.createElement(tag, { className }, value);
+  }
+  return React.createElement(tag, {
+    className: `${className} outline-none border border-transparent hover:border-dashed hover:border-white/20 focus:border-solid focus:border-orange-400/50 rounded px-2 -mx-2 cursor-text transition-colors`,
+    contentEditable: true,
+    suppressContentEditableWarning: true,
+    onBlur: (e: React.FocusEvent<HTMLElement>) => {
+      const newVal = e.currentTarget.innerText;
+      if (newVal !== value) onUpdateField?.(field, newVal);
+    },
+    onKeyDown: (e: React.KeyboardEvent) => {
+      if (e.key === "Enter") { e.preventDefault(); (e.target as HTMLElement).blur(); }
+    },
+    children: value,
+  });
+};
+
 // Slide header helper
-const SlideHeader = ({ slide, colors }: { slide: SlideData; colors: { accent: string } }) => (
+const SlideHeader = ({ slide, colors, editable, onUpdateField }: { slide: SlideData; colors: { accent: string }; editable?: boolean; onUpdateField?: EditableProps['onUpdateField'] }) => (
   <>
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
       className={`text-[22px] font-medium ${colors.accent} uppercase tracking-widest mb-4`}
     >
       Slide {slide.slide_order}
     </motion.div>
-    <motion.h2 initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}
-      className="text-[52px] font-bold text-white leading-tight mb-3"
-    >
-      {slide.title}
-    </motion.h2>
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}>
+      <EditableText value={slide.title} field="title" editable={editable} onUpdateField={onUpdateField}
+        className="text-[52px] font-bold text-white leading-tight mb-3" />
+    </motion.div>
     {slide.subtitle && (
-      <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}
-        className="text-[30px] text-white/50 mb-8"
-      >
-        {slide.subtitle}
-      </motion.p>
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
+        <EditableText value={slide.subtitle} field="subtitle" editable={editable} onUpdateField={onUpdateField}
+          className="text-[30px] text-white/50 mb-8" />
+      </motion.div>
     )}
   </>
 );

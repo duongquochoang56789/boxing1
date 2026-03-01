@@ -465,14 +465,14 @@ export const CoverSlide = ({ slide, editable, onUpdateField, onBlockSelect, sele
 };
 
 /* ==================== TWO-COLUMN ==================== */
-export const TwoColumnSlide = ({ slide }: { slide: SlideData }) => {
+export const TwoColumnSlide = ({ slide, editable, onUpdateField, onBlockSelect, selectedBlock }: { slide: SlideData } & EditableProps) => {
   const colors = sectionColors[slide.section_name] || sectionColors.brand;
   const bg = getSlideBg(slide, colors);
   return (
     <div className={`w-full h-full ${bg.className} flex`} style={bg.style}>
       <div className="flex-1 flex flex-col justify-center px-16 py-12">
-        <SlideHeader slide={slide} colors={colors} />
-        <ContentBlock content={slide.content} accent={colors.accent} />
+        <SlideHeader slide={slide} colors={colors} editable={editable} onUpdateField={onUpdateField} />
+        <ContentBlock content={slide.content} accent={colors.accent} onBlockSelect={onBlockSelect} selectedBlock={selectedBlock} />
       </div>
       {slide.image_url && (
         <div className="w-[45%] relative">

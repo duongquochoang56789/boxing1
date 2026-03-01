@@ -601,7 +601,7 @@ const parseTimelineItems = (content: string) => {
   return items;
 };
 
-export const TimelineSlide = ({ slide }: { slide: SlideData }) => {
+export const TimelineSlide = ({ slide, editable, onUpdateField }: { slide: SlideData } & EditableProps) => {
   const colors = sectionColors[slide.section_name] || sectionColors.brand;
   const items = parseTimelineItems(slide.content);
   const hasTimeline = items.length >= 2;

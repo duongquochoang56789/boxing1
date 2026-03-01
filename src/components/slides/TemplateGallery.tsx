@@ -117,6 +117,29 @@ const TemplateGallery = ({ onClose }: TemplateGalleryProps) => {
 
   return (
     <div className="space-y-6">
+      {/* Search bar */}
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => {
+            setSearchQuery(e.target.value);
+            if (e.target.value.trim()) setCategory("all");
+          }}
+          placeholder="Tìm kiếm mẫu slide..."
+          className="w-full pl-10 pr-20 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-sm placeholder:text-muted-foreground focus:outline-none focus:border-white/20 transition-colors"
+        />
+        <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
+          {searchQuery && (
+            <button onClick={() => setSearchQuery("")} className="text-muted-foreground hover:text-white">
+              <X className="w-4 h-4" />
+            </button>
+          )}
+          <span className="text-muted-foreground text-xs">{filtered.length} mẫu</span>
+        </div>
+      </div>
+
       {/* Category filter */}
       <div className="flex flex-wrap gap-2">
         {CATEGORIES.map((cat) => (

@@ -9,6 +9,7 @@ interface SlideData {
   layout: string;
   image_url: string | null;
   background_color: string;
+  background_image_url?: string | null;
   section_name: string;
 }
 

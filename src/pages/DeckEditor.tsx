@@ -155,6 +155,8 @@ const DeckEditor = () => {
   const [blockStyleMeta, setBlockStyleMeta] = useState<Record<string, string>>({});
   const [contextMenuPos, setContextMenuPos] = useState<{ x: number; y: number } | null>(null);
   const [contextMenuBlock, setContextMenuBlock] = useState<number | null>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const imageInputRef = useRef<HTMLInputElement>(null);
   const history = useSlideHistory();
   const { templates, saveTemplate, deleteTemplate } = useSlideTemplates();
 

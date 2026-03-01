@@ -272,7 +272,7 @@ const ContentBlock = ({ content, accent, onBlockSelect, onBlockContextMenu, sele
       const { cleanText: nbText } = parseStyleMeta(nestedBulletMatch[2]);
       const indent = nestedBulletMatch[1].length >= 4 ? 2 : 1;
       elements.push(
-        <BlockWrapper key={i} index={currentBlockIdx} onBlockSelect={onBlockSelect} selectedBlock={selectedBlock} styleMeta={styleMeta}>
+        <BlockWrapper key={i} index={currentBlockIdx} onBlockSelect={onBlockSelect} onBlockContextMenu={onBlockContextMenu} selectedBlock={selectedBlock} styleMeta={styleMeta}>
           <motion.div custom={elements.length} variants={fadeIn} initial="hidden" animate="visible"
             className="flex items-start gap-3" style={{ paddingLeft: `${indent * 32 + 8}px` }}
           >

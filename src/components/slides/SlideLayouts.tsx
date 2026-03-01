@@ -550,7 +550,7 @@ export const GridSlide = ({ slide, editable, onUpdateField }: { slide: SlideData
 
   return (
     <div className={`w-full h-full ${getSlideBg(slide, colors).className} flex flex-col justify-center px-16 py-12`} style={getSlideBg(slide, colors).style}>
-      <SlideHeader slide={slide} colors={colors} />
+      <SlideHeader slide={slide} colors={colors} editable={editable} onUpdateField={onUpdateField} />
       {hasGrid ? (
         <div className={`grid ${items.length <= 4 ? "grid-cols-2" : "grid-cols-3"} gap-5 mt-2 flex-1`}>
           {items.slice(0, 6).map((item, i) => (

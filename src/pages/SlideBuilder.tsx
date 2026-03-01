@@ -258,6 +258,9 @@ const SlideBuilder = () => {
                 ))}
               </div>
             </div>
+            </div>
+          )}
+          </>
           )}
         </motion.div>
       </div>

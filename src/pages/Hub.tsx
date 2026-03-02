@@ -15,6 +15,14 @@ interface HubStats {
   totalBrandKits: number;
 }
 
+interface Activity {
+  id: string;
+  type: 'deck' | 'brand' | 'class' | 'pt';
+  title: string;
+  timestamp: string;
+  app: 'flyfit' | 'slideai';
+}
+
 const containerVariants = {
   hidden: { opacity: 0 },
   show: {

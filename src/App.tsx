@@ -33,6 +33,7 @@ import DeckPresent from "./pages/DeckPresent";
 import SharedDeck from "./pages/SharedDeck";
 import BuilderLanding from "./pages/BuilderLanding";
 import BrandGenerator from "./pages/BrandGenerator";
+import Hub from "./pages/Hub";
 import AppLayout from "./components/builder/AppLayout";
 import ZaloButton from "@/components/ui/zalo-button";
 import ProjectChatbot from "@/components/ui/ProjectChatbot";

@@ -79,11 +79,11 @@ export function AppSidebar() {
 
       <SidebarFooter className="bg-[#0a0a0a] border-t border-white/10 p-3 space-y-1">
         <button
-          onClick={() => navigate("/")}
+          onClick={() => navigate("/hub")}
           className={`flex items-center gap-3 px-3 py-2 rounded-lg text-white/40 hover:text-white hover:bg-white/5 text-sm transition-all w-full ${collapsed ? "justify-center" : ""}`}
         >
           <Home className="w-4 h-4 flex-shrink-0" />
-          {!collapsed && <span>Trang chủ</span>}
+          {!collapsed && <span>Hub</span>}
         </button>
 
         {/* User */}

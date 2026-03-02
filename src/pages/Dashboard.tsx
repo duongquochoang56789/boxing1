@@ -157,9 +157,14 @@ const Dashboard = () => {
       {/* Header */}
       <header className="bg-background/80 backdrop-blur-xl border-b border-border/50 sticky top-0 z-30">
         <div className="container-custom py-4 flex items-center justify-between">
-          <Link to="/" className="font-display text-xl font-semibold tracking-tight text-charcoal">
-            FLY<span className="text-terracotta">FIT</span>
-          </Link>
+          <div className="flex items-center gap-4">
+            <Link to="/hub" className="text-soft-brown hover:text-terracotta text-label transition-colors duration-300">
+              ← Hub
+            </Link>
+            <Link to="/" className="font-display text-xl font-semibold tracking-tight text-charcoal">
+              FLY<span className="text-terracotta">FIT</span>
+            </Link>
+          </div>
           <div className="flex items-center gap-4">
             {isAdmin && (
               <Link to="/admin">

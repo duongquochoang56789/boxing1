@@ -40,6 +40,7 @@ const Hub = () => {
   const { user, signOut } = useAuth();
   const [stats, setStats] = useState<HubStats>({ upcomingSessions: 0, registeredClasses: 0, totalDecks: 0, totalBrandKits: 0 });
   const [profileName, setProfileName] = useState('');
+  const [activities, setActivities] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

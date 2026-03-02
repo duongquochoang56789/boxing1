@@ -1,16 +1,26 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Dumbbell, Presentation, Palette, LogOut, ArrowUpRight, Home } from 'lucide-react';
+import { Dumbbell, Presentation, Palette, LogOut, ArrowUpRight, Home, Clock, Users, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
+import { formatDistanceToNow } from 'date-fns';
+import { vi } from 'date-fns/locale';
 
 interface HubStats {
   upcomingSessions: number;
   registeredClasses: number;
   totalDecks: number;
   totalBrandKits: number;
+}
+
+interface Activity {
+  id: string;
+  type: 'deck' | 'brand' | 'class' | 'pt';
+  title: string;
+  timestamp: string;
+  app: 'flyfit' | 'slideai';
 }
 
 const containerVariants = {
@@ -30,6 +40,7 @@ const Hub = () => {
   const { user, signOut } = useAuth();
   const [stats, setStats] = useState<HubStats>({ upcomingSessions: 0, registeredClasses: 0, totalDecks: 0, totalBrandKits: 0 });
   const [profileName, setProfileName] = useState('');
+  const [activities, setActivities] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -56,6 +67,23 @@ const Hub = () => {
         totalDecks: deckRes.count || 0,
         totalBrandKits: brandRes.count || 0,
       });
+
+      // Fetch recent activities
+      const [recentDecks, recentBrands, recentClasses, recentPT] = await Promise.all([
+        supabase.from('decks').select('id, title, created_at').eq('user_id', uid).order('created_at', { ascending: false }).limit(3),
+        supabase.from('brand_kits').select('id, name, created_at').eq('user_id', uid).order('created_at', { ascending: false }).limit(2),
+        supabase.from('class_registrations').select('id, registered_at, class_schedules(group_classes(name))').eq('user_id', uid).order('registered_at', { ascending: false }).limit(3),
+        supabase.from('pt_sessions').select('id, created_at, trainers(name)').eq('user_id', uid).order('created_at', { ascending: false }).limit(2),
+      ]);
+
+      const allActivities: Activity[] = [
+        ...(recentDecks.data || []).map((d: any) => ({ id: d.id, type: 'deck' as const, title: `Tạo deck "${d.title}"`, timestamp: d.created_at, app: 'slideai' as const })),
+        ...(recentBrands.data || []).map((b: any) => ({ id: b.id, type: 'brand' as const, title: `Tạo brand kit "${b.name}"`, timestamp: b.created_at, app: 'slideai' as const })),
+        ...(recentClasses.data || []).map((c: any) => ({ id: c.id, type: 'class' as const, title: `Đăng ký lớp ${c.class_schedules?.group_classes?.name || ''}`, timestamp: c.registered_at, app: 'flyfit' as const })),
+        ...(recentPT.data || []).map((p: any) => ({ id: p.id, type: 'pt' as const, title: `Đặt PT với ${p.trainers?.name || 'HLV'}`, timestamp: p.created_at, app: 'flyfit' as const })),
+      ].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()).slice(0, 5);
+
+      setActivities(allActivities);
     } catch (err) {
       console.error('Hub stats error:', err);
     } finally {
@@ -207,6 +235,51 @@ const Hub = () => {
             </motion.div>
           ))}
         </motion.div>
+
+        {/* Recent Activity */}
+        {activities.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.5 }}
+            className="mt-10 max-w-4xl"
+          >
+            <h2 className="font-display text-xl font-medium text-charcoal flex items-center gap-3 mb-5">
+              <div className="w-10 h-10 bg-muted flex items-center justify-center rounded-lg">
+                <Clock className="w-5 h-5 text-muted-foreground" />
+              </div>
+              Hoạt động gần đây
+            </h2>
+            <div className="bg-background border border-border/50 divide-y divide-border/30">
+              {activities.map((activity, i) => {
+                const IconComp = activity.type === 'deck' ? Presentation : activity.type === 'brand' ? Palette : activity.type === 'class' ? Users : Dumbbell;
+                const isFlyfit = activity.app === 'flyfit';
+                return (
+                  <motion.div
+                    key={activity.id}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.6 + i * 0.08 }}
+                    className="flex items-center gap-4 px-6 py-4 hover:bg-cream/50 transition-colors duration-200"
+                  >
+                    <div className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 ${isFlyfit ? 'bg-[hsl(15,65%,45%)]/10' : 'bg-[hsl(239,84%,67%)]/10'}`}>
+                      <IconComp className={`w-4 h-4 ${isFlyfit ? 'text-[hsl(15,65%,45%)]' : 'text-[hsl(239,84%,67%)]'}`} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-charcoal truncate">{activity.title}</p>
+                      <p className="text-xs text-soft-brown mt-0.5">
+                        {formatDistanceToNow(new Date(activity.timestamp), { addSuffix: true, locale: vi })}
+                      </p>
+                    </div>
+                    <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${isFlyfit ? 'bg-[hsl(15,65%,45%)]/10 text-[hsl(15,65%,45%)]' : 'bg-[hsl(239,84%,67%)]/10 text-[hsl(239,84%,67%)]'}`}>
+                      {isFlyfit ? 'FLYFIT' : 'SlideAI'}
+                    </span>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </motion.div>
+        )}
       </main>
     </div>
   );

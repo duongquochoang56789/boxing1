@@ -21,7 +21,7 @@ const Auth = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const location = window.location;
-  const fromRoute = (history.state?.usr?.from?.pathname as string) || '/dashboard';
+  const fromRoute = (history.state?.usr?.from?.pathname as string) || '/hub';
 
   useEffect(() => {
     if (!loading && user) {

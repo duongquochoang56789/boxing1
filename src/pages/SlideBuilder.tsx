@@ -78,18 +78,6 @@ const SlideBuilder = () => {
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] flex flex-col">
-      {/* Header */}
-      <div className="flex items-center justify-between px-6 py-4 border-b border-white/10">
-        <div className="flex items-center gap-3">
-          <Link to="/slides" className="p-2 text-white/50 hover:text-white hover:bg-white/10 rounded-lg transition-colors">
-            <ArrowLeft className="w-5 h-5" />
-          </Link>
-          <span className="text-white font-bold text-xl">FLY<span className="text-orange-400">FIT</span></span>
-          <span className="text-white/30">|</span>
-          <span className="text-white/60 text-sm">AI Slide Builder</span>
-        </div>
-      </div>
-
       {/* Main */}
       <div className="flex-1 flex items-center justify-center px-6 py-12">
         <motion.div

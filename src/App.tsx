@@ -33,6 +33,7 @@ import DeckPresent from "./pages/DeckPresent";
 import SharedDeck from "./pages/SharedDeck";
 import BuilderLanding from "./pages/BuilderLanding";
 import BrandGenerator from "./pages/BrandGenerator";
+import AppLayout from "./components/builder/AppLayout";
 import ZaloButton from "@/components/ui/zalo-button";
 import ProjectChatbot from "@/components/ui/ProjectChatbot";
 import { useAnalytics } from "@/hooks/useAnalytics";
@@ -91,9 +92,14 @@ const AnimatedRoutes = () => {
         <Route path="/hero-demo/3" element={<HeroDemo3 />} />
         <Route path="/hero-demo/4" element={<HeroDemo4 />} />
         <Route path="/hero-demo/5" element={<HeroDemo5 />} />
-        <Route path="/brand" element={<ProtectedRoute><BrandGenerator /></ProtectedRoute>} />
-        <Route path="/slides" element={<ProtectedRoute><SlideDashboard /></ProtectedRoute>} />
-        <Route path="/slides/new" element={<ProtectedRoute><SlideBuilder /></ProtectedRoute>} />
+
+        {/* Builder App Shell - shared sidebar layout */}
+        <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
+          <Route path="/slides" element={<SlideDashboard />} />
+          <Route path="/slides/new" element={<SlideBuilder />} />
+          <Route path="/brand" element={<BrandGenerator />} />
+        </Route>
+
         <Route path="/slides/shared/:slug" element={<SharedDeck />} />
         <Route path="/slides/:deckId" element={<ProtectedRoute><DeckEditor /></ProtectedRoute>} />
         <Route path="/slides/:deckId/present" element={<ProtectedRoute><DeckPresent /></ProtectedRoute>} />

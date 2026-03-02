@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Dumbbell, Presentation, Palette, LogOut, ArrowUpRight, Home } from 'lucide-react';
+import { Dumbbell, Presentation, Palette, LogOut, ArrowUpRight, Home, Clock, Users, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
+import { formatDistanceToNow } from 'date-fns';
+import { vi } from 'date-fns/locale';
 
 interface HubStats {
   upcomingSessions: number;

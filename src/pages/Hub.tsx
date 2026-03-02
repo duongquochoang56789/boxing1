@@ -235,6 +235,51 @@ const Hub = () => {
             </motion.div>
           ))}
         </motion.div>
+
+        {/* Recent Activity */}
+        {activities.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.5 }}
+            className="mt-10 max-w-4xl"
+          >
+            <h2 className="font-display text-xl font-medium text-charcoal flex items-center gap-3 mb-5">
+              <div className="w-10 h-10 bg-muted flex items-center justify-center rounded-lg">
+                <Clock className="w-5 h-5 text-muted-foreground" />
+              </div>
+              Hoạt động gần đây
+            </h2>
+            <div className="bg-background border border-border/50 divide-y divide-border/30">
+              {activities.map((activity, i) => {
+                const IconComp = activity.type === 'deck' ? Presentation : activity.type === 'brand' ? Palette : activity.type === 'class' ? Users : Dumbbell;
+                const isFlyfit = activity.app === 'flyfit';
+                return (
+                  <motion.div
+                    key={activity.id}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.6 + i * 0.08 }}
+                    className="flex items-center gap-4 px-6 py-4 hover:bg-cream/50 transition-colors duration-200"
+                  >
+                    <div className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 ${isFlyfit ? 'bg-[hsl(15,65%,45%)]/10' : 'bg-[hsl(239,84%,67%)]/10'}`}>
+                      <IconComp className={`w-4 h-4 ${isFlyfit ? 'text-[hsl(15,65%,45%)]' : 'text-[hsl(239,84%,67%)]'}`} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-charcoal truncate">{activity.title}</p>
+                      <p className="text-xs text-soft-brown mt-0.5">
+                        {formatDistanceToNow(new Date(activity.timestamp), { addSuffix: true, locale: vi })}
+                      </p>
+                    </div>
+                    <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${isFlyfit ? 'bg-[hsl(15,65%,45%)]/10 text-[hsl(15,65%,45%)]' : 'bg-[hsl(239,84%,67%)]/10 text-[hsl(239,84%,67%)]'}`}>
+                      {isFlyfit ? 'FLYFIT' : 'SlideAI'}
+                    </span>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </motion.div>
+        )}
       </main>
     </div>
   );

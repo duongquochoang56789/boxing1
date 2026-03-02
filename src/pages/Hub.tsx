@@ -67,6 +67,23 @@ const Hub = () => {
         totalDecks: deckRes.count || 0,
         totalBrandKits: brandRes.count || 0,
       });
+
+      // Fetch recent activities
+      const [recentDecks, recentBrands, recentClasses, recentPT] = await Promise.all([
+        supabase.from('decks').select('id, title, created_at').eq('user_id', uid).order('created_at', { ascending: false }).limit(3),
+        supabase.from('brand_kits').select('id, name, created_at').eq('user_id', uid).order('created_at', { ascending: false }).limit(2),
+        supabase.from('class_registrations').select('id, registered_at, class_schedules(group_classes(name))').eq('user_id', uid).order('registered_at', { ascending: false }).limit(3),
+        supabase.from('pt_sessions').select('id, created_at, trainers(name)').eq('user_id', uid).order('created_at', { ascending: false }).limit(2),
+      ]);
+
+      const allActivities: Activity[] = [
+        ...(recentDecks.data || []).map((d: any) => ({ id: d.id, type: 'deck' as const, title: `Tạo deck "${d.title}"`, timestamp: d.created_at, app: 'slideai' as const })),
+        ...(recentBrands.data || []).map((b: any) => ({ id: b.id, type: 'brand' as const, title: `Tạo brand kit "${b.name}"`, timestamp: b.created_at, app: 'slideai' as const })),
+        ...(recentClasses.data || []).map((c: any) => ({ id: c.id, type: 'class' as const, title: `Đăng ký lớp ${c.class_schedules?.group_classes?.name || ''}`, timestamp: c.registered_at, app: 'flyfit' as const })),
+        ...(recentPT.data || []).map((p: any) => ({ id: p.id, type: 'pt' as const, title: `Đặt PT với ${p.trainers?.name || 'HLV'}`, timestamp: p.created_at, app: 'flyfit' as const })),
+      ].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()).slice(0, 5);
+
+      setActivities(allActivities);
     } catch (err) {
       console.error('Hub stats error:', err);
     } finally {

@@ -130,19 +130,6 @@ const BrandGenerator = () => {
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white">
-      {/* Header */}
-      <div className="border-b border-white/10 px-6 py-4">
-        <div className="max-w-5xl mx-auto flex items-center gap-4">
-          <button onClick={() => navigate(-1)} className="text-white/40 hover:text-white transition-colors">
-            <ArrowLeft className="w-5 h-5" />
-          </button>
-          <div className="flex items-center gap-2">
-            <Palette className="w-5 h-5 text-orange-400" />
-            <h1 className="text-lg font-bold">Brand Identity Generator</h1>
-          </div>
-        </div>
-      </div>
-
       {/* Content */}
       <div className="max-w-5xl mx-auto px-6 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

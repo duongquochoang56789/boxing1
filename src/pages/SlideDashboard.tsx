@@ -169,22 +169,6 @@ const SlideDashboard = () => {
 
   return (
     <div className="min-h-screen bg-[#0a0a0a]">
-      {/* Header */}
-      <header className="border-b border-white/10 bg-[#0a0a0a]/80 backdrop-blur-xl sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2">
-            <span className="text-white font-bold text-xl">FLY<span className="text-orange-400">SLIDES</span></span>
-          </Link>
-          <Button
-            onClick={() => navigate("/slides/new")}
-            className="bg-orange-500 hover:bg-orange-600 text-white gap-2"
-          >
-            <Plus className="w-4 h-4" />
-            Tạo mới
-          </Button>
-        </div>
-      </header>
-
       {/* Content */}
       <main className="max-w-7xl mx-auto px-6 py-10">
         <div className="mb-8 flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4">
